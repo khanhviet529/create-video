@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=1920" />
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+/* @brand:start */
+:root {
+  --ground: #0C0D0F; --ground-lift: #14161A;
+  --ink: #EDEAE4; --ink-mid: #9AA0A6; --ink-dim: #8B9198; --ink-ghost: #3A3E42;
+  --rule: #23272A; --rule-bright: #3D4348; --hair: 1.5px;
+  --authoritative: #C9A227; --stale: #E0533D; --lost: #6A6F74;
+  --boundary: #4E8C7D; --pressure: #B4623A; --counterfactual: #7A8086;
+  --font-value: "IBM Plex Mono", ui-monospace, monospace;
+  --font-label: "IBM Plex Sans Condensed", "IBM Plex Sans", system-ui, sans-serif;
+  --t-hero: 200px; --t-value: 64px; --t-body: 36px; --t-label: 26px; --track-label: 0.18em;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { overflow: hidden; background: var(--ground); color: var(--ink); font-family: var(--font-label); }
+.label { font-family: var(--font-label); font-size: var(--t-label); letter-spacing: var(--track-label);
+         text-transform: uppercase; color: var(--ink-dim); font-weight: 500; }
+/* @brand:end */
+
+html, body { width: 1080px; height: 1920px; }
+#stage { position: absolute; inset: 0; }
+
+/* ---------------------------------------------------------------------------
+   s10 — THE DEFAULT FLIPS. transformation.
+
+   REBUILT AGAINST s11, AND THIS IS WHY. The composition revision gave this shot a
+   centre-weighted frame — thin top, heavy middle, thin bottom — to break the video's
+   top-heavy habit. That was a real gain and it was also a regression: s11 opens on this
+   shot's CLOSING frame and lets the default block yield to its list, so the two frames have
+   to be the same frame. s11 is one of the three shots whose composition is preserved, which
+   makes this the side that moves. Geometry here is s11's geometry, to the pixel: invariant
+   42px at 286, rule at 470, default label at 502, default line at 562, source at 668.
+
+   The replacement-in-place that H2 was forbidden is exactly right here: a default cannot be
+   both things at once, so one genuinely replaces the other. In H2 the two facts were
+   simultaneous and had to coexist. The test is whether both can be true at the same time.
+
+   The line is split into three elements so that only the consequent changes. The subject
+   `không có quyết định  →  ` never fades — it goes teal when the flip completes. Mono
+   advance is exactly 0.6em, so at 40px the consequent starts at char 24 = 93 + 576 = 669;
+   the three elements render identically to s11's single string.
+
+   `trừ tài nguyên công khai` and the ownership clause are TRANSIENT. Both are in the
+   narration and both are said and settled before the cut, so they yield during the hold and
+   leave the frame s11 needs. Nothing else moves.
+--------------------------------------------------------------------------- */
+#invLbl  { position: absolute; left: 93px; top: 236px; }
+#invText { position: absolute; left: 93px; top: 286px; width: 894px;
+           font-family: var(--font-label); font-size: 42px; line-height: 1.18;
+           letter-spacing: 0.01em; color: var(--ink); font-weight: 600; }
+
+#rule0 { position: absolute; left: 93px; top: 470px; width: 894px; height: var(--hair);
+         background: var(--rule-bright); transform-origin: left center; }
+#dLbl  { position: absolute; left: 93px; top: 502px; }
+
+.dline { position: absolute; top: 562px; font-family: var(--font-value); font-size: 40px;
+         line-height: 1; white-space: pre; }
+#dPre { left: 93px;  color: var(--ink-mid); }
+#dOld { left: 669px; color: var(--stale); }
+#dNew { left: 669px; color: var(--boundary); }
+
+#src   { position: absolute; left: 93px; top: 668px; color: var(--lost); }
+
+/* transient — said, landed, and gone before the cut */
+#exc { position: absolute; left: 620px; top: 502px; width: 400px; color: var(--stale); }
+#own { position: absolute; left: 93px; top: 760px; width: 894px;
+       font-family: var(--font-label); font-size: 38px; letter-spacing: 0.01em;
+       color: var(--boundary); font-weight: 600; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="8"
+     data-width="1080" data-height="1920">
+  <div id="stage" class="clip" data-start="0" data-duration="8" data-track-index="0">
+
+    <div id="invLbl" class="label">bất biến phải giữ</div>
+    <div id="invText">mọi truy cập tới object được bảo vệ đều phải chịu quyết định phân quyền cần thiết</div>
+
+    <div id="rule0"></div>
+    <div id="dLbl" class="label">và mặc định của nó</div>
+    <div id="exc" class="label">trừ tài nguyên công khai</div>
+
+    <div class="dline" id="dPre">không có quyết định  &rarr;  </div>
+    <div class="dline" id="dOld" data-layout-allow-occlusion>trả dữ liệu</div>
+    <div class="dline" id="dNew" data-layout-allow-occlusion>từ chối</div>
+
+    <div id="own">thực thi theo quyền sở hữu bản ghi</div>
+    <div id="src" class="label">owasp top 10 2021 &middot; a01 broken access control</div>
+
+  </div>
+</div>
+
+<script>
+window.__timelines = window.__timelines || {};
+const tl = gsap.timeline({ paused: true });
+const R = 'power3.out', T = 'power2.inOut';
+
+gsap.set(['#invLbl','#invText','#dLbl','#exc','#dPre','#dOld','#dNew','#own','#src'], { opacity: 0 });
+gsap.set('#rule0', { scaleX: 0 });
+
+/* "OWASP viết thẳng hai vế." */
+tl.to('#invLbl', { opacity: 1, duration: .35, ease: R }, 0.30)
+  .to('#invText', { opacity: 1, duration: .5, ease: R }, 0.55);
+
+/* "Trừ tài nguyên công khai, mặc định là …" */
+tl.to('#rule0', { scaleX: 1, duration: .55, ease: T }, 1.70)
+  .to('#dLbl', { opacity: 1, duration: .3, ease: R }, 1.95)
+  .to(['#dPre','#dOld'], { opacity: 1, duration: .4, ease: R }, 2.20)
+  .to('#exc', { opacity: 1, duration: .35, ease: R }, 2.60);
+
+/* "… từ chối." — only the consequent is replaced; the subject stays and goes teal */
+tl.to('#dOld', { opacity: 0, duration: .4, ease: 'power2.in' }, 3.60)
+  .to('#dNew', { opacity: 1, duration: .45, ease: R }, 3.95)
+  .to('#dPre', { color: '#4E8C7D', duration: .6, ease: 'none' }, 3.95);
+
+/* "Và phân quyền phải được thực thi theo quyền sở hữu bản ghi." */
+tl.to('#own', { opacity: 1, duration: .45, ease: R }, 4.70)
+  .to('#src', { opacity: 1, duration: .35, ease: R }, 6.20);
+
+/* both transients yield, leaving exactly the frame s11 opens on */
+tl.to(['#exc','#own'], { opacity: 0, duration: .5, ease: 'power2.in' }, 6.60);
+
+window.__timelines['main'] = tl;
+</script>
+</body>
+</html>

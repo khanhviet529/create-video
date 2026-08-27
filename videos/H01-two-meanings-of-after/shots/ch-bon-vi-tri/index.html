@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=1920" />
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+/* @brand:start */
+:root {
+  --ground: #0C0D0F; --ground-lift: #14161A;
+  --ink: #EDEAE4; --ink-mid: #9AA0A6; --ink-dim: #8B9198; --ink-ghost: #3A3E42;
+  --rule: #23272A; --rule-bright: #3D4348; --hair: 1.5px;
+  --authoritative: #C9A227; --stale: #E0533D; --lost: #6A6F74;
+  --boundary: #4E8C7D; --pressure: #B4623A; --counterfactual: #7A8086;
+  --font-value: "IBM Plex Mono", ui-monospace, monospace;
+  --font-label: "IBM Plex Sans Condensed", "IBM Plex Sans", system-ui, sans-serif;
+  --t-hero: 200px; --t-value: 64px; --t-body: 36px; --t-label: 26px; --track-label: 0.18em;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { overflow: hidden; background: var(--ground); color: var(--ink); font-family: var(--font-label); }
+.label { font-family: var(--font-label); font-size: var(--t-label); letter-spacing: var(--track-label);
+         text-transform: uppercase; color: var(--ink-dim); font-weight: 500; }
+/* @brand:end */
+
+html, body { width: 1080px; height: 1920px; }
+#stage { position: absolute; inset: 0; }
+
+.cell { position: absolute; border-radius: 1px; }
+.live { background: var(--ink); }
+.dead { background: var(--lost); }
+.free { background: transparent; box-shadow: inset 0 0 0 4px var(--rule-bright); } /* Ô TRỐNG */
+/* a slot whose DEPICTION has been lifted out to be counted. The slot is still occupied —
+   nothing in the relation moved, and the ghost is what says so. */
+.ghost { background: transparent; box-shadow: inset 0 0 0 3px var(--lost); }
+
+.frame { position: absolute; left: 0; top: 0; }
+.fbar { position: absolute; background: var(--ink-dim); }   /* KHUNG CẤP PHÁT */
+.fbar.h { height: 3px; }
+.fbar.v { width: 3px; transform-origin: left top; }
+#need .fbar { background: var(--boundary); }
+
+.cap { position: absolute; font-family: var(--font-label); font-size: 26px;
+       letter-spacing: 0.14em; text-transform: uppercase; font-weight: 500; }
+.val { position: absolute; font-family: var(--font-value); font-size: 54px; }
+
+/* the analytical register — a different band of the frame, with its own rule */
+#analytic { position: absolute; left: 90px; top: 1362px; width: 900px; height: 1.5px;
+            background: var(--counterfactual); opacity: .5; }
+/* a sweep event travelling down the allocation */
+.sweep { position: absolute; background: var(--authoritative); opacity: .22; }
+/* the visibility horizon held by an old snapshot */
+.horizon { position: absolute; left: 76px; width: 928px;
+           height: 3px;
+           background: repeating-linear-gradient(90deg, var(--boundary) 0 16px, transparent 16px 28px); }
+
+/* the measurement register: bars on an axis. A quantity belongs on an axis, never as a
+   frame drawn around a subset of cells — that reads as a physical partition, which is false. */
+#axis { position: absolute; left: 90px; top: 300px; width: 900px; height: 1.5px; background: var(--rule); }
+.bar { position: absolute; left: 90px; height: 22px; transform-origin: left center; }
+#bNeed { top: 246px; background: var(--boundary); }
+#bAlloc { top: 316px; background: var(--stale); }
+#drop { position: absolute; top: 246px; width: 1.5px; height: 112px; background: var(--boundary); opacity: .55; }
+
+#hist { position: absolute; left: 170px; top: 999px;
+        width: 740px; height: 2px; background: var(--rule-bright); }
+.pt { position: absolute; width: 2px; height: 20px; margin-left: -1px;
+      top: 990px; background: var(--rule-bright); }
+.pn { position: absolute; top: 1040px; width: 150px; margin-left: -168px;
+      text-align: right; font-family: var(--font-value); font-size: 30px; color: var(--ink-dim); }
+.br { position: absolute; height: 4px; background: var(--ink-mid); transform-origin: left center; }
+.cap2 { position: absolute; width: 4px; background: var(--ink-mid); }
+.brl { position: absolute; font-family: var(--font-label); font-size: 26px; letter-spacing: .14em;
+       text-transform: uppercase; font-weight: 500; color: var(--ink-dim); }
+.mk { position: absolute; width: 28px; height: 28px; margin: -14px 0 0 -14px; top: 1000px;
+      background: var(--ground); box-shadow: inset 0 0 0 4px var(--ink); border-radius: 50%; }
+.mk.filled { background: var(--ink); }
+.ring { position: absolute; width: 76px; height: 76px; margin: -38px 0 0 -38px; top: 1000px;
+        border-radius: 50%; box-shadow: inset 0 0 0 3px var(--ink); opacity: 0; }
+/* SỢI PHỤC VỤ: câu đọc này được tiền tố NÀO phục vụ. Đi lên = primary, đi xuống = replica. */
+.serve { position: absolute; width: 3px; background: var(--boundary); transform-origin: center top; }
+.serve.down { transform-origin: center top; }
+/* SỢI NEO của remote_apply: đầu mút commit neo vào ĐIỀU KIỆN, không vào thời điểm */
+.teth { position: absolute; width: 3px; background: var(--authoritative); transform-origin: center top; }
+/* MỐC trên MỘT hành trình — không phải ba thanh ngang nhau */
+.ms { position: absolute; width: 16px; height: 16px; margin: -8px 0 0 -8px; border-radius: 50%;
+      background: var(--ink-dim); }
+.msl { position: absolute; font-family: var(--font-value); font-size: 26px; color: var(--ink-dim);
+       margin-left: 26px; margin-top: -16px; }
+#gapb { position: absolute; top: 1020px; height: 3px; background: var(--ink-dim); opacity: 0; }
+
+
+/* ---------------------------------------------------------------------------
+   CH-A · bốn vị trí. Bốn phép KHÁC LOẠI: V1 nối lại sợi phục vụ · V2 chờ · V3 neo
+   đầu mút commit vào ĐIỀU KIỆN · V4 không vẽ gì. Ngang hàng là hệ quả của hình học
+   khác nhau, không phải của ô bằng nhau. Tỉ lệ không đổi một lần nào.
+   R11 — nửa AVAILABILITY của remote_apply CỐ Ý KHÔNG DỰNG: package chỉ nói "replica
+   chết thì đường ghi ĐỨNG theo" và không có chữ nào về timeout. Giữ đánh dấu chưa đủ.
+   R14 — beat 33 đưa vào CÂU ĐỌC THỨ HAI, và nó nối XUỐNG tiền tố vẫn dừng ở 499.
+--------------------------------------------------------------------------- */
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="30"
+     data-width="1080" data-height="1920">
+  <div id="stage" class="clip" data-start="0" data-duration="30" data-track-index="0">
+    <div id="hist"></div>
+    <div class="pt" style="left:244px"></div>
+    <div class="pn" style="left:244px">497</div>
+    <div class="pt" style="left:429px"></div>
+    <div class="pn" style="left:429px">498</div>
+    <div class="pt" style="left:614px"></div>
+    <div class="pn" style="left:614px">499</div>
+    <div class="pt" style="left:799px"></div>
+    <div class="pn" style="left:799px">500</div>
+    <div id="gapb" style="left:614px;width:185px"></div>
+    <div class="br" id="bPri" style="left:170px;top:900px;width:629px"></div>
+    <div class="cap2" id="cPri" style="left:799px;top:900px;height:86px"></div>
+    <div class="br" id="bRep" style="left:170px;top:1188px;width:444px"></div>
+    <div class="cap2" id="cRep" style="left:614px;top:1084px;height:108px"></div>
+    <div class="brl" id="lPri" style="left:170px;top:856px">primary đã áp tới</div>
+    <div class="brl" id="lRep" style="left:170px;top:1212px">replica đã áp tới</div>
+  </div>
+</div>
+
+<script>
+window.__timelines = window.__timelines || {};
+const tl = gsap.timeline({ paused: true });
+const R = 'power3.out', T = 'power2.inOut';
+const stage = document.getElementById('stage');
+const X = (p) => Math.round(170 + (p - 496.6) / 4 * 740);
+function mark(p, filled) {
+  const d = document.createElement('div');
+  d.className = 'mk' + (filled ? ' filled' : '');
+  d.style.left = X(p) + 'px'; stage.appendChild(d); return d;
+}
+/* sợi phục vụ: nối một câu đọc với tiền tố ĐANG phục vụ nó */
+function serve(p, dir) {
+  const d = document.createElement('div');
+  d.className = 'serve';
+  const up = dir === 'up';
+  const top = up ? 902 : 1014;
+  const h = up ? 84 : 176;
+  d.style.cssText = 'left:' + (X(p) - 1) + 'px;top:' + top + 'px;height:' + h + 'px';
+  stage.appendChild(d); return d;
+}
+gsap.set('#gapb', { opacity: 0 });
+gsap.set('.pt, .pn', { opacity: 1 });
+const W = mark(500, true);
+const R1 = mark(499, false);
+gsap.set([W, R1], { opacity: 0 });
+tl.to([W, R1], { opacity: 1, duration: .4, ease: R }, 0.6);
+/* mặc định: câu đọc được tiền tố DƯỚI phục vụ */
+const s0 = serve(499, 'down'); gsap.set(s0, { opacity: 0, scaleY: 0 });
+tl.to(s0, { opacity: 1, scaleY: 1, duration: .5, ease: R }, 1.4);
+
+/* V1 (beat 26–27) — NỐI LẠI: chính câu đọc đó được tiền tố TRÊN phục vụ. 500 nằm trong. */
+const s1 = serve(500, 'up'); gsap.set(s1, { opacity: 0, scaleY: 0 });
+tl.to(s0, { opacity: 0, duration: .35, ease: T }, 3.6);
+tl.to(s1, { opacity: 1, scaleY: 1, duration: .6, ease: R }, 3.9);
+/* beat 27 — cái giá: chỉ ĐÚNG câu đọc này được nối lại. Câu đọc khác vẫn nối xuống. */
+const R1b = mark(498, false); gsap.set(R1b, { opacity: 0 });
+const s1b = serve(498, 'down'); gsap.set(s1b, { opacity: 0, scaleY: 0 });
+tl.to([R1b], { opacity: 1, duration: .4, ease: R }, 6.0);
+tl.to(s1b, { opacity: 1, scaleY: 1, duration: .5, ease: R }, 6.3);
+tl.to([s1, s1b, R1b], { opacity: 0, duration: .5, ease: T }, 8.4);
+
+/* V2 (beat 28–29) — CHỜ: tiền tố dưới đi tới 500 TRƯỚC, câu đọc mới xảy ra. */
+tl.to(R1, { opacity: 0, duration: .3, ease: T }, 9.0);
+tl.to('#bRep', { scaleX: 1.4167, duration: 1.0, ease: T }, 9.6);
+tl.to('#cRep', { x: 185, duration: 1.0, ease: T }, 9.6);
+const R2 = mark(500, false); gsap.set(R2, { opacity: 0 });
+const s2 = serve(500, 'down'); gsap.set(s2, { opacity: 0, scaleY: 0 });
+tl.to(R2, { opacity: 1, duration: .4, ease: R }, 11.0);
+tl.to(s2, { opacity: 1, scaleY: 1, duration: .5, ease: R }, 11.3);
+/* trả trường về trạng thái gốc cho vị trí kế */
+tl.to([R2, s2], { opacity: 0, duration: .4, ease: T }, 13.4);
+tl.to('#bRep', { scaleX: 1, duration: .01 }, 14.0);
+tl.to('#cRep', { x: 0, duration: .01 }, 14.0);
+
+/* V3 (beat 30–31) — NEO: đầu mút của chính DẤU COMMIT neo vào ĐIỀU KIỆN "tiền tố dưới
+   chạm 500", không neo vào một thời điểm. Sợi neo giữ, tiền tố đi tới, rồi mới nhả. */
+const th = document.createElement("div"); th.className = "teth";
+th.style.cssText = "left:" + (X(500) - 1) + "px;top:" + 1014 + "px;height:" + 176 + "px";
+stage.appendChild(th); gsap.set(th, { opacity: 0, scaleY: 0 });
+const rW = document.createElement("div"); rW.className = "ring";
+rW.style.left = X(500) + "px"; stage.appendChild(rW);
+tl.to(th, { opacity: 1, scaleY: 1, duration: .5, ease: R }, 15.0);
+tl.to('#bRep', { scaleX: 1.4167, duration: 1.6, ease: T }, 16.2);
+tl.to('#cRep', { x: 185, duration: 1.6, ease: T }, 16.2);
+tl.fromTo(rW, { opacity: 0, scale: .55 }, { opacity: 1, scale: 1, duration: .35, ease: R }, 18.0);
+tl.to(rW, { opacity: 0, scale: 1.35, duration: .5, ease: T }, 18.4);
+tl.to(th, { opacity: 0, duration: .4, ease: T }, 18.6);
+tl.to('#bRep', { scaleX: 1, duration: .01 }, 19.6);
+tl.to('#cRep', { x: 0, duration: .01 }, 19.6);
+
+/* V4 (beat 32–33) — KHÔNG VẼ: không câu đọc nào chạm tiền tố dưới, nên trường KHÔNG ĐỔI.
+   Rồi beat 33 đưa vào CÂU ĐỌC THỨ HAI — và nó nối xuống một tiền tố vẫn dừng ở 499. */
+tl.to('#gapb', { opacity: .85, duration: .4, ease: R }, 21.0);
+const R4 = mark(499, false); gsap.set(R4, { opacity: 0 });
+const s4 = serve(499, 'down'); gsap.set(s4, { opacity: 0, scaleY: 0 });
+tl.to(R4, { opacity: 1, duration: .45, ease: R }, 25.4);
+tl.to(s4, { opacity: 1, scaleY: 1, duration: .5, ease: R }, 25.8);
+window.__timelines['main'] = tl;
+</script>
+</body>
+</html>

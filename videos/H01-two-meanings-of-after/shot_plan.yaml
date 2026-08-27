@@ -1,0 +1,242 @@
+video_id: H01-two-meanings-of-after
+package: "007"
+stage: STEP_3_R1
+full_video_review: not_started
+timing_status: NOT_MEASURED
+
+# Chưa có kiến trúc chương. Lượt này chỉ có hai shot thí nghiệm cho R1, câm.
+shots:
+  - id: p-r1-projection
+    status: experiment
+    name: R1 — phép chiếu
+    duration: 26
+    engine: hyperframes
+    purpose: >-
+      cùng HAI sự kiện, đổi hệ quy chiếu, thứ tự đảo — mà hai dấu không di chuyển một pixel
+    parallel_lines:
+      at: 8.6
+      primary: pline
+      replica: rline
+      note: >-
+        R8 — replica là đường primary được TỊNH TIẾN, nên độ dốc bằng nhau theo cấu tạo.
+        Đo trên artifact để xác nhận, không tin vào ý định của source
+    marks_immobile:
+      from: 11.0
+      to: 25.5
+      note: >-
+        khẳng định trung tâm của R1: hai dấu quan sát giữ nguyên toạ độ pixel suốt cả hai
+        phép chiếu. Nếu chúng nhúc nhích thì "cùng hai sự kiện" là lời nói, không phải hình
+    review:
+      hero_frames: [ 1.6, 4.6, 8.2, 10.8, 14.2, 18.4, 22.0, 25.7 ]
+      mute_test: >-
+        một node thì hai phép chiếu cho cùng thứ tự; thêm đường thứ hai thì một dấu rời khỏi
+        đường trên, và hai phép chiếu cho hai thứ tự ngược nhau — trong khi hai dấu đứng im
+
+  - id: p-r1-neg-slope
+    status: experiment
+    name: NEGATIVE CONTROL — dốc lệch
+    duration: 8
+    engine: hyperframes
+    purpose: >-
+      shot TỒN TẠI ĐỂ TRƯỢT. Replica kéo giãn theo thời gian nên dốc thấp hơn — hình nói
+      "replica chạy chậm hơn", đúng thứ semantic lock A cấm. Dùng để xác nhận bộ kiểm R8 nổ
+    parallel_lines:
+      at: 4.0
+      primary: pline
+      replica: rline
+      expect: VIOLATION
+    review:
+      hero_frames: [ 2.0, 7.7 ]
+      mute_test: hai đường KHÔNG song song — và bộ kiểm phải nói ra điều đó
+  - id: p-l1-prefix
+    status: experiment
+    name: LÙI 1 — bao hàm tiền tố
+    duration: 26
+    engine: hyperframes
+    purpose: >-
+      "sau" thành "trong/ngoài một tiền tố"; thứ tự đồng hồ nằm trong thứ tự xuất hiện
+    prefix_world:
+      brackets: { primary: bPri, replica: bRep }
+      levels: { primary: 902, replica: 1190, line: 1000 }
+      covered_mark: { position: 500, must_be_inside: primary, from: 11.0, to: 19.0 }
+      separable_from: 9.0
+    review:
+      hero_frames: [ 2.4, 5.4, 9.2, 11.6, 14.0, 17.0, 21.4, 25.7 ]
+      mute_test: >-
+        một node thì không gì nằm ngoài được; thêm node thứ hai thì 500 nằm ngoài tiền tố của
+        replica trong khi vẫn nằm trong tiền tố của primary — ngoài là một QUAN HỆ, không phải
+        một sự vắng mặt
+
+  - id: p-l1-neg-overlap
+    status: experiment
+    name: NEGATIVE CONTROL — hai đoạn bao cùng mức
+    duration: 8
+    engine: hyperframes
+    purpose: hai đoạn bao vẽ đè nhau; bộ kiểm tách-được phải nổ
+    prefix_world:
+      brackets: { primary: bPri, replica: bRep }
+      levels: { primary: 902, replica: 902, line: 1000 }
+      separable_from: 1.0
+      expect: NOT_SEPARABLE
+    review:
+      hero_frames: [ 2.0, 7.7 ]
+      mute_test: không phân biệt được hai node — và bộ kiểm phải nói ra
+
+  - id: p-l1-neg-uncovered
+    status: experiment
+    name: NEGATIVE CONTROL — 500 ngoài mọi tiền tố
+    duration: 8
+    engine: hyperframes
+    purpose: primary cũng dừng ở 499; R15 phải nổ
+    prefix_world:
+      brackets: { primary: bPri, replica: bRep }
+      levels: { primary: 902, replica: 1190, line: 1000 }
+      covered_mark: { position: 500, must_be_inside: primary, from: 1.0, to: 7.5 }
+      separable_from: 1.0
+      expect: UNCOVERED
+    review:
+      hero_frames: [ 2.0, 7.7 ]
+      mute_test: 500 không nằm trong tiền tố nào — hình đang nói nó không tồn tại
+
+  - id: p-sw-order
+    status: experiment
+    name: Cú đổi cách nhìn trong thế giới bao hàm
+    duration: 28
+    engine: hyperframes
+    purpose: >-
+      hai sự kiện được duyệt một lần theo thứ tự tới, một lần theo thứ tự vị trí, trên đúng
+      đường lịch sử đó, dấu không dịch
+    prefix_world:
+      brackets: { primary: bPri, replica: bRep }
+      levels: { primary: 902, replica: 1190, line: 1000 }
+      covered_mark: { position: 500, must_be_inside: primary, from: 8.5, to: 20.5 }
+      separable_from: 7.0
+    sweep_tempo:
+      passes:
+        - { name: theo thứ tự tới,    first: 500, second: 499, window: [11.6, 15.2] }
+        - { name: theo thứ tự vị trí, first: 499, second: 500, window: [17.6, 21.2] }
+      note: khoảng giữa hai lần nổ phải BẰNG NHAU ở cả hai lượt
+    review:
+      hero_frames: [ 2.4, 4.6, 6.4, 8.4, 10.2, 12.4, 14.4, 18.4, 20.4, 23.4, 27.7 ]
+      mute_test: >-
+        hai dấu đứng yên; một lượt nổ phải-trái, một lượt nổ trái-phải; khoảng nổ bằng nhau
+
+  - id: p-sw-neg-tempo
+    status: experiment
+    name: NEGATIVE CONTROL — hai nhịp lệch
+    duration: 32
+    engine: hyperframes
+    purpose: lượt hai giãn gấp đôi; bộ kiểm tempo phải nổ
+    sweep_tempo:
+      passes:
+        - { name: lượt một, first: 500, second: 499, window: [11.6, 15.2] }
+        - { name: lượt hai, first: 499, second: 500, window: [17.6, 23.2] }
+      expect: TEMPO_MISMATCH
+    review:
+      hero_frames: [ 12.4, 20.4, 31.7 ]
+      mute_test: hai lượt khác nhịp — bộ kiểm phải nói ra
+
+  - id: ch-aha
+    status: chapter_draft
+    name: CH-B · AHA (beat 16-19)
+    duration: 15
+    engine: hyperframes
+    purpose: hệ quy chiếu của HÌNH đến cùng mệnh đề gọi tên nó
+    frame_silence:
+      window: [2.9, 5.6]
+      brackets: [bPri, bRep]
+      levels: { primary: 902, replica: 1190 }
+      note: R18 — trong cửa sổ beat 17 (hệ đồng hồ) không đoạn bao nào được hiện
+    prefix_world:
+      brackets: { primary: bPri, replica: bRep }
+      levels: { primary: 902, replica: 1190, line: 1000 }
+      covered_mark: { position: 500, must_be_inside: primary, from: 6.4, to: 9.4 }
+      separable_from: 7.4
+    camera: { motion: static, semantic_function: none, rationale: cú đổi hệ do lời dẫn }
+    review:
+      hero_frames: [ 1.4, 2.9, 4.2, 5.4, 7.0, 8.6, 11.0, 13.6, 14.7 ]
+      mute_test: trong beat 17 không có tiền tố nào; beat 18 tiền tố tới; beat 19 bỏ node thứ hai thì loại trừ không phát biểu được
+
+  - id: ch-aha-neg-frame
+    status: experiment
+    name: NEGATIVE CONTROL — hệ hình nói sớm
+    duration: 6
+    engine: hyperframes
+    purpose: đoạn bao có mặt trong cửa sổ beat 17; bộ kiểm R18 phải nổ
+    frame_silence:
+      window: [1.0, 5.0]
+      brackets: [bPri, bRep]
+      levels: { primary: 902, replica: 1190 }
+      expect: FRAME_SPOKEN_EARLY
+    camera: { motion: static, semantic_function: none, rationale: negative control }
+    review: { hero_frames: [ 2.0, 5.7 ], mute_test: hình phát biểu vị trí quá sớm }
+
+  - id: ch-bon-vi-tri
+    status: chapter_draft
+    name: CH-A · bốn vị trí (beat 25-33)
+    duration: 30
+    engine: hyperframes
+    purpose: bốn phép biến hình KHÁC LOẠI trên cùng trường, tỉ lệ giữ nguyên
+    prefix_world:
+      brackets: { primary: bPri, replica: bRep }
+      levels: { primary: 902, replica: 1190, line: 1000 }
+      covered_mark: { position: 500, must_be_inside: primary, from: 1.0, to: 21.0 }
+      separable_from: 2.0
+    second_read:
+      at: 27.0
+      mark_position: 499
+      serves_from: replica
+      note: R14 — câu đọc thứ hai nối XUỐNG một tiền tố vẫn dừng ở 499
+    scale_locked: { from: 0.6, to: 29.5, note: bốn vị trí phải so sánh được — §9 thắng §7 }
+    camera: { motion: static, semantic_function: none, rationale: bốn vị trí phải cùng một chỗ đứng để ngang hàng }
+    review:
+      hero_frames: [ 2.0, 4.6, 6.8, 10.6, 12.0, 16.8, 18.2, 22.0, 26.2, 29.5 ]
+      mute_test: nối lại · chờ · neo · không vẽ — bốn phép khác loại, cùng một trường, cùng một cỡ
+
+  - id: ch-bvt-neg-secondread
+    status: experiment
+    name: NEGATIVE CONTROL — câu đọc thứ hai nối lên
+    duration: 6
+    engine: hyperframes
+    purpose: hình nói V4 đã sửa được hệ thống; bộ kiểm R14 phải nổ
+    second_read: { at: 3.0, mark_position: 499, serves_from: primary, expect: WRONG_SERVER }
+    camera: { motion: static, semantic_function: none, rationale: negative control }
+    review: { hero_frames: [ 2.0, 5.7 ], mute_test: câu đọc thứ hai nối lên — sai }
+
+  - id: ch-do-luong
+    status: chapter_draft
+    name: CH-C · phát hiện (beat 34-38)
+    duration: 22
+    engine: hyperframes
+    purpose: ba mốc trên một hành trình; cùng số đọc cho hai thế giới
+    same_reading_two_worlds:
+      levels: { primary: 902, replica: 1190, line: 1000 }
+      world_a: 13.1
+      world_b: 19.6
+      note: R12 — bề rộng khe hở phải bằng nhau ở hai thế giới, trong khi chuyển động khác hẳn
+    camera: { motion: static, semantic_function: none, rationale: dụng cụ đo không cần đổi chỗ đứng }
+    review:
+      hero_frames: [ 1.4, 2.8, 4.4, 6.4, 7.4, 10.2, 13.6, 15.4, 17.4, 19.6, 21.7 ]
+      mute_test: ba mốc lần lượt trên một hành trình; chỉ mốc cuối nối tới đầu mút; hai thế giới cùng số đọc
+
+  - id: ch-dl-neg-reading
+    status: experiment
+    name: NEGATIVE CONTROL — hai số đọc khác nhau
+    duration: 9
+    engine: hyperframes
+    purpose: khe hở khác bề rộng; bộ kiểm R12 phải nổ
+    same_reading_two_worlds:
+      levels: { primary: 902, replica: 1190, line: 1000 }
+      world_a: 2.9
+      world_b: 7.6
+      expect: READING_DIFFERS
+    camera: { motion: static, semantic_function: none, rationale: negative control }
+    review: { hero_frames: [ 2.0, 5.7 ], mute_test: hai khe hở khác nhau }
+
+camera_semantics:
+  default: tĩnh
+  earned: []
+  rejected: []
+  note: >-
+    R1 là kiểm câm về hình học, không phải về camera. Ứng viên camera duy nhất (R3→R4) chỉ
+    được xét sau khi R1 có phán quyết — xem VISUAL_STRATEGY.md §12

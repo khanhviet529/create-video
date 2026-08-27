@@ -1,0 +1,34 @@
+package_id: "002"
+package_slug: index-defeated-by-function
+schema_version: 1
+package_revision: null
+source_path: D:/Project/technical-content-engine/packages/002-index-defeated-by-function/content-package.yaml
+source_sha256: d7f183556c38a8c5ffcd97fb8eedda1a7b9fac08c7bd50465de6f5efff6b6533
+source_git_commit: null
+imported_at: 2026-08-24T07:19:06.077Z
+validation_result:
+  validator: tools/validate-package.mjs
+  exit_code: 0
+  verdict: 0 lỗi · 0 cảnh báo
+consumed_as: E01-not-sargable
+snapshot: videos/E01-not-sargable/content-package.yaml
+snapshot_sha256: d7f183556c38a8c5ffcd97fb8eedda1a7b9fac08c7bd50465de6f5efff6b6533
+consumed_sha256: unknown
+retroactive: true
+topic: Index tồn tại nhưng planner không dùng
+domain: database
+source_modified_at: 2026-08-24T06:39:02.286Z
+evidence_of_change:
+  video_composed_at: 2026-08-24T04:14:59.769Z
+  source_modified_at: 2026-08-24T06:39:02.286Z
+  reasoning: the source was modified after this video was composed, so it is not
+    the content the video was built from. What differs cannot be determined from
+    this side.
+notes:
+  - RETROACTIVE. This video was built before ingestion existed; no snapshot was
+    kept, so the bytes it consumed are unrecoverable. consumed_sha256 is
+    therefore unknown and `cv provenance` can never report CURRENT for it.
+  - package carries no `revision` field, so revision is not expressible in this
+    contract — only content identity is. source_sha256 is what identifies these
+    bytes.
+  - "source_git_commit: source is not in a git working tree"

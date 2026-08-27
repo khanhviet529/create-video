@@ -1,0 +1,171 @@
+video_id: D01-retry-storm
+title: "The load is the failure, and the failure is the load"
+semantics: semantics.yaml
+canvas: { w: 1080, h: 1920, fps: 30 }
+target_runtime_s: 70
+arc: incident -> mechanism -> the baseline never moved -> cutting the loop -> detection
+ladder_path: [user_reality, system, state, implementation]
+
+# Three prototypes of ONE hero, sharing semantics, duration and marker timestamps so
+# the A/B comparison is real. All three are authored with NO content stage: no header,
+# no footer, no card, no title, no stage rectangle. The full 1080x1920 is the space the
+# mechanism happens in.
+#
+# Visual scale is honest: marks are load units at a fixed 1:5 ratio, so 24/36/72/180
+# marks are exactly 120/180/360/900 requests. The visual carries the RATIO, the numerals
+# carry the QUANTITY, and neither invents anything.
+
+shots:
+  # ---------------------------------------------------------------------------
+  - id: dirA
+    status: experiment_rejected
+    time: [0.0, 15.0]
+    duration: 15.0
+    engine: hyperframes
+    camera:
+      motion: static
+      semantic_function: fixed_aperture_must_not_appear_to_change
+      rationale: >-
+        A pull-back would make the throat — which IS the capacity constant — appear to
+        shrink as load grows. That is the one thing in this mechanism that never
+        changes, so a camera that implies otherwise would be lying. Static is forced by
+        the semantics, not chosen for comfort.
+    narration: >-
+      A hundred get through. The rest come back, three times over. Nobody sent
+      more traffic — the traffic is the failure, coming round again.
+    purpose: "Test whether flow-as-matter through a fixed aperture makes amplification felt."
+    visual_question: "Where does the load that could not get through actually go?"
+    semantic: { scenario: storm, events: [r1_retry, r1_load, r2_retry, r2_load, r3_retry, r3_load], t_window: [0.10, 0.92] }
+    representation: [system, state]
+    validation:
+      focus_in_frame: ["#lip"]
+      keeps_moving: "#stage"
+      max_static_sec: 2.4
+      caption_zone: true
+    review:
+      hero_frames: [1.4, 2.8, 6.6, 8.0, 11.9, 14.6]
+
+  # ---------------------------------------------------------------------------
+  - id: dirB
+    hero: true
+    time: [0.0, 15.0]
+    duration: 15.0
+    engine: hyperframes
+    camera:
+      motion: static
+      semantic_function: orbit_is_the_frame
+      rationale: >-
+        The circuit already occupies the whole canvas and the thing that changes is
+        density inside it, not extent. Moving the camera would trade the one comparison
+        that matters — how full the same loop is, pass after pass — for a sense of
+        motion it does not need.
+    narration: >-
+      A hundred get through. The rest come back, three times over. Nobody sent
+      more traffic — the traffic is the failure, coming round again.
+    purpose: "Test whether circular causality drawn as an actual circuit makes the loop felt."
+    visual_question: "What happens to a request that fails?"
+    semantic: { scenario: storm, events: [r1_retry, r1_load, r2_retry, r2_load, r3_retry, r3_load], t_window: [0.10, 0.92] }
+    representation: [system, state]
+    validation:
+      focus_in_frame: ["#exitArc"]
+      keeps_moving: "#orbit"
+      max_static_sec: 2.4
+      caption_zone: true
+    review:
+      hero_frames: [1.4, 2.8, 6.6, 8.0, 11.9, 14.6]
+
+  # ---------------------------------------------------------------------------
+  - id: dirC
+    status: experiment
+    time: [0.0, 15.0]
+    duration: 15.0
+    engine: hyperframes
+    camera:
+      motion: static
+      semantic_function: layers_must_stay_comparable
+      rationale: >-
+        The whole argument is that one of two superimposed populations never changed.
+        Both have to remain measurable against each other in the same place for the
+        whole shot, which fixes the frame.
+    narration: >-
+      A hundred get through. The rest come back, three times over. Nobody sent
+      more traffic — the traffic is the failure, coming round again.
+    purpose: "Test whether layering the unchanging baseline under the retries makes the loop self-evidently self-inflicted."
+    visual_question: "Which part of this load did a user actually ask for?"
+    semantic: { scenario: storm, events: [r1_retry, r1_load, r2_retry, r2_load, r3_retry, r3_load], t_window: [0.10, 0.92] }
+    representation: [system, state]
+    validation:
+      focus_in_frame: ["#userBand"]
+      keeps_moving: "#stage"
+      max_static_sec: 2.4
+      caption_zone: true
+    review:
+      hero_frames: [1.4, 2.8, 6.6, 8.0, 11.9, 14.6]
+
+  # ---------------------------------------------------------------------------
+  # What the story still needs. Each is here because a communication need was found,
+  # not to reach a shot count.
+  - id: shot_01
+    status: planned      # NEEDED: the incident. Latency climbs while every individual
+                        # query stays fast — the contradiction that makes this hard to find.
+    time: [0.0, 9.0]
+    duration: 9.0
+    engine: ffmpeg
+    representation: [user_reality]
+    semantic: { scenario: storm, events: [] }
+    validation: {}
+
+  - id: shot_03
+    status: planned      # NEEDED: "nobody sent more traffic". dirC's exact-proportion
+                        # wall — 780 orange standing on 120 grey — is the right image
+                        # for this beat, now that the hero has established the loop.
+    time: [24.0, 33.0]
+    duration: 9.0
+    engine: hyperframes
+    representation: [state]
+    semantic: { scenario: storm, events: [r3_load] }
+    validation: {}
+
+  - id: shot_04
+    status: planned      # NEEDED: the fix is cutting the loop, not adding capacity.
+                        # Same circuit, breaker opens, ring drains back to sparse.
+                        # Must reuse dirB's geometry AND its camera (see CAMERA_STUDY).
+    time: [33.0, 46.0]
+    duration: 13.0
+    engine: hyperframes
+    representation: [state]
+    semantic: { scenario: capped, events: [r1_retry, r1_load, r2_break, r2_load] }
+    validation: {}
+
+  - id: shot_05
+    status: planned      # NEEDED, short: the detection signal. Retry rate as a
+                        # leading indicator — you see it before latency moves.
+    time: [46.0, 54.0]
+    duration: 8.0
+    engine: hyperframes
+    representation: [system]
+    semantic: { scenario: storm, events: [] }
+    validation: {}
+
+fingerprint:
+  dominant_compositions: [closed_circuit_filling_the_frame, steady_stream_in_and_out, no_content_stage]
+  dominant_geometry: [circle, radial_point_field, single_capacity_arc]
+  visual_devices: [density_is_the_quantity, golden_angle_placement, both_ends_constant, ring_saturates_to_solid]
+  motion_devices: [continuous_orbit, treadmill_inflow, treadmill_outflow, spread_reveal]
+  typography_usage: [single_centred_tally, rate_readouts]
+  color_distribution: { dominant: neutral, pressure: burnt_orange, boundary: teal }
+  reference_influences: [engineered_information_design, particle_systems]
+  distinctive_device: [the_loop_you_can_watch_fill, the_two_ends_that_never_change]
+  spatial_model: circuit           # not a page. see directions.md
+  rejected_directions:
+    - id: dirA
+      model: flow_through_a_fixed_aperture
+      why: >-
+        A physical constraint only reads against solid mass, and this brand has none.
+        Halton-scattered particles read as noise rather than as space.
+    - id: dirC
+      model: stacked_proportional_bands
+      why: >-
+        Strongest single frame of the three, but it shows the consequence and never the
+        loop — and it is structurally a vertical bar chart, which is the habit under
+        investigation. Its exact-proportion image is kept for a later consequence beat.

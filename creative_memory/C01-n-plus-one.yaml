@@ -1,0 +1,42 @@
+video_id: C01-n-plus-one
+title: One list, a hundred round trips
+domain: performance
+shots: 1
+engines:
+  - hyperframes
+representation_layers:
+  - implementation
+  - state
+camera:
+  - shot: shot_02_cam
+    motion: pull_back
+    semantic_function: one_to_many
+dominant_compositions:
+  - code_column_with_emission_field
+  - dense_mark_grid
+dominant_geometry:
+  - grid_of_marks
+  - tick_strip
+  - plain_code_type
+visual_devices:
+  - code_becomes_execution
+  - cost_vs_result_glyphs
+  - accumulation_field
+  - desaturate_the_waste
+motion_devices:
+  - emit
+  - cascade_stagger
+  - fill
+  - desaturate
+typography_usage:
+  - plain_source_as_type
+  - single_large_tally
+color_distribution:
+  dominant: neutral
+  pressure: burnt_orange
+  discarded: grey
+reference_influences:
+  - engineered_information_design
+  - data_storytelling
+distinctive_device:
+  - a_statement_emitting_its_own_cost

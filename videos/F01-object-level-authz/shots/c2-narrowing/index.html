@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=1920" />
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+/* @brand:start */
+:root {
+  --ground: #0C0D0F; --ground-lift: #14161A;
+  --ink: #EDEAE4; --ink-mid: #9AA0A6; --ink-dim: #8B9198; --ink-ghost: #3A3E42;
+  --rule: #23272A; --rule-bright: #3D4348; --hair: 1.5px;
+  --authoritative: #C9A227; --stale: #E0533D; --lost: #6A6F74;
+  --boundary: #4E8C7D; --pressure: #B4623A; --counterfactual: #7A8086;
+  --font-value: "IBM Plex Mono", ui-monospace, monospace;
+  --font-label: "IBM Plex Sans Condensed", "IBM Plex Sans", system-ui, sans-serif;
+  --t-hero: 200px; --t-value: 64px; --t-body: 36px; --t-label: 26px; --track-label: 0.18em;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { overflow: hidden; background: var(--ground); color: var(--ink); font-family: var(--font-label); }
+.label { font-family: var(--font-label); font-size: var(--t-label); letter-spacing: var(--track-label);
+         text-transform: uppercase; color: var(--ink-dim); font-weight: 500; }
+/* @brand:end */
+
+html, body { width: 1080px; height: 1920px; }
+#stage { position: absolute; inset: 0; }
+.mono { position: absolute; font-family: var(--font-value); line-height: 1; white-space: pre; }
+.sans { position: absolute; font-family: var(--font-label); letter-spacing: 0.01em; font-weight: 600; }
+
+/* ---------------------------------------------------------------------------
+   c2 — NARROWING. Composition prototype for the s02 / s08 / s09 / s13 family.
+   Candidates spread wide, then the survivor converges into the vacated space.
+--------------------------------------------------------------------------- */
+.hyp  { font-size: 34px; color: var(--ink); }
+.kill { position: absolute; height: 3px; background: var(--lost); width: 0; }
+#fLbl { position: absolute; left: 560px; top: 700px; }
+#freq { left: 560px; top: 746px; font-size: 30px; color: var(--ink-mid); }
+#f403 { left: 560px; top: 792px; font-size: 92px; font-weight: 600; color: var(--boundary); }
+#fNote{ position: absolute; left: 560px; top: 918px; width: 460px; color: var(--boundary); }
+.conc { font-size: 48px; }
+#c1 { left: 93px; top: 1120px; width: 894px; color: var(--ink); }
+#c2 { left: 93px; top: 1270px; width: 894px; color: var(--stale); }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="13"
+     data-width="1080" data-height="1920">
+  <div id="stage" class="clip" data-start="0" data-duration="13" data-track-index="0">
+    <div class="mono hyp" id="h1" data-layout-allow-occlusion style="left:93px;top:300px">token cũ chưa hết hạn</div>
+    <div class="kill" id="k1" style="left:88px;top:316px"></div>
+    <div class="mono hyp" id="h2" data-layout-allow-occlusion style="left:520px;top:430px">membership chưa bị xoá</div>
+    <div class="kill" id="k2" style="left:515px;top:446px"></div>
+    <div class="mono hyp" id="h3" data-layout-allow-occlusion style="left:180px;top:560px">quyền chưa được thu hồi</div>
+    <div class="kill" id="k3" style="left:175px;top:576px"></div>
+
+    <div id="fLbl" class="label">một dữ kiện</div>
+    <div class="mono" id="freq">GET /documents/d41</div>
+    <div class="mono" id="f403">403</div>
+    <div id="fNote" class="label">đường cũ vẫn từ chối &middot; đúng như mong đợi</div>
+
+    <div class="sans conc" id="c1">ba giả thuyết cùng chết vì một dữ kiện</div>
+    <div class="sans conc" id="c2">chỉ có một đường khác không trả 403</div>
+  </div>
+</div>
+
+<script>
+window.__timelines = window.__timelines || {};
+const tl = gsap.timeline({ paused: true });
+const R = 'power3.out', T = 'power2.inOut';
+gsap.set(['#h1','#h2','#h3','#fLbl','#freq','#f403','#fNote','#c1','#c2'], { opacity: 0 });
+/* phase 1 — candidates spread across a wide field */
+tl.to('#h1', { opacity: 1, duration: .3, ease: R }, 0.30)
+  .to('#h2', { opacity: 1, duration: .3, ease: R }, 0.85)
+  .to('#h3', { opacity: 1, duration: .3, ease: R }, 1.40);
+/* phase 2 — the fact arrives among them */
+tl.to('#fLbl', { opacity: 1, duration: .3, ease: R }, 2.60)
+  .to('#freq', { opacity: 1, duration: .3, ease: R }, 2.90)
+  .to('#f403', { opacity: 1, duration: .4, ease: R }, 3.40)
+  .to('#fNote', { opacity: 1, duration: .4, ease: R }, 4.30);
+/* phase 3 — they go, and the footprint collapses */
+tl.to('#h1', { color: '#6A6F74', duration: .3 }, 6.10)
+  .to('#k1', { width: 430, duration: .4, ease: T }, 6.10)
+  .to('#h2', { color: '#6A6F74', duration: .3 }, 6.60)
+  .to('#k2', { width: 452, duration: .4, ease: T }, 6.60)
+  .to('#h3', { color: '#6A6F74', duration: .3 }, 7.10)
+  .to('#k3', { width: 472, duration: .4, ease: T }, 7.10)
+  .to(['#h1','#h2','#h3','#k1','#k2','#k3'], { opacity: 0, duration: .6, ease: 'power2.in' }, 8.00);
+/* phase 4 — the survivor takes the space they vacated */
+tl.to('#c1', { opacity: 1, duration: .5, ease: R }, 8.70)
+  .to('#c2', { opacity: 1, duration: .5, ease: R }, 10.60);
+window.__timelines['main'] = tl;
+</script>
+</body>
+</html>

@@ -1,0 +1,535 @@
+schema_version: 1
+id: "007"
+topic: "Read-your-writes qua read replica - hai nghĩa của chữ sau"
+domain: distributed-systems
+audience: "vietnamese software engineers, 2-5+ years"
+
+format:
+  kind: tiktok
+  recommended_duration_sec: 170
+  minimum_duration_sec: 140
+  reason_for_duration: >-
+    Đây là video trade-off, và phần lớn thời lượng đi vào chỗ mà một video sự cố không có:
+    bốn vị trí đứng, mỗi vị trí phải nói đủ mua gì và trả gì. Bốn thứ không nén được. Một,
+    phải gỡ khung "có cái gì hỏng" trước khi vào cơ chế, nếu không người xem đi tìm thủ phạm
+    ở một chuyện không có thủ phạm. Hai, con số dưới một giây cần hai nhịp: một nhịp để nghe
+    nó lành, một nhịp để thấy nó trùng đúng khoảng giữa lưu và refresh. Ba, mỗi vị trí trong
+    bốn vị trí mà chỉ còn hai câu thì mất phần trả-bằng-gì, và lúc đó nó thành danh sách chứ
+    không còn là đánh đổi. Bốn, ba loại lag phải gọi tên đủ ba rồi mới nói chỉ một cái đúng.
+    Dưới 140 giây là mất một trong bốn. Bản cuối ra 169 giây và không beat nào được kéo dài.
+
+why_this_matters: >-
+  Thêm read replica là bước scale mặc định của gần như mọi đội qua giai đoạn đầu. Cái giá đi
+  kèm không nằm trong câu lệnh tạo replica, không có cảnh báo nào, và triệu chứng của nó
+  được người dùng báo lên bằng một từ sai - mất dữ liệu - khiến đội đi tìm lỗi ở tầng ghi.
+
+core_claim: "Khi câu ghi và câu đọc được phục vụ ở hai vị trí khác nhau trên cùng một replication log, chữ sau không còn là một khái niệm xác định."
+
+viewer_should_understand: >-
+  Read-your-writes là thứ bạn đem đổi khi thêm read replica, và có bốn vị trí để đứng chứ
+  không có một cách sửa.
+
+assumptions:
+  - "PostgreSQL với streaming replication ở cấu hình mặc định, tức bất đồng bộ"
+  - "Ứng dụng route câu đọc về replica và câu ghi về primary"
+  - "Tầng route không mang theo thông tin gì về câu ghi vừa xảy ra"
+  - "Câu đọc xảy ra ngay sau câu ghi, trong cùng một luồng người dùng - submit rồi redirect"
+  - "Cùng một người dùng vừa ghi vừa đọc - nếu người khác đọc thì bảo đảm bị phá có tên khác"
+  - "Vị trí log 500 và 499 là số ví dụ cho khoảng cách một nhịp, không phải phép đo"
+
+technical_truth:
+  mechanism_summary: >-
+    Primary commit ở một vị trí trong replication log. Replica chạy lại log đó và đang ở một
+    vị trí nhỏ hơn. Câu đọc tiếp theo của cùng người dùng được route về replica, nên nó được
+    phục vụ ở vị trí cũ hơn và trả về giá trị trước khi ghi. Đo bằng đồng hồ thì câu đọc xảy
+    ra sau câu ghi. Đo bằng vị trí log thì nó xảy ra trước. Với một node hai cách đo là một,
+    với hai node thì không. Không node nào hỏng - mỗi node trả lời đúng ở vị trí của nó.
+  invariant_broken: "Read-your-writes - ghi thành công rồi đọc lại thì phải thấy được cái mình vừa ghi"
+  primary_fix: >-
+    Không có fix gốc rễ, vì không có lỗi. Có bốn vị trí trên một đường đánh đổi. Vị trí rẻ
+    nhất và hay dùng nhất: route những câu đọc cần thấy cái vừa ghi về primary. Xem
+    alternatives cho ba vị trí còn lại - chúng không phải phương án dự phòng, chúng ngang hàng.
+  fix_unchanged: >-
+    Với vị trí thứ nhất: replication vẫn bất đồng bộ, độ trễ vẫn nguyên đó, và mọi câu đọc
+    khác vẫn ở replica. Không có gì trong cấu hình database thay đổi. Và quan trọng nhất -
+    tri thức về việc câu đọc nào cần thấy cái vừa ghi vẫn nằm trong đầu người viết code, chứ
+    không nằm trong hệ thống.
+  fix_enables: >-
+    Read-your-writes được khôi phục cho đúng những đường cần nó, mà không phải trả độ trễ ghi
+    hay độ phức tạp của việc theo dõi vị trí log.
+  fix_tradeoff: >-
+    Trả lại một phần khả năng đọc vừa mua bằng replica. Và nó chỉ đúng chừng nào danh sách
+    câu đọc cần route về primary còn đúng - mỗi endpoint mới là một cơ hội để danh sách đó
+    sai mà không ai biết.
+  detection:
+    signal: >-
+      Cột replay_lag trong pg_stat_replication. Doc mô tả nó là thời gian giữa lúc flush WAL
+      cục bộ và lúc nhận được báo rằng standby đã written, flushed and applied - tức đúng con
+      số quyết định câu đọc trên replica thấy được gì.
+    interpretation: >-
+      replay_lag cho biết ĐỘ RỘNG của cửa sổ. Nó không cho biết có ai rơi vào cửa sổ đó hay
+      không. Muốn biết điều thứ hai thì phải đo ở tầng ứng dụng: đếm số lần một request đọc
+      chạy trong vòng vài trăm mili giây sau một request ghi của cùng người dùng.
+    false_positives:
+      - "Primary đang rảnh: cả ba con số lag về gần không vì không có WAL mới để chép, không phải vì replica đã bắt kịp"
+      - "Một câu ghi lớn vừa chạy: lag nhảy vọt rồi tự về, không liên quan tới read-your-writes"
+      - "Replica đang chạy một query dài chặn replay: lag tăng vì lý do khác hẳn"
+      - "Mạng giữa hai node xấu đi: lag tăng nhưng cửa sổ vẫn có thể nhỏ hơn round trip của người dùng"
+    does_not_prove: >-
+      replay_lag thấp KHÔNG chứng minh read-your-writes an toàn - cửa sổ chỉ cần dài bằng
+      khoảng giữa câu ghi và câu đọc kế tiếp, mà với luồng submit rồi redirect thì đó là vài
+      chục mili giây. replay_lag bằng không KHÔNG chứng minh replica đã bắt kịp, vì primary
+      rảnh cũng cho kết quả đó. Nhìn write_lag hay flush_lag KHÔNG trả lời được câu hỏi này -
+      chúng nói về độ bền, không nói về khả năng nhìn thấy. Và không con số nào trong
+      pg_stat_replication cho biết bao nhiêu người dùng đã thật sự rơi vào cửa sổ.
+  alternatives:
+    - name: "V2 - theo dõi vị trí log theo từng phiên (root-cause mitigation)"
+      solves: >-
+        chạm vào chính định nghĩa của chữ sau. Ghi xong thì client nhớ vị trí log; câu đọc kế
+        tiếp hoặc chờ replica tới vị trí đó, hoặc đi về primary. Nó biến sau thành một thứ so
+        sánh được thay vì để nó mơ hồ.
+      cost: >-
+        Đắt về code - phải mang vị trí log xuyên qua các tầng ứng dụng. Và câu đọc có thể phải chờ.
+      not_equivalent_because: >-
+        Đây là vị trí duy nhất không đòi ai phải BIẾT TRƯỚC câu đọc nào cần. Không áp dụng
+        được khi đội không kiểm soát tầng route hoặc client.
+    - name: "V3 - synchronous_commit remote_apply (architectural prevention)"
+      solves: >-
+        chạm vào precondition, tức tính bất đồng bộ. Doc: commit chờ tới khi standby applied
+        it, so that it has become visible to queries on the standby(s). Phủ được MỌI câu đọc
+        mà không cần biết câu nào cần.
+      cost: >-
+        Doc nói thẳng - this will cause much larger commit delays than previous settings since
+        it waits for WAL replay. Và độ bền của đường ghi giờ phụ thuộc replica còn sống.
+      not_equivalent_because: >-
+        Ba vị trí kia đổi CHỖ ĐỌC. Vị trí này đổi LÚC GHI KẾT THÚC. Không áp dụng khi đường
+        ghi nhạy độ trễ, hoặc khi không chấp nhận được việc replica chết làm ghi đứng theo.
+    - name: "V4 - hiện luôn giá trị vừa gửi, không đọc lại (operational workaround)"
+      solves: "làm một triệu chứng biến mất, rẻ và nhanh, và là cách phần lớn sản phẩm thật đang làm"
+      cost: >-
+        Nó KHÔNG sửa gì trong hệ thống. Tab thứ hai, thiết bị thứ hai, hay bất kỳ đường đọc
+        nào khác vẫn thấy giá trị cũ.
+      not_equivalent_because: >-
+        Ba vị trí kia chạm vào một mắt xích trong cơ chế. Vị trí này chạm vào cái người dùng
+        thấy. Không áp dụng khi giá trị mà người dùng đang thấy được dùng làm đầu vào cho quyết
+        định tiếp theo - lúc đó nó thôi là vấn đề giao diện.
+  edge_cases:
+    - "Chỉ một node: không tồn tại. Đây là cái giá xuất hiện đúng lúc thêm node thứ hai."
+    - "Người khác đọc, không phải người vừa ghi: bảo đảm bị phá là monotonic reads hoặc chỉ là dữ liệu cũ, KHÔNG phải read-your-writes."
+    - "Đọc lại sau vài giây: thường đã qua cửa sổ. Doc nói độ trễ thường dưới một giây."
+    - "Nhiều replica: mỗi cái ở một vị trí riêng. Route ngẫu nhiên làm người dùng nhảy tới lui giữa các phiên bản thế giới."
+    - "Replica chỉ dùng cho báo cáo, không phục vụ request người dùng: cơ chế vẫn đó nhưng không ai chạm vào cửa sổ."
+    - "Logical replication thay vì streaming: cùng hình dạng vấn đề, nhưng con số và tham số khác. Chưa verify nên không phát biểu gì."
+
+story:
+  incident: >-
+    Đội thêm một read replica. Đọc nhanh hơn, primary nhẹ hẳn đi, mọi thứ chạy tốt. Rồi
+    support bắt đầu nhận báo lỗi: user bấm lưu, hệ thống báo đã lưu, bấm F5 thì giá trị cũ
+    quay lại.
+  likely_wrong_guess: "Mất dữ liệu - đây là từ vựng của chính người báo lỗi, và tin theo nó là đi sai hướng ngay từ đầu."
+  evidence: >-
+    Không có gì mất, giá trị mới nằm nguyên trên primary. Đường đó không có cache. Câu UPDATE
+    chạy, commit thành công, đúng giá trị mới. Không node nào hỏng - cả hai đang trả lời đúng
+    câu hỏi được đặt cho chúng.
+  mechanism:
+    - "Postgres ghi mọi thay đổi vào một replication log, và replica chạy lại đúng log đó"
+    - "Primary commit xong ở một vị trí trong log - gọi là vị trí 500"
+    - "Replica lúc đó đang ở vị trí 499, vì streaming replication mặc định là bất đồng bộ - đây là điều kiện thường trực, không phải nguyên nhân"
+    - "Doc Postgres cho một con số: độ trễ đó thường dưới một giây"
+    - "Nhưng khoảng cách giữa lúc user bấm lưu và lúc trình duyệt gửi câu đọc tiếp theo cũng là dưới một giây - hai khoảng này chồng lên nhau"
+    - "Tầng route đưa câu đọc tiếp theo về replica, và nó không biết gì về câu ghi vừa xảy ra - đây là nguyên nhân chính"
+    - "Replica phục vụ câu đọc ở vị trí 499, và trả về đúng thế giới ở vị trí đó"
+    - "User thấy giá trị trước khi ghi, và gọi đó là mất dữ liệu"
+  aha:
+    viewer_thinks: "Câu đọc xảy ra sau câu ghi, nên nó phải thấy được cái vừa ghi."
+    actually: >-
+      Câu đọc xảy ra sau nếu đo bằng đồng hồ, và trước nếu đo bằng vị trí trong log. Với một
+      node hai cách đo đó là một. Với hai node thì không.
+  concept_name: "read-your-writes - ghi thành công rồi đọc lại thì phải thấy được cái mình vừa ghi"
+  fix: >-
+    Không có cách sửa, vì không có lỗi. Có bốn vị trí để đứng: route câu đọc cần thấy về
+    primary; theo dõi vị trí log theo phiên; bắt primary chờ replica bằng remote apply; hoặc
+    hiện luôn giá trị vừa gửi mà không đọc lại. Chỗ nào cũng phải trả một thứ.
+  tradeoff: >-
+    Thêm replica mua thêm khả năng đọc, và thứ đem đi đổi là read-your-writes. Cái giá đó
+    không nằm trong câu lệnh tạo replica nên lúc trả không ai nhìn thấy. Bốn vị trí trên là
+    bốn cách mua lại nó, mỗi cách trả bằng một loại tiền khác nhau.
+  detection: >-
+    Đừng đo replication lag như một con số. Postgres cho ba: write lag, flush lag, replay lag.
+    Chỉ replay lag mới nói về cái mà câu đọc trên replica thấy được. Và replay lag thấp không
+    chứng minh an toàn, vì cửa sổ chỉ cần dài bằng một vòng round trip của trình duyệt.
+  ending_question: "Cái gì trong hệ thống của bạn đang quyết định một câu SELECT đi về primary hay replica, và nó có biết gì về câu ghi vừa xảy ra không?"
+
+semantic_model:
+  entities:
+    - id: user
+      type: client
+      label: "Người dùng bấm lưu rồi refresh ngay"
+    - id: app
+      type: component
+      label: "Ứng dụng, có tầng route quyết định câu nào đi đâu"
+    - id: primary
+      type: service
+      label: "Primary Postgres, nơi nhận câu ghi"
+    - id: replica
+      type: service
+      label: "Read replica, nơi nhận câu đọc"
+    - id: wal
+      type: datastore
+      label: "Replication log dùng chung giữa primary và replica"
+
+  states:
+    - entity: primary
+      field: log_position
+      initial: 499
+      timeline: [499, 499, 499, 500, 500, 500, 500, 500]
+    - entity: replica
+      field: log_position
+      initial: 499
+      timeline: [499, 499, 499, 499, 499, 499, 499, 500]
+    - entity: user
+      field: observed_value
+      initial: "giá trị cũ"
+      timeline: ["giá trị cũ", "giá trị cũ", "đã gửi giá trị mới", "đã gửi giá trị mới", "đã gửi giá trị mới", "đã gửi giá trị mới", "giá trị cũ quay lại", "giá trị cũ quay lại"]
+
+  events:
+    - id: e1
+      t: 0
+      role: precondition
+      actor: replica
+      action: replay_log_asynchronously
+      target: wal
+      detail: >-
+        Streaming replication mặc định là bất đồng bộ, nên replica luôn ở một vị trí nhỏ hơn
+        hoặc bằng primary. Luôn đúng, kể cả khi không ai gặp lỗi. Nó ĐỊNH CỠ cửa sổ chứ không
+        tạo ra lỗi.
+      causes: [e6]
+    - id: e2
+      t: 0
+      role: precondition
+      actor: app
+      action: route_reads_without_write_context
+      target: replica
+      detail: >-
+        Tầng route gửi câu đọc về replica và không mang theo thông tin gì về câu ghi vừa xảy
+        ra. Đây là trạng thái mặc định sau khi thêm replica.
+      causes: [e5]
+    - id: e3
+      t: 1
+      role: trigger
+      actor: user
+      action: submit_write
+      target: app
+      detail: "Bấm lưu. Hành động bình thường, và là thứ làm cái giá lộ ra."
+      causes: [e4]
+    - id: e4
+      t: 2
+      role: consequence
+      actor: primary
+      action: commit_at_log_position
+      target: wal
+      detail: "Commit thành công ở vị trí 500 trong log. Dữ liệu nằm nguyên ở đây, không mất đi đâu."
+      causes: []
+    - id: e5
+      t: 3
+      role: primary_cause
+      actor: app
+      action: route_followup_read_to_replica
+      target: replica
+      detail: >-
+        Câu đọc ngay sau đó được gửi về replica. Đây là nguyên nhân chính - bỏ nó ra thì
+        không có gì sai. Ba trong bốn vị trí đánh đổi đều nhắm vào đúng quyết định này.
+      causes: [e6]
+    - id: e6
+      t: 4
+      role: consequence
+      actor: replica
+      action: serve_read_at_earlier_position
+      target: user
+      detail: >-
+        Replica phục vụ câu đọc ở vị trí 499 và trả về đúng thế giới ở vị trí đó. Đây là câu
+        trả lời ĐÚNG cho vị trí của nó.
+      causes: [e7]
+    - id: e7
+      t: 5
+      role: invariant_violation
+      actor: user
+      action: observe_pre_write_value
+      target: replica
+      detail: >-
+        Đọc lại sau khi ghi thành công mà thấy giá trị trước khi ghi. Kỳ vọng bị phá là
+        read-your-writes.
+      causes: [e8]
+    - id: e8
+      t: 6
+      role: supporting_evidence
+      actor: user
+      action: report_as_data_loss
+      target: app
+      detail: >-
+        Người dùng báo lên bằng từ mất dữ liệu. Đây là dấu hiệu, không phải cơ chế - và tin
+        theo từ vựng này sẽ đẩy chẩn đoán sang tầng ghi, tức sai hướng.
+      causes: []
+
+  relationships:
+    - from: user
+      to: app
+      kind: calls
+    - from: app
+      to: primary
+      kind: writes
+    - from: app
+      to: replica
+      kind: reads
+    - from: primary
+      to: wal
+      kind: writes
+    - from: replica
+      to: wal
+      kind: reads
+
+  invariants:
+    - id: read_your_writes
+      statement: "Một client ghi thành công rồi đọc lại thì phải thấy được giá trị nó vừa ghi"
+      holds_in_expected: true
+      violated_by: e7
+    - id: observation_order_matches_real_order
+      statement: "Nếu A xảy ra trước B theo đồng hồ thì mọi quan sát viên đều thấy A trước B"
+      holds_in_expected: true
+      violated_by: e6
+
+  expected:
+    value_seen_after_refresh: "giá trị vừa lưu"
+    read_log_position: "bằng hoặc lớn hơn vị trí commit"
+    guarantees_held: "eventual consistency và read-your-writes"
+  actual:
+    value_seen_after_refresh: "giá trị trước khi lưu"
+    read_log_position: "nhỏ hơn vị trí commit"
+    guarantees_held: "eventual consistency, nhưng không phải read-your-writes"
+
+  dataset:
+    - id: lag_columns
+      of: replica
+      description: "ba cột lag mà pg_stat_replication cung cấp"
+      values: ["write_lag", "flush_lag", "replay_lag"]
+    - id: columns_governing_read_visibility
+      of: replica
+      description: "cột duy nhất quyết định câu đọc trên replica thấy được gì"
+      values: ["replay_lag"]
+
+  assertions:
+    - claim: "replication lag không phải một con số - Postgres cho ba"
+      op: count_equals
+      subject: lag_columns
+      value: 3
+    - claim: "chỉ replay_lag quyết định khả năng nhìn thấy của câu đọc trên replica"
+      op: contains
+      subject: columns_governing_read_visibility
+      value: "replay_lag"
+    - claim: "flush_lag nói về độ bền chứ không nói về khả năng nhìn thấy, nên không thay được replay_lag"
+      op: not_contains
+      subject: columns_governing_read_visibility
+      value: "flush_lag"
+    - claim: "ba cột lag không hoán đổi được cho nhau"
+      op: not_equals
+      subject: lag_columns
+      other: columns_governing_read_visibility
+
+narration:
+  language: vi
+  syllable_count: 711
+  assumed_syllables_per_second: 4.2
+  estimated_duration_sec: 169
+  beat_count: 39
+  text: |
+    Bạn thêm một read replica. Đúng sách, đúng lúc.
+
+    Đọc nhanh hơn. Primary nhẹ hẳn đi. Mọi thứ chạy tốt.
+
+    Rồi support bắt đầu nhận báo lỗi. User bấm lưu, hệ thống báo đã lưu, bấm F5 thì giá trị cũ quay lại.
+
+    Họ gọi đó là mất dữ liệu.
+
+    Nhưng không có gì mất. Giá trị mới nằm nguyên trên primary.
+
+    Kiểm cache: đường đó không có cache. Kiểm log ghi: câu UPDATE chạy, commit thành công, đúng giá trị mới.
+
+    Không node nào hỏng. Cả hai đang trả lời đúng câu hỏi được đặt cho chúng.
+
+    Postgres ghi mọi thay đổi vào một cái log, và replica chạy lại đúng cái log đó.
+
+    Primary commit xong ở vị trí năm trăm trong log.
+
+    Replica lúc đó đang ở bốn trăm chín mươi chín.
+
+    Câu đọc của user chạy trên replica. Nó thấy đúng thế giới ở vị trí bốn trăm chín mươi chín.
+
+    Doc Postgres nói streaming replication mặc định là bất đồng bộ. Có một khoảng trễ nhỏ giữa lúc commit trên primary và lúc thay đổi hiện ra trên replica.
+
+    Doc còn cho một con số. Thường là dưới một giây.
+
+    Dưới một giây nghe rất lành, và trên dashboard nào nó cũng là con số đẹp. Nhưng khoảng cách giữa lúc user bấm lưu và lúc trình duyệt gửi câu đọc tiếp theo cũng là dưới một giây.
+
+    Hai khoảng đó chồng lên nhau. Đó là toàn bộ lỗi.
+
+    Chỗ này chữ "sau" đang gánh một việc nó không gánh nổi.
+
+    Câu đọc xảy ra sau câu ghi, nếu đo bằng đồng hồ.
+
+    Nó xảy ra trước câu ghi, nếu đo bằng vị trí trong log.
+
+    Với một node, hai cách đo đó là một. Với hai node thì không.
+
+    Thứ vừa mất có tên. Read-your-writes: ghi thành công rồi đọc lại thì phải thấy được cái mình vừa ghi.
+
+    Và nói cho rõ, eventual consistency vẫn đang được giữ đúng. Đây là hai bảo đảm khác nhau. Mất cái này không bắt buộc phải mất cái kia.
+
+    Giờ tới phần đáng nói nhất. Bạn không gặp bug. Bạn đã trả một cái giá.
+
+    Thêm replica mua thêm khả năng đọc. Thứ đem đi đổi là read-your-writes.
+
+    Cái giá đó không nằm trong câu lệnh tạo replica, nên lúc trả không ai nhìn thấy.
+
+    Có bốn chỗ để đứng. Chỗ nào cũng phải trả một thứ.
+
+    Chỗ thứ nhất, rẻ nhất. Câu đọc nào cần thấy cái vừa ghi thì cho về primary.
+
+    Nhưng bạn phải biết câu nào cần. Tri thức đó nằm trong đầu người viết code, không nằm trong hệ thống.
+
+    Chỗ thứ hai. Ghi xong thì nhớ vị trí log, đọc thì chờ replica tới vị trí đó.
+
+    Đúng ngữ nghĩa nhất, vì nó biến chữ "sau" thành một thứ so sánh được. Đắt về code, và câu đọc có thể phải chờ.
+
+    Chỗ thứ ba. Bắt primary chờ replica. Postgres có mức remote apply. Commit không trả về cho tới khi replica đã áp dụng xong. Tức là tới khi câu đọc trên replica thấy được nó.
+
+    Doc nói thẳng: mức đó làm độ trễ commit tăng lên nhiều hơn hẳn, vì nó phải chờ replay. Và replica chết thì đường ghi đứng theo.
+
+    Chỗ thứ tư, hay bị chọn nhất. Sau khi lưu thì hiện luôn giá trị vừa gửi, không đọc lại.
+
+    Cái này không sửa gì trong hệ thống. Nó sửa cái người dùng thấy. Tab thứ hai vẫn thấy giá trị cũ.
+
+    Đo thì đừng đo replication lag như một con số.
+
+    Postgres cho ba con số khác nhau. Write lag, flush lag, và replay lag.
+
+    Chỉ replay lag mới nói về cái mà câu đọc trên replica thấy được. Hai con số kia nói về độ bền.
+
+    Và replay lag thấp không chứng minh bạn an toàn. Cửa sổ chỉ cần dài bằng một vòng round trip của trình duyệt.
+
+    Còn primary đang rảnh thì cả ba con số đều về gần không. Không phải vì mọi thứ ổn, mà vì không có gì để chép.
+
+    Cái gì trong hệ thống của bạn đang quyết định một câu SELECT đi về primary hay replica? Và nó có biết gì về câu ghi vừa xảy ra không?
+  inseparable:
+    - beats: [13, 14]
+      reason: >-
+        Beat 13 đưa con số có nguồn: độ trễ thường dưới một giây. Beat 14 đặt nó cạnh khoảng
+        thời gian giữa lúc bấm lưu và lúc trình duyệt gửi câu đọc tiếp theo, và cho thấy hai
+        khoảng đó chồng lên nhau. Đứng một mình, beat 13 dạy NGƯỢC lại điều nó định dạy -
+        dưới một giây nghe như hoàn toàn an toàn.
+    - beats: [30, 31]
+      reason: >-
+        Beat 30 nêu remote apply là mức làm commit chờ tới khi replica thấy được. Beat 31 nêu
+        giá: độ trễ commit tăng nhiều hơn hẳn, và replica chết thì đường ghi đứng theo. Bỏ
+        beat 31 là biến một tham số có hậu quả nặng ở tầng ghi thành một công tắc vô hại.
+    - beats: [32, 33]
+      reason: >-
+        Beat 32 nêu cách rẻ nhất và hay bị chọn nhất: hiện luôn giá trị vừa gửi. Beat 33 nêu
+        giới hạn: nó không sửa gì trong hệ thống, tab thứ hai vẫn thấy giá trị cũ. Bỏ beat 33
+        là trình bày một cách sửa giao diện như một cách sửa dữ liệu.
+
+technical_notes:
+  - >-
+    Cách nói "replica chậm hơn primary" bị loại có chủ ý khỏi toàn bộ package, kể cả research.
+    Nó dựng lại theo nghĩa đen thành một vấn đề HIỆU NĂNG - nâng cấu hình là hết - trong khi
+    đây là vấn đề VỊ TRÍ. Replica nhanh gấp mười lần vẫn có một khoảng trễ khác không, và cửa
+    sổ chỉ cần dài bằng một round trip.
+  - >-
+    Bẫy tên gọi đã cắt khỏi narration: synchronous_commit mặc định là on, nhưng replication
+    chỉ đồng bộ khi synchronous_standby_names được đặt khác rỗng. Nghĩa là thấy on KHÔNG có
+    nghĩa là đang chạy replication đồng bộ. Narration nhắc remote apply mà cố ý không nhắc
+    synchronous_commit = on, vì remote apply là một giá trị cụ thể và không mơ hồ.
+  - >-
+    Chữ "mất dữ liệu" xuất hiện trong narration nhưng được gán cho NGƯỜI BÁO LỖI ở một beat
+    rồi bác ngay ở beat sau. Đây là cách dùng có kiểm soát một từ vựng sai mà vẫn phải nhắc,
+    không phải nhầm lẫn của package.
+  - >-
+    Cơ chế là chung cho mọi replication bất đồng bộ. Các con số, tên tham số và tên cột là của
+    PostgreSQL. Logical replication cùng hình dạng vấn đề nhưng chưa verify nên không phát
+    biểu gì.
+  - >-
+    Vị trí log 500 và 499 là số ví dụ cho khoảng cách một nhịp, không phải phép đo LSN thật.
+    Con số duy nhất có nguồn trong narration là "thường dưới một giây".
+  - >-
+    Ranh giới giữa read-your-writes và session consistency khác nhau tuỳ tài liệu. Package
+    dùng read-your-writes theo nghĩa hẹp - đọc lại sau khi ghi thì thấy được cái mình vừa ghi -
+    và không phát biểu gì về session consistency. Ghi lại thay vì tự hoà giải.
+
+rejected_explanations:
+  - explanation: "Mất dữ liệu"
+    reason: >-
+      Không mất. Giá trị mới nằm nguyên trên primary và sẽ hiện ra trên replica sau vài trăm
+      mili giây. Đây là từ vựng của người báo lỗi, và tin theo nó đẩy chẩn đoán sang tầng ghi
+      ngay từ đầu - tức đi sai hướng trước khi kịp nhìn vào tầng đọc. Cách nói đúng: dữ liệu
+      CŨ, không phải dữ liệu MẤT.
+  - explanation: "Replica chậm, nâng cấu hình là hết"
+    reason: >-
+      Đây không phải vấn đề hiệu năng. Nâng cấu hình THU HẸP cửa sổ chứ không ĐÓNG nó, và cửa
+      sổ chỉ cần dài bằng một round trip của trình duyệt. Dựng lại theo nghĩa đen thì fix
+      thành "mua máy to hơn", vốn không sửa gì và còn tốn tiền.
+  - explanation: "Eventual consistency thì phải chịu thôi"
+    reason: >-
+      Gộp ba bảo đảm khác nhau thành một. Eventual consistency vẫn đang được giữ đúng - replica
+      SẼ bắt kịp. Cái mất là read-your-writes, và nó mua lại được bằng bốn cách khác nhau mà
+      không phải bỏ eventual consistency. Cách nói này biến một lựa chọn thành một định mệnh.
+  - explanation: "synchronous_commit đang là on nên replication đã đồng bộ rồi"
+    reason: >-
+      on là giá trị MẶC ĐỊNH, và nó chỉ có hiệu lực với standby đồng bộ. Không đặt
+      synchronous_standby_names thì không có standby đồng bộ nào để chờ. Đây là bẫy tên gọi
+      thật trong sản phẩm, không phải hiểu lầm do người dùng nghĩ ra - nên nó nguy hiểm hơn
+      ba cái trên.
+
+sources:
+  - title: "PostgreSQL - Log-Shipping Standby Servers"
+    url: "https://www.postgresql.org/docs/current/warm-standby.html"
+    supports: >-
+      Streaming replication mặc định bất đồng bộ, có khoảng trễ nhỏ giữa lúc commit trên
+      primary và lúc thay đổi hiện ra trên standby, thường dưới một giây. Replication đồng bộ
+      đòi synchronous_standby_names khác rỗng.
+    kind: primary
+  - title: "PostgreSQL - Write Ahead Log configuration"
+    url: "https://www.postgresql.org/docs/current/runtime-config-wal.html"
+    supports: >-
+      Năm mức synchronous_commit với on là mặc định. remote_apply chờ tới khi standby đã áp
+      dụng và thay đổi đã hiện ra với query trên standby, và mức đó làm độ trễ commit tăng
+      nhiều hơn hẳn vì phải chờ WAL replay.
+    kind: primary
+  - title: "PostgreSQL - Monitoring Statistics"
+    url: "https://www.postgresql.org/docs/current/monitoring-stats.html"
+    supports: >-
+      pg_stat_replication với bốn cột LSN và ba cột lag. replay_lag là thời gian tới khi
+      standby đã written, flushed and applied - khác với write_lag và flush_lag.
+    kind: primary
+
+confidence: high
+
+open_questions:
+  - >-
+    Chưa verify logical replication: cùng hình dạng vấn đề nhưng tham số và hành vi khác.
+    Nếu làm video tiếp về chủ đề này thì phải đọc doc riêng.
+  - >-
+    Chưa khảo sát tầng route của các framework phổ biến ở Việt Nam - Laravel read/write
+    connection, Rails role-based connection switching, Spring AbstractRoutingDataSource - cái
+    nào có sẵn cơ chế "ghi xong thì đọc từ primary trong một khoảng" và cái nào phải tự làm.
+    Đây là thứ quyết định vị trí thứ nhất rẻ tới mức nào trong thực tế.
+  - >-
+    Chưa có cơ sở để nói tỉ lệ request nào rơi vào cửa sổ trong một hệ thống thật. Video cố ý
+    chỉ nói cửa sổ rộng bao nhiêu và cách đo, không nêu tỉ lệ nào.
+
+fingerprint:
+  hook_type: unexpected_consequence
+  incident_type: write_then_read_shows_old_value
+  wrong_guess: reported_as_data_loss
+  mechanism_shape: read_and_write_at_different_log_positions
+  aha_type: after_is_not_defined_across_nodes
+  fix_type: choose_position_on_tradeoff
+  ending_type: component_knowledge_audit

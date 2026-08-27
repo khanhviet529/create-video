@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=1920" />
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+/* @brand:start */
+:root {
+  --ground: #0C0D0F; --ground-lift: #14161A;
+  --ink: #EDEAE4; --ink-mid: #9AA0A6; --ink-dim: #8B9198; --ink-ghost: #3A3E42;
+  --rule: #23272A; --rule-bright: #3D4348; --hair: 1.5px;
+  --authoritative: #C9A227; --stale: #E0533D; --lost: #6A6F74;
+  --boundary: #4E8C7D; --pressure: #B4623A; --counterfactual: #7A8086;
+  --font-value: "IBM Plex Mono", ui-monospace, monospace;
+  --font-label: "IBM Plex Sans Condensed", "IBM Plex Sans", system-ui, sans-serif;
+  --t-hero: 200px; --t-value: 64px; --t-body: 36px; --t-label: 26px; --track-label: 0.18em;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { overflow: hidden; background: var(--ground); color: var(--ink); font-family: var(--font-label); }
+.label { font-family: var(--font-label); font-size: var(--t-label); letter-spacing: var(--track-label);
+         text-transform: uppercase; color: var(--ink-dim); font-weight: 500; }
+/* @brand:end */
+
+html, body { width: 1080px; height: 1920px; }
+#stage { position: absolute; inset: 0; }
+
+.cell { position: absolute; border-radius: 1px; }
+.live { background: var(--ink); }
+.dead { background: var(--lost); }
+.free { background: transparent; box-shadow: inset 0 0 0 4px var(--rule-bright); } /* Ô TRỐNG */
+/* a slot whose DEPICTION has been lifted out to be counted. The slot is still occupied —
+   nothing in the relation moved, and the ghost is what says so. */
+.ghost { background: transparent; box-shadow: inset 0 0 0 3px var(--lost); }
+
+.frame { position: absolute; left: 0; top: 0; }
+.fbar { position: absolute; background: var(--ink-dim); }   /* KHUNG CẤP PHÁT */
+.fbar.h { height: 3px; }
+.fbar.v { width: 3px; transform-origin: left top; }
+#need .fbar { background: var(--boundary); }
+
+.cap { position: absolute; font-family: var(--font-label); font-size: 26px;
+       letter-spacing: 0.14em; text-transform: uppercase; font-weight: 500; }
+.val { position: absolute; font-family: var(--font-value); font-size: 54px; }
+
+/* the analytical register — a different band of the frame, with its own rule */
+#analytic { position: absolute; left: 90px; top: 1362px; width: 900px; height: 1.5px;
+            background: var(--counterfactual); opacity: .5; }
+/* a sweep event travelling down the allocation */
+.sweep { position: absolute; background: var(--authoritative); opacity: .22; }
+/* the visibility horizon held by an old snapshot */
+.horizon { position: absolute; left: 76px; width: 928px;
+           height: 3px;
+           background: repeating-linear-gradient(90deg, var(--boundary) 0 16px, transparent 16px 28px); }
+
+/* the measurement register: bars on an axis. A quantity belongs on an axis, never as a
+   frame drawn around a subset of cells — that reads as a physical partition, which is false. */
+#axis { position: absolute; left: 90px; top: 300px; width: 900px; height: 1.5px; background: var(--rule); }
+.bar { position: absolute; left: 90px; height: 22px; transform-origin: left center; }
+#bNeed { top: 246px; background: var(--boundary); }
+#bAlloc { top: 316px; background: var(--stale); }
+#drop { position: absolute; top: 246px; width: 1.5px; height: 112px; background: var(--boundary); opacity: .55; }
+
+#hist { position: absolute; left: 170px; top: 999px;
+        width: 740px; height: 2px; background: var(--rule-bright); }
+.pt { position: absolute; width: 2px; height: 20px; margin-left: -1px;
+      top: 990px; background: var(--rule-bright); }
+.pn { position: absolute; top: 1040px; width: 160px; margin-left: -80px;
+      text-align: center; font-family: var(--font-value); font-size: 30px; color: var(--ink-dim); }
+#gap { position: absolute; top: 1020px; height: 3px; background: var(--ink-dim); opacity: 0; }
+.br { position: absolute; height: 4px; background: var(--ink-mid); transform-origin: left center; }
+.cap2 { position: absolute; width: 4px; background: var(--ink-mid); }
+.brl { position: absolute; font-family: var(--font-label); font-size: 26px; letter-spacing: .14em;
+       text-transform: uppercase; font-weight: 500; color: var(--ink-dim); }
+.mk { position: absolute; width: 28px; height: 28px; margin: -14px 0 0 -14px; top: 1000px;
+      background: var(--ground); box-shadow: inset 0 0 0 4px var(--ink); border-radius: 50%; }
+.mk.filled { background: var(--ink); }
+/* vòng sáng: chỉ transform + opacity, và nó KHÔNG che dấu — nó nở ra ngoài dấu */
+.ring { position: absolute; width: 76px; height: 76px; margin: -38px 0 0 -38px; top: 1000px;
+        border-radius: 50%; box-shadow: inset 0 0 0 3px var(--ink); opacity: 0; }
+
+
+/* ---------------------------------------------------------------------------
+   NEGATIVE CONTROL cho R16. Lượt hai giãn GẤP ĐÔI lượt một, nên hai lượt cho hai nhịp
+   khác nhau — lock A quay lại qua tempo thay vì qua độ dốc. Shot này TỒN TẠI ĐỂ TRƯỢT.
+--------------------------------------------------------------------------- */
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="32"
+     data-width="1080" data-height="1920">
+  <div id="stage" class="clip" data-start="0" data-duration="32" data-track-index="0">
+    <div id="hist"></div>
+    <div class="pt" style="left:244px"></div>
+    <div class="pn" style="left:244px">497</div>
+    <div class="pt" style="left:429px"></div>
+    <div class="pn" style="left:429px">498</div>
+    <div class="pt" style="left:614px"></div>
+    <div class="pn" style="left:614px">499</div>
+    <div class="pt" style="left:799px"></div>
+    <div class="pn" style="left:799px">500</div>
+    <div id="gap" style="left:614px;width:185px"></div>
+    <div class="br" id="bPri" style="left:170px;top:900px;width:629px"></div>
+    <div class="cap2" id="cPri" style="left:799px;top:900px;height:86px"></div>
+    <div class="br" id="bRep" style="left:170px;top:1188px;width:444px"></div>
+    <div class="cap2" id="cRep" style="left:614px;top:1084px;height:108px"></div>
+    <div class="brl" id="lPri" style="left:170px;top:856px">primary đã áp tới</div>
+    <div class="brl" id="lRep" style="left:170px;top:1212px">replica đã áp tới</div>
+    <div class="ring" id="rW" style="left:799px"></div>
+    <div class="ring" id="rR" style="left:614px"></div>
+  </div>
+</div>
+
+<script>
+window.__timelines = window.__timelines || {};
+const tl = gsap.timeline({ paused: true });
+const R = 'power3.out', T = 'power2.inOut';
+const stage = document.getElementById('stage');
+gsap.set(['#bPri','#cPri','#bRep','#cRep','#lPri','#lRep'], { opacity: 0 });
+gsap.set('.pt, .pn', { opacity: 0 });
+gsap.set('#hist', { scaleX: 0, transformOrigin: 'left center' });
+
+/* 1 · lịch sử */
+tl.to('#hist', { scaleX: 1, duration: .9, ease: R }, 0.4);
+tl.to('.pt', { opacity: 1, duration: .4, stagger: .12 }, 1.2);
+tl.to('.pn', { opacity: 1, duration: .4, stagger: .12 }, 1.4);
+
+/* 2 · MỘT node — tiền tố phủ tới 500, không gì nằm ngoài được */
+tl.to(['#bPri','#cPri','#lPri'], { opacity: 1, duration: .6, ease: R }, 3.2);
+
+/* 3 · node thứ hai */
+tl.to(['#bRep','#cRep','#lRep'], { opacity: 1, duration: .7, ease: R }, 5.4);
+
+/* 4 · hai sự kiện. W hiện TRƯỚC ở 500; R hiện SAU ở 499 — bên TRÁI. */
+const W = document.createElement("div"); W.className = "mk filled";
+W.style.left = 799 + "px"; stage.appendChild(W);
+const Rd = document.createElement("div"); Rd.className = "mk";
+Rd.style.left = 614 + "px"; stage.appendChild(Rd);
+gsap.set([W, Rd], { opacity: 0 });
+tl.to(W, { opacity: 1, duration: .45, ease: R }, 7.6);
+tl.to(Rd, { opacity: 1, duration: .45, ease: R }, 9.4);
+
+/* 5 · LƯỢT MỘT — thứ tự TỚI: W rồi R. Phải → trái. */
+tl.fromTo('#rW', { opacity: 0, scale: .55 }, { opacity: 1, scale: 1, duration: .34, ease: R }, 12);
+tl.to('#rW', { opacity: 0, scale: 1.35, duration: .5, ease: T }, 12.4);
+tl.fromTo('#rR', { opacity: 0, scale: .55 }, { opacity: 1, scale: 1, duration: .34, ease: R }, 14);
+tl.to('#rR', { opacity: 0, scale: 1.35, duration: .5, ease: T }, 14.4);
+
+/* 6 · LƯỢT HAI — thứ tự VỊ TRÍ: R rồi W. Trái → phải.
+   Cùng hằng số khoảng cách với lượt một, nên không có nhịp nào để so. */
+tl.fromTo('#rR', { opacity: 0, scale: .55 }, { opacity: 1, scale: 1, duration: .34, ease: R }, 18);
+tl.to('#rR', { opacity: 0, scale: 1.35, duration: .5, ease: T }, 18.4);
+tl.fromTo('#rW', { opacity: 0, scale: .55 }, { opacity: 1, scale: 1, duration: .34, ease: R }, 22);
+tl.to('#rW', { opacity: 0, scale: 1.35, duration: .5, ease: T }, 22.4);
+
+/* 7 · khe hở: phần log replica chưa áp. Trung tính, dưới đường, không chạm dấu. */
+tl.to('#gap', { opacity: .85, duration: .5, ease: R }, 23.6);
+
+/* 8 · eventual consistency — replica áp tiếp tới 500. Chỉ transform. */
+tl.to('#bRep', { scaleX: 1.4167, duration: 1.1, ease: T }, 25.4);
+tl.to('#cRep', { x: 185, duration: 1.1, ease: T }, 25.4);
+tl.to('#gap', { opacity: 0, duration: .8, ease: T }, 25.9);
+window.__timelines['main'] = tl;
+</script>
+</body>
+</html>

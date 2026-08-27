@@ -1,0 +1,405 @@
+schema_version: 1
+id: "002"
+topic: "Index tồn tại nhưng planner không dùng"
+domain: database
+audience: "vietnamese software engineers, 2-5+ years"
+format:
+  kind: tiktok
+  recommended_duration_sec: 95
+  minimum_duration_sec: 80
+  reason_for_duration: >-
+    Video phải tách bạch ba thứ hay bị trộn: giá trị có tồn tại, biểu thức nào đã được index,
+    và biểu thức nào đang được hỏi. Tách bạch đó tốn chỗ và không nén được - nén là quay lại
+    đúng claim sai của revision 1. Cộng một fix, chi phí ở đường ghi, cái bẫy upper-vs-lower,
+    và một detection có caveat. Dưới 80 giây là mất một trong ba.
+
+why_this_matters: >-
+  Tạo index là phản xạ đầu tiên khi query chậm. Nhưng index chỉ phục vụ được predicate nào
+  hỏi đúng biểu thức mà nó đã lưu. Một hàm bọc quanh cột - lower, date, ép kiểu ngầm - làm
+  predicate không còn khớp với index nào, mà không báo lỗi, không cảnh báo, và không lộ ra
+  trong code review.
+
+core_claim: "Index phục vụ được một predicate chỉ khi nó được xây trên đúng biểu thức mà predicate đó hỏi."
+
+viewer_should_understand: >-
+  Index thuộc về một biểu thức chứ không thuộc về một cột, nên muốn thu hẹp phạm vi thì
+  predicate phải hỏi đúng biểu thức đã được index.
+
+assumptions:
+  - "Postgres, index B-tree mặc định trên cột email - biểu thức được index là chính email, nguyên văn"
+  - "Query dạng WHERE lower(email) = $1 - hàm bọc quanh cột nằm ở vế trái phép so sánh"
+  - "Bảng đủ lớn để quét tuần tự là vấn đề thật - ví dụ giả định 2 triệu dòng"
+  - "Chưa có index nào được xây trên biểu thức lower(email)"
+  - "Cột không dùng collation case-insensitive"
+
+technical_truth:
+  mechanism_summary: >-
+    Index B-tree trên email được xây trên biểu thức email nguyên văn. Predicate hỏi giá trị
+    của một biểu thức khác là lower(email), và không index nào được xây trên biểu thức đó.
+    Không có indexed expression nào khớp thì không có đường truy cập nào qua index thu hẹp
+    được phạm vi, nên planner chọn quét tuần tự. Thứ tự khoá index cũng không bắc cầu hộ
+    được - đó là bằng chứng phụ, không phải nguyên nhân.
+  invariant_broken: "Chi phí của một query tra cứu theo email không được tăng theo số dòng của bảng"
+  primary_fix: >-
+    Tạo thêm một index được xây trên chính biểu thức lower(email) -
+    CREATE INDEX users_lower_email_idx ON users (lower(email)).
+  fix_unchanged: >-
+    Câu query không cần đổi. Predicate vẫn viết lower(email) = $1 như cũ. Index cũ trên email
+    cũng không phải bỏ - nó vẫn phục vụ các predicate hỏi email nguyên văn. Fix là thêm một
+    indexed expression, không phải sửa lại chỗ đặt hàm.
+  fix_enables: >-
+    Bây giờ tồn tại một indexed expression khớp với predicate, nên planner có đường truy cập
+    qua index để thu hẹp phạm vi. Lookup tìm trên các giá trị đã được tính sẵn và lưu trong
+    index - không phải tính lại lower cho từng dòng của bảng nữa.
+  fix_tradeoff: >-
+    Chi phí dồn sang đường ghi. Doc Postgres nói thẳng - expression index tương đối đắt để
+    bảo trì, vì biểu thức phải được tính lại cho mỗi lần chèn dòng và mỗi lần update không-HOT.
+    Thêm một bẫy - index đó chỉ phục vụ đúng biểu thức đó, upper(email) lại quét toàn bảng.
+  detection:
+    signal: >-
+      SELECT relname, indexrelname, idx_scan FROM pg_stat_user_indexes WHERE idx_scan = 0 -
+      liệt kê các index chưa bao giờ được dùng kể từ lần reset thống kê gần nhất.
+    interpretation: >-
+      Một index mình cố tình tạo mà không bao giờ được dùng là chỗ đáng mở ra xem. Kết hợp với
+      EXPLAIN trên chính câu query nghi ngờ thì mới biết được planner đang chọn đường nào.
+    false_positives:
+      - "Index thừa hoặc trùng lặp - không query nào cần nó ngay từ đầu"
+      - "Index cho một tính năng chưa chạy, hoặc chạy theo mùa"
+      - "Thống kê vừa được reset nên chưa kịp tích luỹ lần dùng nào"
+      - "Index phục vụ ràng buộc unique chứ không phục vụ query nào"
+      - "Replica đọc dùng index đó nhưng thống kê đang xem là của primary"
+    does_not_prove: >-
+      Không chứng minh query nào đó non-sargable. Nó chỉ nói index này chưa được dùng, không
+      nói vì sao. Muốn biết vì sao phải chạy EXPLAIN trên câu query cụ thể.
+  alternatives:
+    - name: "chuẩn hoá lúc ghi - lưu sẵn cột email_normalized rồi index cột đó"
+      solves: "đường đọc nhanh, dùng index thường trên một cột đã ở đúng dạng"
+      cost: "thêm cột, phải backfill dữ liệu cũ, thêm một chỗ dữ liệu có thể lệch nhau"
+      not_equivalent_because: "đánh đổi ngược với expression index - trả giá ở lược đồ thay vì ở mỗi lần ghi"
+    - name: "viết lại predicate để cột đứng một mình, ví dụ khoảng thời gian thay cho date()"
+      solves: "predicate khớp lại với index sẵn có, không tốn thêm gì ở đường ghi"
+      cost: "phải sửa mọi call site"
+      not_equivalent_because: "chỉ áp dụng được khi hàm bảo toàn thứ tự, nên viết lại thành khoảng được"
+    - name: "citext hoặc collation case-insensitive"
+      solves: "so sánh không phân biệt hoa thường ngay ở tầng kiểu dữ liệu, bỏ được lower() khỏi predicate"
+      cost: "đổi kiểu cột, ảnh hưởng mọi nơi dùng cột đó"
+      not_equivalent_because: "chỉ giải quyết trường hợp hoa-thường, không giải quyết các hàm khác"
+  edge_cases:
+    - "Bảng nhỏ: planner chọn quét tuần tự vì nó rẻ hơn thật. Đây là quyết định đúng, không phải lỗi."
+    - "WHERE email = lower($1): hàm nằm ở phía tham số chứ không bọc quanh cột, predicate vẫn hỏi biểu thức email nên index dùng được bình thường."
+    - "MySQL 8 mặc định collation utf8mb4_0900_ai_ci, hậu tố _ci là case-insensitive, nên riêng ví dụ lower() thường thừa ngay từ đầu. Cơ chế thì giống - MySQL 8.0.13 trở lên cũng cần functional index cho biểu thức khác."
+    - "date(created_at) = '2026-08-01' cùng hình dạng. Vì date() bảo toàn thứ tự nên có cách rẻ hơn expression index: viết lại thành khoảng lớn hơn hoặc bằng X và nhỏ hơn X cộng một ngày, lúc đó predicate hỏi đúng biểu thức created_at."
+    - "Ép kiểu ngầm, ví dụ cột bigint so với chuỗi, cũng cùng cơ chế: giá trị bị biến đổi trước khi so sánh nên biểu thức không còn khớp."
+    - "Thống kê cũ là một vấn đề khác: ANALYZE xử lý được. Ở đây ANALYZE không đổi gì, và đó chính là bằng chứng loại giả thuyết."
+
+story:
+  incident: "Bảng users có index trên cột email. Query tìm theo email vẫn chậm dần đều theo số dòng."
+  likely_wrong_guess: "Thống kê cũ rồi, planner tưởng bảng còn nhỏ nên không thèm dùng index. Chạy ANALYZE là xong."
+  evidence: >-
+    Chạy ANALYZE, không đổi gì, EXPLAIN vẫn cho ra Seq Scan. Mà index thì có thật - một query
+    khác trên đúng cột đó vẫn cho ra Index Scan bình thường. Khác biệt duy nhất nằm ở mệnh đề WHERE.
+  mechanism:
+    - "Index trên email được xây trên một biểu thức, và mặc định biểu thức đó là chính email, nguyên văn"
+    - "Predicate đang hỏi giá trị của một biểu thức khác: lower(email)"
+    - "Không có index nào được xây trên biểu thức lower(email) - đây là nguyên nhân"
+    - "Giá trị cần tìm vẫn có thể đang nằm trong index dưới dạng viết hoa, nhưng nằm ở đó không có nghĩa là có đường đi tới nó"
+    - "Thứ tự khoá index cũng không bắc cầu hộ: thứ tự theo mã ký tự khác thứ tự sau khi hạ chữ thường, nên không có khoảng liên tục nào để quét - đây là bằng chứng phụ, không phải nguyên nhân"
+    - "Không có indexed expression nào khớp thì không có đường truy cập nào qua index, planner bỏ index"
+    - "Executor quét tuần tự: đọc từng dòng, tự tính lower cho từng dòng, rồi so sánh"
+  aha:
+    viewer_thinks: "Mình đã index cột email rồi."
+    actually: >-
+      Bạn đã index một biểu thức, và biểu thức đó không phải cái query đang hỏi. Index thuộc về
+      một biểu thức chứ không thuộc về một cột.
+  concept_name: "sargable - predicate mà database thu hẹp được phạm vi bằng index"
+  fix: >-
+    Tạo thêm một index trên chính biểu thức lower(email). Câu query không cần đổi một chữ nào.
+    Lúc này lookup tìm thẳng trên các giá trị đã tính sẵn, không còn tính lower cho từng dòng.
+  tradeoff: >-
+    Giá phải trả nằm ở đường ghi - mỗi lần chèn hay cập nhật, database phải tính lại biểu thức
+    để cập nhật index. Và index đó chỉ phục vụ đúng biểu thức đó, đổi sang upper là lại quét toàn bảng.
+  detection: >-
+    Liệt kê các index có số lần được dùng bằng 0. Đó là chỗ bắt đầu điều tra, không phải kết luận -
+    index có thể chỉ đơn giản là thừa.
+  ending_question: "Trong các câu WHERE của bạn, có bao nhiêu chỗ cột đang bị bọc trong một hàm?"
+
+semantic_model:
+  entities:
+    - id: query
+      type: component
+      label: "Câu query có predicate hỏi biểu thức lower(email)"
+    - id: planner
+      type: component
+      label: "Query planner"
+    - id: index_email
+      type: index
+      label: "Index B-tree được xây trên biểu thức email nguyên văn"
+    - id: users_table
+      type: datastore
+      label: "Bảng users"
+    - id: executor
+      type: component
+      label: "Executor"
+
+  states:
+    - entity: index_email
+      field: matches_requested_expression
+      initial: null
+      timeline: [null, null, false, false, false, false, false]
+    - entity: users_table
+      field: access_path
+      initial: "chưa quyết"
+      timeline: ["chưa quyết", "chưa quyết", "chưa quyết", "chưa quyết", "chưa quyết", "seq_scan", "seq_scan"]
+    - entity: users_table
+      field: rows_examined
+      initial: 0
+      timeline: [0, 0, 0, 0, 0, 0, 2000000]
+
+  events:
+    - id: e1
+      t: 0
+      role: precondition
+      actor: index_email
+      action: built_on_expression
+      target: users_table
+      detail: "index được xây trên biểu thức email nguyên văn - đây là thứ nó lưu và sắp xếp"
+      causes: []
+    - id: e2
+      t: 1
+      role: precondition
+      actor: query
+      action: request_expression
+      target: planner
+      detail: "predicate hỏi giá trị của biểu thức lower(email)"
+      causes: []
+    - id: e3
+      t: 2
+      role: primary_cause
+      actor: planner
+      action: no_matching_indexed_expression
+      target: index_email
+      detail: >-
+        không index nào được xây trên biểu thức mà predicate hỏi. Đây là nguyên nhân, và nó là
+        quan hệ giữa e1 và e2 chứ không phải thuộc tính của riêng cái nào.
+      causes: [e5]
+    - id: e4
+      t: 2
+      role: supporting_evidence
+      actor: planner
+      action: ordering_does_not_bridge
+      target: index_email
+      detail: >-
+        thứ tự khoá index theo mã ký tự khác thứ tự sau khi hạ chữ thường, nên các dòng khớp
+        không nằm liền nhau. Điều này chặn nốt phương án quét một khoảng của index gốc. Nó
+        củng cố kết luận chứ không tạo ra kết luận.
+      causes: [e5]
+    - id: e5
+      t: 3
+      role: consequence
+      actor: planner
+      action: reject_index_as_access_path
+      target: index_email
+      detail: "không có đường truy cập nào qua index thu hẹp được phạm vi cho predicate này"
+      causes: [e6]
+    - id: e6
+      t: 4
+      role: consequence
+      actor: planner
+      action: choose_seq_scan
+      target: users_table
+      detail: "chọn quét tuần tự làm đường truy cập"
+      causes: [e7]
+    - id: e7
+      t: 5
+      role: invariant_violation
+      actor: executor
+      action: scan_and_filter
+      target: users_table
+      detail: "đọc từng dòng, tính lower(email) cho từng dòng, rồi so sánh - chi phí tỉ lệ với số dòng"
+      causes: []
+
+  relationships:
+    - from: query
+      to: planner
+      kind: calls
+    - from: planner
+      to: index_email
+      kind: reads
+    - from: index_email
+      to: users_table
+      kind: depends_on
+    - from: executor
+      to: users_table
+      kind: reads
+
+  invariants:
+    - id: cost_independent_of_table_size
+      statement: "Chi phí của một query tra cứu theo email không tăng theo số dòng của bảng"
+      holds_in_expected: true
+      violated_by: e7
+    - id: index_serves_matching_predicate
+      statement: "Predicate tra cứu theo email phải có một indexed expression khớp để thu hẹp phạm vi"
+      holds_in_expected: true
+      violated_by: e3
+
+  expected:
+    access_path: index_scan
+    rows_examined: 1
+    index_email_idx_scan: "lớn hơn 0"
+  actual:
+    access_path: seq_scan
+    rows_examined: 2000000
+    index_email_idx_scan: 0
+
+  dataset:
+    - id: index_key_order
+      of: index_email
+      description: "khoá trong index, sắp theo thứ tự mã ký tự của giá trị email nguyên văn"
+      values: ["Anh@x.com", "CUONG@x.com", "binh@x.com"]
+    - id: order_if_lowercased
+      description: "thứ tự của đúng ba email đó nếu sắp theo giá trị sau khi hạ chữ thường"
+      values: ["Anh@x.com", "binh@x.com", "CUONG@x.com"]
+    - id: predicate_target
+      of: query
+      description: "giá trị mà predicate lower(email) = ... đang tìm"
+      values: ["cuong@x.com"]
+
+  assertions:
+    - claim: "giá trị predicate đang tìm không xuất hiện nguyên văn trong khoá index"
+      op: not_contains
+      subject: index_key_order
+      value: "cuong@x.com"
+    - claim: "nhưng dòng cần tìm vẫn nằm trong index, dưới dạng viết hoa - object tồn tại, access path thì không"
+      op: contains
+      subject: index_key_order
+      value: "CUONG@x.com"
+    - claim: "thứ tự khoá index khác thứ tự sau khi hạ chữ thường, nên các dòng khớp không nằm liền nhau"
+      op: not_equals
+      subject: index_key_order
+      other: order_if_lowercased
+    - claim: "predicate chỉ tìm đúng một giá trị"
+      op: count_equals
+      subject: predicate_target
+      value: 1
+
+narration:
+  language: vi
+  syllable_count: 387
+  estimated_duration_sec: 92
+  text: |
+    Bảng users có index trên cột email. Query tìm theo email vẫn chậm dần đều theo số dòng.
+
+    Phản xạ đầu tiên: thống kê cũ rồi. Planner tưởng bảng còn nhỏ nên không thèm dùng index.
+
+    Chạy ANALYZE. Không đổi gì. EXPLAIN vẫn nói Seq Scan.
+
+    Mà index có thật. Một query khác trên đúng cột đó vẫn Index Scan bình thường.
+
+    Khác biệt duy nhất nằm ở mệnh đề WHERE. Câu chậm viết là lower email bằng chuỗi cần tìm.
+
+    Nhìn vào bên trong index. Nó được xây trên một biểu thức. Mặc định biểu thức đó là chính email, nguyên văn.
+
+    Predicate thì đang hỏi một biểu thức khác. Lower email. Không có index nào được xây trên biểu thức đó.
+
+    Để ý chỗ này. Chuỗi bạn cần vẫn có thể đang nằm trong index, dưới dạng viết hoa. Nằm ở đó không có nghĩa là tới được.
+
+    Thứ tự cũng không bắc cầu hộ. Một email viết hoa đứng trước một email viết thường theo mã ký tự. Hạ hết xuống chữ thường thì thứ tự đảo lại. Nên không có khoảng liên tục nào để quét.
+
+    Thế là bỏ index. Đọc từng dòng, tự tính lower cho từng dòng, rồi so sánh.
+
+    Chỗ lệch nằm ở đây. Bạn nghĩ mình đã index cột email. Thật ra bạn đã index một biểu thức, và biểu thức đó không phải cái query đang hỏi.
+
+    Predicate chỉ thu hẹp được phạm vi khi nó hỏi đúng biểu thức mà index đã lưu. Predicate làm được việc đó gọi là sargable.
+
+    Cách sửa là tạo thêm một index trên chính lower email. Câu query không cần đổi một chữ nào.
+
+    Lúc này lookup tìm thẳng trên các giá trị đã tính sẵn. Không còn tính lower cho từng dòng nữa.
+
+    Giá phải trả nằm ở đường ghi. Mỗi lần insert hay update, database tính lại biểu thức để cập nhật index.
+
+    Và index đó chỉ phục vụ đúng biểu thức đó. Đổi sang upper là lại quét toàn bảng.
+
+    Muốn soát thì liệt kê các index có số lần được dùng bằng không. Đó là chỗ bắt đầu điều tra, không phải kết luận. Index có thể chỉ là thừa.
+
+    Trong các câu WHERE của bạn, có bao nhiêu chỗ cột đang bị bọc trong một hàm?
+
+technical_notes:
+  - >-
+    Quét tuần tự không phải lúc nào cũng xấu. Với bảng nhỏ, planner chọn nó vì nó rẻ hơn thật.
+    Video đặt bối cảnh bảng lớn ngay ở câu đầu, nhưng đây là chỗ dễ bị hiểu sai nhất.
+  - >-
+    Phạm vi của claim "planner không suy ra được khoảng cần quét": đây là hành vi của planner
+    Postgres, nó không suy luận tính đơn điệu của hàm để viết lại predicate. Đó là lựa chọn
+    thiết kế của một engine cụ thể, không phải giới hạn cơ bản của việc đánh index. Tránh
+    phát biểu rộng hơn thành "database không hiểu hàm" - dựng lại theo nghĩa đen thì sai.
+  - >-
+    Ordering là bằng chứng phụ, không phải nguyên nhân. Kể cả nếu thứ tự có được bảo toàn,
+    predicate vẫn cần một indexed expression khớp thì planner mới thu hẹp phạm vi được.
+    Trong semantic_model, e4 mang role supporting_evidence còn e3 mang role primary_cause.
+  - >-
+    MySQL 8 mặc định collation utf8mb4_0900_ai_ci, hậu tố _ci là case-insensitive, nên riêng
+    ví dụ lower(email) thường không cần thiết trên MySQL. Cơ chế thì không đổi - bọc hàm nào
+    khác quanh cột cũng làm predicate không khớp indexed expression, và MySQL 8.0.13 trở lên
+    dùng functional index cho đúng việc này.
+  - >-
+    Mô tả B-tree là "danh sách giá trị đã sắp xếp" là rút gọn. Bỏ chi tiết cây nhiều tầng
+    nhưng giữ đúng tính chất quyết định ở đây - thứ tự nằm trên giá trị của biểu thức đã lưu.
+  - >-
+    ANALYZE ảnh hưởng đến việc chọn giữa các đường đi có sẵn. Ở đây không tồn tại đường đi nào
+    qua index để mà chọn, nên thống kê không đổi được gì. Đó là lý do bằng chứng này đủ mạnh
+    để loại giả thuyết.
+
+rejected_explanations:
+  - explanation: "planner xử lý hàm như hộp đen"
+    reason: >-
+      Gán một thuộc tính chung cho hệ thống trong khi sự thật là một tình huống cụ thể không
+      khớp. Dựng lại theo nghĩa đen thì ra "database không hiểu function", vốn sai. Cách nói
+      đúng phạm vi: index đã được xây trên một biểu thức, predicate đang hỏi một biểu thức
+      khác, không có cái nào khớp.
+  - explanation: "giá trị cần tìm không nằm trong index"
+    reason: >-
+      Sai theo nghĩa đen. Một chuỗi tương ứng có thể đang nằm ngay trong index dưới dạng nguyên
+      văn. Sự tồn tại của giá trị không nói gì về việc có đường truy cập dùng được nó hay không.
+      Cách nói đúng: index không lưu giá trị của biểu thức mà predicate đang hỏi.
+  - explanation: "thứ tự đổi khi hạ chữ thường, nên không dùng được index"
+    reason: >-
+      Suy luận này không đúng ở dạng phổ quát. Ordering là bằng chứng phụ đúng trong ví dụ cụ
+      thể, không phải nguyên nhân. Nguyên nhân là không có indexed expression nào khớp với
+      predicate. Nếu để ordering đứng ngang hàng, người đọc sẽ rút ra một mechanism sai.
+
+sources:
+  - title: "PostgreSQL - Indexes on Expressions"
+    url: "https://www.postgresql.org/docs/current/indexes-expressional.html"
+    supports: >-
+      Index thường không phục vụ được predicate hỏi một biểu thức khác. Expression index là cách
+      sửa, và tương đối đắt để bảo trì vì biểu thức phải tính lại cho mỗi lần chèn dòng và mỗi
+      update không-HOT.
+    kind: primary
+  - title: "PostgreSQL - Monitoring Statistics"
+    url: "https://www.postgresql.org/docs/current/monitoring-stats.html"
+    supports: "Tên cột indexrelname, idx_scan, seq_scan dùng trong query phát hiện"
+    kind: primary
+  - title: "MySQL - Character Sets, Collations, Unicode"
+    url: "https://dev.mysql.com/doc/refman/8.4/en/charset-mysql.html"
+    supports: "Collation mặc định của utf8mb4 là utf8mb4_0900_ai_ci"
+    kind: primary
+  - title: "MySQL - Collation Naming Conventions"
+    url: "https://dev.mysql.com/doc/refman/8.4/en/charset-collation-names.html"
+    supports: "Hậu tố _ci nghĩa là case-insensitive"
+    kind: primary
+
+confidence: high
+
+open_questions:
+  - >-
+    Chưa kiểm tra planner của SQL Server và Oracle có suy luận tính đơn điệu của hàm để viết
+    lại predicate hay không. Nếu có thì phạm vi của note về hành vi planner cần thu hẹp thêm.
+
+fingerprint:
+  hook_type: invisible_behavior
+  incident_type: silent_full_scan
+  wrong_guess: stale_statistics
+  mechanism_shape: indexed_expression_mismatch
+  aha_type: index_belongs_to_expression_not_column
+  fix_type: expression_index
+  ending_type: code_pattern_scan

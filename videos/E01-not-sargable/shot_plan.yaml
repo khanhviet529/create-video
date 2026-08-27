@@ -1,0 +1,502 @@
+video_id: E01-not-sargable
+title: "Index tồn tại nhưng planner không dùng"
+semantics: semantics.yaml
+canvas: { w: 1080, h: 1920, fps: 30 }
+target_runtime_s: 84          # narration đo được 81s; phần dư là khoảng lặng có chủ đích
+stage: production
+
+# Đặt bằng tay, sau khi đã xem hết 84s — không phải khi render xong 8/8. cv compose
+# chỉ được phép đặt tên final.mp4 khi field này là "passed"; trước đó nó luôn ra
+# prototype_NofM.mp4. Lần cắt đầu render đủ 8 shot và lập tức tự gọi mình là final,
+# trong khi chưa ai xem liền mạch — và lượt xem đó tìm ra bốn lỗi bên dưới.
+full_video_review: passed
+full_video_review_findings:
+  - >-
+    shot_04 trên đĩa vẫn là bản trước khi viết lại: 7 dòng có chứa carol@corp.com,
+    HITS [0,1,6], và một bracket "khoảng phải đọc 7/7" dựng tới hết danh sách rồi ra
+    giá 2.000.000 — tức là đúng chuỗi nhân quả bị cấm trong never_say. Câu chữ trong
+    khung có phủ định nó, nhưng hình vẫn lập luận. Viết lại theo facts (6 dòng, giá trị
+    cần tìm không được lưu, descent hạ xuống ô trống), bỏ hẳn bracket.
+  - >-
+    Không có gì kiểm shot có vẽ đúng facts hay không. verify-index-facts.mjs giờ đọc
+    lại ROWS/WANT/HITS/DESCENT từ shot_04 và fail nếu lệch — đó là lý do bản sai ship
+    được dù mọi check đều xanh.
+  - >-
+    Lề trái không nhất quán: shot_01 dùng 120, shot_04 dùng 140, sáu shot còn lại 93.
+    Qua mỗi cắt là một cú nhảy lề. Thống nhất về 93.
+  - >-
+    Cắt 03 -> 04 không giao chủ thể: shot_03 kết ở lower(email) = $1, shot_04 mở bằng
+    nhãn về index. shot_04 giờ mở đúng chuỗi đó, rồi $1 mới bind thành giá trị cụ thể
+    sau khi danh sách đã mở.
+  - >-
+    Giây đầu của shot_01 và shot_08 gần như trắng (nhãn hiện trước nội dung), tạo nhịp
+    chết ngay sau hard cut. Dồn nội dung vào sớm hơn 0.3s.
+  - >-
+    LOCK PASS. shot_04 vẫn hàm ý một đường THỰC THI không tồn tại: reading head đi
+    xuống từng dòng index rồi tới ô trống, tức là "planner thử index -> trượt -> quay
+    sang seq scan". Planner không descend; nó loại index ở lúc PLAN vì không có biểu
+    thức nào được index khớp. Một chuyển động attempt-and-miss dạy runtime failure, và
+    không caption nào rút lại được cái người xem đã đọc thành hành động. Đã bỏ descent.
+    Thay bằng hai cột hai không gian giá trị: cột index có giá trị và có thứ tự (email),
+    cột predicate hỏi (lower(email)) là các gạch rỗng. Nguyên nhân hiện TRƯỚC, rồi giá
+    trị bên phải mới được tính vào từng dòng.
+  - >-
+    shot_08 nói đủ chi phí đường GHI nhưng thiếu một khẳng định dương: lúc tra cứu thì
+    giá trị biểu thức ĐÃ LƯU được tìm. Không chỗ nào trong 84s nói điều đó, nên shot bỏ
+    ngỏ cách đọc sai "Postgres tính lower() cho từng dòng index khi lookup". Đã thêm
+    một caret teal trỏ vào một entry thật kèm "tra cứu đọc giá trị đã lưu / không tính
+    lại khi đọc".
+
+# Chỉ còn MỘT chỗ trên màn hình nhắc tới thứ tự trong toàn bộ 84s: "index lưu · có thứ
+# tự" ở shot_04, nêu như thuộc tính của index. Không shot nào dùng thứ tự làm nguyên
+# nhân. Phân biệt index(email) vs index(lower(email)) giữ nguyên qua cả 8 shot.
+status: FROZEN_BENCHMARK
+
+# Ghi thật, không phải để sửa. E01 đã hết mục đích R&D của nó.
+known_limitations:
+  - >-
+    Event `scatter` vẫn nằm trong scenario broken (đã ghi rõ là "hệ quả quan sát được,
+    không phải nguyên nhân"). Không shot nào instrument nó. Nó là một cái bẫy còn mở cho
+    shot tương lai đọc nhầm thành cơ chế.
+  - >-
+    facts.descent_lands_at vẫn được tính và verify vì narration claim 3 dựa vào nó, nhưng
+    không frame nào vẽ nó nữa. Khẳng định đó tồn tại trong lời, không trong hình.
+  - >-
+    Câu narration "trong danh sách đó không có giá trị nào như vậy" đúng với dữ liệu
+    nhưng KHÔNG được đánh dấu trong khung — người xem phải tự suy ra. Cố ý: đánh dấu nó
+    sẽ nâng một bằng chứng phụ thành một khẳng định thị giác.
+  - >-
+    shot_01 dùng engine ffmpeg nên `cv gate` bỏ qua nó hoàn toàn (không lint, không
+    layout, không contrast, không motion). Nó chỉ được soát bằng mắt.
+  - >-
+    Chưa có track narration. Mốc thời gian dựa trên một lần đọc đo được 81s so với bản
+    cắt 84s; khi có voice thật, nhịp có thể phải chỉnh lại.
+  - >-
+    Đo được: `cv gate` (lệnh check) chạy trên chrome-headless-shell 131.0.6778.204 từ cache
+    puppeteer, còn `cv render` chạy trên 152.0.7977.30 từ cache hyperframes. Tức là layout,
+    contrast và overlap được đo trên một bản Chrome, còn pixel xuất ra do một bản khác sinh.
+    Chưa quy được hiện tượng nào cho việc này. Ghi lại, không truy tiếp — E01 đã đóng băng.
+    (Ghi chú trước đây trong repo nói ngược lại chiều này; nó được suy ra từ một dòng debug
+    của lệnh check, và đã sai.)
+
+arc: incident -> giả thuyết sai bị loại -> định vị -> cơ chế -> mô hình sai -> fix -> giá phải trả -> soát
+
+# ---------------------------------------------------------------------------
+# Eight shots because eight distinct communication needs were found in the
+# narration, not because eight is a number. Each shot's `communication_need`
+# names the one thing it exists to do; if two shots could share a need, they
+# would be one shot.
+#
+# Two are authored (shot_04 hero, shot_06 aha) and passed Step 3. Six are
+# planned, each with its need and its reason written in place.
+#
+# Whole video is authored with NO content stage. Typography is the material
+# throughout, because the unit of information in this topic is a sorted string
+# rather than a count — a mark cannot be looked up.
+#
+# Colour semantics, channel-wide, unchanged: --stale = an expression the index
+# cannot answer · --boundary = expressions matching · --pressure = the cost
+# --counterfactual = what a working lookup would have been · --lost = discarded
+# ---------------------------------------------------------------------------
+
+shots:
+  # =========================================================================
+  - id: shot_01
+    time: [0.0, 7.0]
+    duration: 7.0
+    engine: ffmpeg              # two figures and a rule; no runtime needed
+    narration: >-
+      Bảng users có index trên cột email. Query tìm theo email vẫn chậm dần đều
+      theo số dòng.
+    communication_need: "thiết lập nghịch lý: index có thật, chi phí vẫn tăng theo số dòng"
+    viewer_belief_before: "Có index trên cột là query trên cột đó sẽ nhanh."
+    visual_question: "Nếu index đang được dùng, tại sao chi phí lại tăng theo số dòng?"
+    semantic_truth: { scenario: broken, quotes: { invariant: cost_independent_of_table_size } }
+    main_focus: "quan hệ giữa số dòng và thời gian — thứ lẽ ra phải phẳng"
+    representation: [user_reality]
+    camera:
+      motion: static
+      semantic_function: preserve_comparison_geometry
+      rationale: >-
+        Hai đại lượng phải đọc được cùng lúc để thấy chúng đi cùng nhau. Camera động
+        sẽ lấy đi một trong hai vào đúng lúc đang so.
+    motion_semantic_function: grow_together
+    transition: hard cut
+    viewer_belief_after: "Index có đó, nhưng có gì đó khiến nó không được dùng."
+    validation: { must_contain_text: ["index", "email"] }
+    review:
+      hero_frames: [0.8, 2.0, 3.5, 5.0, 6.4]
+      mute_test: "hai thanh luôn dài bằng nhau qua cả ba lần đo — chi phí đi đúng theo số dòng"
+
+  # =========================================================================
+  - id: shot_02
+    time: [7.0, 17.0]
+    duration: 10.0
+    engine: hyperframes
+    narration: >-
+      Phản xạ đầu tiên: thống kê cũ rồi. Planner tưởng bảng còn nhỏ nên không thèm
+      dùng index. Chạy ANALYZE. Không đổi gì. EXPLAIN vẫn nói Seq Scan.
+    communication_need: "loại bỏ giả thuyết hiển nhiên nhất, bằng bằng chứng chứ bằng lời"
+    viewer_belief_before: "Thống kê cũ. ANALYZE là xong."
+    visual_question: "Nếu giả thuyết đó đúng, cái gì phải đổi sau ANALYZE?"
+    semantic_truth:
+      scenario: after_analyze
+      events: [analyze, probe, seqscan]
+      t_window: [0.05, 0.85]
+      note: >-
+        Replay của scenario này chứng minh giả thuyết sai: thêm ANALYZE vào đúng
+        chỗ đó và KHÔNG invariant nào đổi trạng thái. Shot chỉ được cho thấy điều
+        replay chứng minh.
+    main_focus: "sự KHÔNG thay đổi — trước và sau ANALYZE là cùng một khung"
+    representation: [state]
+    camera:
+      motion: static
+      semantic_function: preserve_comparison_geometry
+      rationale: >-
+        Bắt buộc tĩnh. Nội dung của shot là "không có gì đổi"; nếu khung dịch một pixel
+        thì người xem mất chỗ dựa để khẳng định điều đó.
+    motion_semantic_function: run_and_nothing_changes
+    transition: "hard cut giữ nguyên khung — chính sự bất động là lập luận"
+    viewer_belief_after: "Không phải thống kê. Nguyên nhân nằm ở chỗ khác."
+    validation: { focus_in_frame: ["#planRow"], caption_zone: true }
+    review:
+      hero_frames: [0.9, 2.0, 3.6, 5.0, 7.2, 9.0]
+      mute_test: "một dòng plan duy nhất, không đổi, trong khi ANALYZE chạy xong bên dưới nó"
+
+  # =========================================================================
+  - id: shot_03
+    time: [17.0, 26.0]
+    duration: 9.0
+    engine: hyperframes
+    narration: >-
+      Mà index có thật. Một query khác trên đúng cột đó vẫn Index Scan bình thường.
+      Khác biệt duy nhất nằm ở mệnh đề WHERE.
+    communication_need: "định vị nguyên nhân xuống đúng một dòng, bằng phép trừ"
+    viewer_belief_before: "Cái gì đó về index, hoặc về bảng, hoặc về planner."
+    visual_question: "Hai câu gần giống hệt — chỗ nào khác?"
+    semantic_truth:
+      scenario: broken
+      events: []          # cố ý rỗng — xem note
+      note: >-
+        Không phải một event mới. Đây là phép trừ giữa hai query trên CÙNG index:
+        một cái Index Scan, một cái Seq Scan. Mọi thứ trừ mệnh đề WHERE là giống nhau,
+        nên phần khác biệt là phần duy nhất có thể mang nguyên nhân.
+    main_focus: "đúng token khác nhau giữa hai câu"
+    representation: [implementation]
+    camera:
+      motion: static
+      semantic_function: preserve_comparison_geometry
+      rationale: >-
+        Phép trừ hai câu cần hai câu đứng yên cạnh nhau. Máy quay dịch một chút là
+        người xem mất căn cứ để nói phần nào đã bị triệt tiêu.
+    motion_semantic_function: cancel_what_is_identical
+    transition: "cắt sang shot_04 mang theo mệnh đề WHERE — nó là chủ thể của shot sau"
+    viewer_belief_after: "Nguyên nhân nằm trong mệnh đề WHERE, không ở đâu khác."
+    validation: { focus_in_frame: ["#diff"], caption_zone: true }
+    review:
+      hero_frames: [1.0, 2.4, 4.0, 5.2, 6.4, 8.4]
+      mute_test: "phần giống nhau của hai câu mờ đi rồi biến mất; phần còn lại trượt sang trái và lớn lên"
+
+  # =========================================================================
+  - id: shot_04
+    hero: true
+    time: [26.0, 40.0]
+    duration: 14.0
+    engine: hyperframes
+    camera:
+      motion: expand
+      semantic_function: object_to_its_contents
+      moves_during: [1.10, 2.20]
+      rationale: >-
+        Narration nói "Nhìn vào bên trong index". Chuyển động giữa hai mức mô tả của
+        cùng một vật: index-như-dòng-lệnh-bạn-đã-viết → index-như-các-giá-trị-nó-giữ.
+        Không có nó, người xem không bao giờ biết danh sách này CHÍNH LÀ cái index.
+    narration: >-
+      Nhìn vào bên trong index. Nó là một danh sách các giá trị email đã sắp xếp.
+      Planner cần tìm giá trị của lower email. Trong danh sách đó không có giá trị nào
+      như vậy. Và thứ tự cũng không giúp được. Planner không đảo ngược hàm.
+      Thế là bỏ index. Đọc từng dòng, tự tính lower cho từng dòng, rồi so sánh.
+    communication_need: >-
+      cho thấy một descent chỉ điều hướng được bằng biểu thức của CHÍNH nó, nên nó đi
+      tới một chỗ không có gì — trong khi các dòng thoả nằm ở đầu kia
+    viewer_belief_before: "Index là index cho cột email, nên nó phải tra được."
+    visual_question: "Nếu đi vào index này để tìm 'carol@corp.com', thì đi tới đâu?"
+    semantic_truth:
+      scenario: broken
+      events: [probe, reject, seqscan]
+      t_window: [0.12, 0.78]
+      facts_used: [rows, looking_for, value_present_in_index, descent_lands_at, matches_in_index_order]
+      guard: >-
+        Ba khẳng định của narration được tools/verify-index-facts.mjs tính lại từ dữ
+        liệu và fail build nếu sai: (1) giá trị cần tìm không phải giá trị được lưu,
+        (2) hạ chữ thường có đảo thứ tự, (3) descent hạ xuống chỗ không phải dòng thoả.
+    main_focus: "cột mà predicate hỏi — và việc index không có cột đó"
+    representation: [state]
+    # Đã bỏ descend_to_the_wrong_place: reading head đi xuống rồi trượt vẽ ra một
+    # đường THỰC THI mà Postgres không hề đi (thử index -> trượt -> quay sang scan).
+    # Planner loại index ở lúc PLAN, vì không có biểu thức nào được index khớp.
+    motion_semantic_function: the_question_lives_in_a_column_the_index_does_not_have
+    transition: hard cut
+    viewer_belief_after: >-
+      Index sắp theo email, nên nó chỉ dẫn được theo email. Predicate cần lower(email),
+      và không có đường indexed lookup nào cho biểu thức đó.
+    validation:
+      focus_in_frame: ["#rows"]
+      keeps_moving: "#stage"
+      max_static_sec: 3.2
+      caption_zone: true
+    review:
+      hero_frames: [1.2, 2.8, 3.6, 4.8, 6.4, 7.6, 10.4, 13.0]
+      mute_test: >-
+        hai cột: cột index có giá trị và có thứ tự, cột predicate hỏi thì trống rỗng.
+        Nguyên nhân hiện TRƯỚC, rồi các giá trị bên phải mới được tính vào từng dòng.
+
+  # =========================================================================
+  - id: shot_06
+    role: aha
+    time: [40.0, 54.0]
+    duration: 14.0
+    engine: hyperframes
+    camera:
+      motion: static
+      semantic_function: preserve_comparison_geometry
+      rationale: >-
+        Toàn bộ shot là một phép so sánh hai vế. Khung phải đứng yên và hai vế giữ
+        nguyên vị trí, nếu không thì "khớp / không khớp" mất chỗ dựa để đọc.
+    narration: >-
+      Chỗ lệch nằm ở mô hình trong đầu. Index không phải index cho cột email. Nó là
+      danh sách giá trị email đã được sắp xếp sẵn. Bọc một hàm quanh cột là hỏi một
+      giá trị chưa từng nằm trong danh sách đó. Từ dùng cho việc này là sargable —
+      predicate mà database thu hẹp được phạm vi bằng index.
+    communication_need: >-
+      thay mô hình tư duy: index phục vụ một BIỂU THỨC, không phải một cột. Đây là
+      nguyên nhân, phát biểu như nguyên nhân, sau khi shot_04 đã cho thấy hiện tượng.
+    viewer_belief_before: "Index thuộc về cột. Cột nào thì index cho cột đó."
+    visual_question: "Index này được xây trên cái gì, chính xác?"
+    semantic_truth:
+      scenario: broken
+      events: [probe, reject, seqscan]
+      t_window: [0.12, 0.78]
+      quotes: { mechanism_priority: primary }
+    main_focus: "phần thò ra ngoài cột ký tự chung"
+    representation: [implementation]
+    motion_semantic_function: wrap_then_fail_to_match
+    transition: "hard cut; dấu ngoặc còn nằm ở vế predicate — shot sau sẽ dời nó"
+    viewer_belief_after: "Index phục vụ một biểu thức cụ thể. Bọc hàm là đổi biểu thức."
+    validation:
+      focus_in_frame: ["#axis"]
+      keeps_moving: "#stage"
+      # nâng từ 3.2 có chủ đích: nhịp của cơ chế này là chậm-rồi-đứng-yên, và 3.5s
+      # hai biểu thức nằm đó không khớp CHÍNH LÀ nội dung. Phương án còn lại là bịa
+      # chuyển động cho đủ ngưỡng, đúng thứ project này liên tục bắt được.
+      max_static_sec: 3.8
+      caption_zone: true
+    review:
+      hero_frames: [1.2, 2.8, 5.5, 8.0, 9.5, 13.2]
+      mute_test: "hai biểu thức, phần khớp và phần không có gì để khớp"
+
+  # =========================================================================
+  - id: shot_07
+    time: [54.0, 64.0]
+    duration: 10.0
+    engine: hyperframes
+    camera:
+      motion: static
+      semantic_function: preserve_comparison_geometry
+      rationale: >-
+        Dùng LẠI y nguyên khung của shot_06 — cùng 88px, cùng cột 410px, cùng baseline
+        640/860, cùng vị trí connector. Shot mở ở đúng frame cuối shot_06 kể cả verdict
+        và con số, nên cắt giữa hai shot không dịch một pixel. Cặp so sánh chia sẻ
+        reference frame, nếu không thì người xem không phân biệt được "khung đổi vì cơ
+        chế đổi" hay "vì camera đổi".
+    narration: >-
+      Cách sửa là tạo index trên chính biểu thức đó. Index lower email. Lúc này giá
+      trị đã tính sẵn và đã sắp xếp.
+    communication_need: "cho thấy fix là một phép DỜI CHỖ của cùng một dấu ngoặc, không phải thêm thứ mới"
+    viewer_belief_before: "Phải viết lại query, hoặc bỏ lower() đi."
+    visual_question: "Cái gì thay đổi vị trí?"
+    semantic_truth:
+      scenario: expression_index
+      events: [probe, use, fetch]
+      t_window: [0.22, 1.0]
+      note: >-
+        Replay của scenario này cho idx_scan = 1 và rows_examined = 1, và cả hai
+        invariant đều giữ. Shot phải cho thấy đúng chừng đó, không hơn.
+      facts_used: [expression_index_order, matches_in_expression_order]
+    main_focus: "dấu ngoặc lower( ) dời từ vế predicate sang định nghĩa index"
+    representation: [implementation, state]
+    camera_semantic_function: preserve_comparison_geometry
+    camera_rationale: >-
+      Dùng LẠI y nguyên khung của shot_06 — cùng cột ký tự, cùng vị trí hai vế. Cặp
+      so sánh chia sẻ reference frame, nếu không thì người xem không phân biệt được
+      "khung đổi vì cơ chế đổi" hay "vì camera đổi". Xem CAMERA_STUDY.md.
+    # Sửa sau khi implement: mô tả cũ ("dấu ngoặc đổi vế") SAI về kỹ thuật.
+    # CREATE INDEX ... (lower(email)) THÊM biểu thức vào định nghĩa index; predicate
+    # không đổi. Wrapper rời khỏi predicate sẽ là một query khác.
+    motion_semantic_function: index_is_rebuilt_to_match_the_predicate
+    transition: hard cut
+    viewer_belief_after: "Index phải được xây trên đúng biểu thức mà query hỏi."
+    validation:
+      focus_in_frame: ["#e2"]
+      keeps_moving: "#stage"
+      max_static_sec: 3.8
+      caption_zone: true
+    review:
+      hero_frames: [0.6, 1.5, 2.4, 3.6, 5.2, 9.2]
+      mute_test: "wrapper được nhân bản lên vế index; connector đỏ chuyển teal; chi phí sụp từ 2.000.000 xuống 1"
+
+  # =========================================================================
+  - id: shot_08
+    time: [64.0, 75.0]
+    duration: 11.0
+    engine: hyperframes
+    narration: >-
+      Giá phải trả nằm ở đường ghi. Mỗi lần insert hay update, database phải tính lại
+      biểu thức để cập nhật index. Và index đó chỉ phục vụ đúng biểu thức đó thôi.
+      Đổi sang upper là lại quét toàn bảng.
+    communication_need: >-
+      hai cái giá, không phải một: phép tính chuyển sang đường ghi, VÀ index mới chỉ
+      phục vụ đúng một biểu thức
+    viewer_belief_before: "Tạo expression index là xong chuyện."
+    visual_question: "Ai trả tiền, và trả vào lúc nào?"
+    semantic_truth:
+      scenario: expression_index
+      events: []          # cố ý rỗng — shot này không dramatise event nào
+      note: >-
+        Không có event nào trong model. Đây là trade-off, không phải mechanism: hai
+        phát biểu đối chiếu — (a) biểu thức phải tính lại mỗi lần ghi, theo doc
+        Postgres về indexes on expressions; (b) upper(email) là một biểu thức khác nên
+        rơi lại vào đúng shot_04. Vì không có event, shot dựa vào focus_in_frame,
+        keeps_moving và caption_zone để validate, và điều đó được ghi ra ở đây thay vì
+        để một danh sách assertion rỗng trông như đã kiểm.
+    main_focus: "chỗ phép tính xảy ra chuyển từ đường đọc sang đường ghi"
+    representation: [state, implementation]
+    camera:
+      motion: static
+      semantic_function: two_times_one_place
+      rationale: >-
+        Hai thời điểm — lúc ghi và lúc đọc — phải đo được với nhau trong cùng một khung,
+        nên khung đứng yên. Hình ảnh giữ lại từ dirC (bị loại làm hero), nhưng cái bị
+        BỎ đã đổi: ở dirC (đường đọc) giá trị tính ra biến mất vì không ai lưu; ở đây
+        (đường ghi) phép tính là thoáng qua còn KẾT QUẢ được giữ — trong một index có
+        tên. Đó là lý do cột phải mang nhãn "index lower(email)" chứ không phải "giá
+        trị đã tính sẵn": một generated column không index sẽ không sửa được gì.
+    motion_semantic_function: cost_moves_from_read_path_to_write_path
+    transition: hard cut
+    viewer_belief_after: "Expression index dời chi phí, không xoá chi phí. Và nó rất hẹp."
+    validation:
+      # #writeSide was dirC's element; this shot has its own. Pointing an assertion at
+      # a selector that does not exist is a vacuous pass waiting to happen — the gate
+      # caught it as motion_selector_missing.
+      focus_in_frame: ["#idx"]
+      keeps_moving: "#stage"
+      max_static_sec: 2.6
+      caption_zone: true
+    review:
+      hero_frames: [0.8, 2.0, 3.4, 5.4, 7.4, 9.2]
+      mute_test: "mỗi dòng ghi làm lóe một phép tính rồi để lại một entry trong index; sau đó upper(email) không khớp"
+
+  # =========================================================================
+  - id: shot_09
+    time: [75.0, 84.0]
+    duration: 9.0
+    engine: hyperframes
+    narration: >-
+      Muốn soát nhanh thì liệt kê các index có số lần được dùng bằng không.
+      Trong các câu WHERE của bạn, có bao nhiêu chỗ cột đang bị bọc trong một hàm?
+    communication_need: "đưa một tín hiệu phát hiện dùng được ngay, rồi trả câu hỏi về phía người xem"
+    viewer_belief_before: "Không biết chỗ nào trong hệ thống của mình đang bị."
+    visual_question: "Index nào mình đã tạo mà chưa bao giờ được dùng?"
+    semantic_truth:
+      scenario: broken
+      events: []          # cố ý rỗng — shot này là tín hiệu phát hiện, không dramatise event nào
+      facts_used: [detection_query]
+      note: >-
+        idx_scan = 0 nghĩa là index chưa từng được chọn. Đó là điều kiện cần để soát,
+        không phải bằng chứng non-sargable — index có thể chỉ là dư. Shot không được
+        nói mạnh hơn thế.
+    main_focus: "cột idx_scan bằng 0"
+    representation: [system]
+    camera:
+      motion: static
+      semantic_function: hold_for_reading
+      rationale: >-
+        Shot cuối là để đọc và để ghi nhớ một câu query. Chuyển động ở đây chỉ cạnh
+        tranh với việc đọc.
+    motion_semantic_function: single_column_resolves_to_zero
+    transition: end
+    viewer_belief_after: "Mình có một câu query để chạy, và một chỗ cụ thể để soát."
+    validation: { caption_zone: true }
+    review:
+      hero_frames: [0.8, 2.0, 3.2, 4.6, 6.4, 8.4]
+      mute_test: "cột idx_scan đọc xuống là số 0 suốt; rồi một câu hỏi thay cho kết luận"
+
+  # =========================================================================
+  # Kept as the record of Step 3, not part of the cut.
+  - id: dirC
+    status: experiment_rejected
+    time: [0.0, 14.0]
+    duration: 14.0
+    engine: hyperframes
+    camera: { motion: static, semantic_function: two_times_one_place }
+    narration: "—"
+    communication_need: "(rejected as hero)"
+    semantic_truth: { scenario: broken, events: [probe, reject, seqscan], t_window: [0.12, 0.78] }
+    representation: [state, implementation]
+    validation: {}
+    rejected_because: >-
+      Là hero thì nó ngụ ý TÍNH SẴN LÀ ĐỦ, trong khi index là tính sẵn VÀ có thứ tự.
+      Người xem có thể kết luận một generated column không index sẽ sửa được — sẽ không.
+      Hình ảnh mạnh của nó (cột phải sinh giá trị rồi bỏ) được giữ và dùng ở shot_08,
+      nơi chủ đề đúng là thời điểm tính toán.
+
+# ---------------------------------------------------------------------------
+fingerprint:
+  dominant_compositions: [opened_structure_as_a_list, two_expressions_on_a_shared_column, no_content_stage]
+  dominant_geometry: [sorted_text_rows, shared_character_column, one_ordered_column_and_one_empty]
+  visual_devices: [strings_as_the_unit, the_column_the_index_does_not_have, wrapper_with_nothing_above_it,
+                   empty_rules_where_values_would_be]
+  motion_devices: [cause_stated_before_consequence_is_drawn, wrapper_clamps_onto_column,
+                   index_gains_the_expression]
+  typography_usage: [text_is_the_subject_not_the_label, real_values_not_marks, expression_as_physical_shape]
+  color_distribution: { dominant: neutral, mismatch: vermilion, agreement: teal, cost: burnt_orange,
+                        counterfactual: grey }
+  reference_influences: [engineered_information_design, typographic_specimen]
+  distinctive_device: [a_structural_absence_rather_than_a_failed_action]
+  spatial_model: opened_object_with_a_missing_column
+  rejected_devices:
+    - device: reading_head_descends_and_lands_on_an_empty_slot
+      why_rejected: >-
+        Vẽ ra một đường thực thi Postgres không đi: thử index, trượt, quay sang seq scan.
+        Planner loại index ở lúc PLAN. Attempt-and-miss dạy runtime failure, và caption
+        không rút lại được cái người xem đã đọc thành hành động.
+    - device: bracket_grown_to_the_smallest_range_containing_every_match
+      why_rejected: >-
+        Vẽ ra "các dòng thoả nằm rải rác nên phải quét cả bảng" — sai chiều nhân quả.
+        Một câu phủ định trong cùng khung không cứu được: hình lập luận, chữ chỉ rút lại.
+    - device: wrapper_relocates_from_predicate_to_index
+      why_rejected: >-
+        SAI kỹ thuật. CREATE INDEX ... (lower(email)) THÊM biểu thức vào định nghĩa index;
+        predicate không đổi. Wrapper rời khỏi predicate sẽ là một QUERY khác.
+  intentional_repetition:
+    - shots: [shot_06, shot_07]
+      reason: >-
+        Cùng cột ký tự, cùng vị trí hai vế, cùng camera. Điểm khác duy nhất là vế INDEX
+        được xây thêm biểu thức lower() — predicate không đổi một ký tự nào. Đó chính là
+        toàn bộ cách sửa, nên match cut là nội dung, không phải hiệu ứng.
+        LƯU Ý CHO SHOT SAU: bản mô tả đầu tiên ở đây viết "dấu ngoặc đổi vế" và nó SAI
+        về kỹ thuật — wrapper rời khỏi predicate sẽ là một query khác, không phải một
+        index khác. Sai này từng nằm trong creative memory, tức là shot sau sẽ tái dùng
+        nó. WHY trong memory phải đúng cơ chế, không chỉ đúng hình.
+  # CẢNH BÁO CHO VIDEO SAU, không phải lỗi của video này.
+  # 7/8 shot camera tĩnh, và 5 trong số đó khai semantic_function là
+  # preserve_comparison_geometry. Ở đây nó chính đáng: cơ chế của video LÀ một phép so
+  # sánh hai biểu thức, khung mà dịch thì phép so sánh mất chỗ dựa. Nhưng nếu video kế
+  # tiếp cũng ra 5-6/8 preserve_comparison_geometry thì habit static_camera đã quay lại
+  # dưới một cái tên đã được phê duyệt — "đã khai lý do" trở thành con dấu, không còn
+  # là một quyết định. Kiểm bằng câu hỏi: cơ chế này có phải một phép so sánh không?
+  notes: >-
+    Video đầu tiên trong thư viện mà đơn vị thông tin là một chuỗi có thứ tự chứ không
+    phải một số đếm, và đầu tiên mà typography chở cơ chế thay vì dán nhãn cho nó.
+    Điều đó do vật liệu quyết định: một dấu mark không tra cứu được và không cho thấy
+    được CAROL sắp trước alice.

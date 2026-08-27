@@ -1,0 +1,159 @@
+video_id: G01-bloat-not-row-count
+status: FROZEN_BENCHMARK
+shots: 11
+engines:
+  - hyperframes
+representation_layers: []
+camera:
+  - shot: ch01-quan-sat
+    motion: static
+    semantic_function: none
+  - shot: ch02-co-che-ghi
+    motion: static
+    semantic_function: none
+  - shot: ch03-nguong
+    motion: static
+    semantic_function: none
+  - shot: ch04-cu-lat
+    motion: static
+    semantic_function: none
+  - shot: ch05-doc-lai-con-so
+    motion: static
+    semantic_function: none
+  - shot: ch06-on-dinh
+    motion: static
+    semantic_function: none
+  - shot: ch07-cach-sua
+    motion: static
+    semantic_function: none
+  - shot: ch08-vacuum-vo-ich
+    motion: static
+    semantic_function: none
+  - shot: ch09-viet-lai
+    motion: static
+    semantic_function: none
+  - shot: ch10-cong-cu-do
+    motion: static
+    semantic_function: none
+  - shot: ch11-cau-hoi
+    motion: static
+    semantic_function: none
+dominant_compositions:
+  - one_storage_world_held_for_137_seconds_across_seven_chapters
+  - a_register_band_above_the_world_reading_what_the_world_contains
+  - a_ruler_below_the_world_where_a_quantity_becomes_a_distance
+  - an_analytical_tray_the_world_lends_objects_to_and_takes_back
+  - text_alone_at_the_open_and_at_the_close
+dominant_geometry:
+  - a_cell_grid_whose_ALLOCATED_extent_is_a_frame_that_only_ever_grows
+  - free_space_INSIDE_the_frame_meaning_reusable_not_returned
+  - two_bars_on_one_axis_whose_GAP_is_the_subject
+  - a_second_world_written_beneath_the_first_while_both_must_exist
+visual_devices:
+  - a_population_read_in_reading_order_rather_than_appearing_whole
+  - a_ghost_holding_a_slot_while_its_depiction_is_away
+  - an_idle_machine_as_a_LINE_that_thickens_into_a_band_when_it_runs
+  - a_horizon_arriving_above_the_world_to_mean_an_open_transaction
+  - a_counterfactual_world_labelled_and_kept_separate_from_the_real_one
+  - a_frame_held_motionless_while_its_interior_takes_three_meanings
+motion_devices:
+  - a_sweep_that_runs_the_full_height_while_the_boundary_does_not_move
+  - growth_that_happens_only_when_the_interior_has_run_out_of_room
+  - writes_that_KEEP_landing_under_the_sentence_saying_growth_has_stopped
+  - a_reading_returning_to_zero_without_the_extent_returning_with_it
+  - a_gap_closing_because_the_interior_filled_not_because_the_size_changed
+  - the_old_world_greying_out_while_the_new_one_is_written_beneath_it
+typography_usage:
+  - column_names_because_they_are_what_the_viewer_will_type
+  - one_number_per_slot_read_off_the_world_never_a_literal
+  - two_word_anchors_pinned_to_a_geometry_mocnuoc_chenhlech
+  - no_paragraph_no_code_panel_no_document_page
+color_distribution:
+  dominant: neutral
+  live_version: ink
+  dead_version: lost_grey
+  reclaimable_slot: ground_with_a_bright_ring
+  the_cleaner: authoritative_ochre
+  allocated_extent: stale_vermilion
+  what_live_data_needs: boundary_teal
+  counterfactual: counterfactual_grey
+reference_influences:
+  - persistent_system_world_progressive_disclosure
+  - engineered_information_design
+distinctive_device:
+  - an_invariant_asserted_by_the_ABSENCE_of_a_movement_and_verified_by_measuring_the_artifact
+spatial_model: "one table interior whose occupancy changes constantly and whose
+  allocated boundary is a high-water mark: it moves outward when the interior
+  runs out of room and never moves back, so bloat is the DISTANCE between what
+  is occupied and what is allocated"
+rejected_devices:
+  - device: idle_cleaner_parked_as_a_filled_band_over_live_cells
+    why_rejected: "CH3 beat 1 cần cỗ máy dọn CÓ MẶT mà KHÔNG chạy, và bản đầu để nó
+      đỗ thành một dải phủ hai hàng đầu ở opacity .22. --authoritative là màu
+      của cỗ máy dọn, nên phủ nó lên 22 ô SỐNG trong 15s là nói một điều không
+      đúng về những ô đó; tệ hơn, ở beat 2 vài phiên bản chết đi ra khỏi ô của
+      chúng từ dưới lớp phủ. Dời dải lên trên thế giới thì nó nằm sau dải thanh
+      ghi và gate bắt được contrast #cDead tụt còn 2.67:1 (WCAG AA cần 3:1). Máy
+      đang đỗ không phải một VÙNG mà là một VỊ TRÍ: nó đỗ thành một đường 4px
+      trên mép cấp phát, không chạm ô nào, rồi DÀY LÊN thành dải khi autovacuum
+      tới lượt. Cú dày lên đó chính là beat."
+  - device: a_thumbnail_of_the_world_placed_beside_a_claim_it_does_not_witness
+    why_rejected: 'CH10 bản đầu là bốn câu chữ xếp dọc cạnh một hình thu nhỏ bất
+      động của bảng đã gói chặt sau VACUUM FULL — 0 dòng chết và cũng không
+      bloat — đặt ngay cạnh câu "dòng chết bằng 0 không chứng minh hết bloat",
+      tức trạng thái duy nhất mà câu ấy KHÔNG nói về. Comment trong code còn
+      khẳng định extent của nó vẫn là mốc nước cao nhất, điều đã sai sau khi CH9
+      viết lại bảng. Một hình đúng về mặt kỹ thuật vẫn có thể là nhân chứng sai.
+      Lời thoại tự chỉ ra hai thiết bị đã có: "mốc nước vẫn nằm nguyên đó" =
+      khung cấp phát, "bloat là chênh lệch, không phải kích thước" = thước.'
+  - device: camera_push_in_across_an_abstraction_change_that_already_has_a_carrier
+    why_rejected: "Cú vào gần CH1 → CH2 từng được ghi là earned. Đo trên artifact
+      thì beat 0 của CH2 đã kín chuyển động (YMAX 94-198 liên tục từ 0.25s tới
+      5.0s, lắng đúng lúc beat 1 mở) vì lượt hé lộ dân số theo thứ tự đọc CHÍNH
+      LÀ cú đổi mức trừu tượng. Camera đặt lên đó là chuyển động thứ hai nói lại
+      cùng một điều. Và nó không có chủ thể: trong CH1 không có vật nào trở
+      thành thế giới CH2 — thanh dung lượng là phép ĐO cái bảng, không phải ruột
+      bảng."
+  - device: camera_pull_back_to_reveal_the_allocation_boundary
+    why_rejected: 'P3 đo hai bản cùng thước cùng thời điểm: bản lùi ra thu ô xuống
+      62% và không thêm một thông tin nào. Tệ hơn, thu nhỏ triệt tiêu một phần
+      chính tín hiệu "lớn lên" mà chương đang phải cho thấy.'
+  - device: packing_a_chapters_operations_into_its_first_beat
+    why_rejected: CH6 dồn cả tám lần ghi vào beat 1, nên beat 2 — "ổn định thì ngừng
+      lớn, nó chỉ không nhỏ lại" — chạy 3.46s trên một khung đã dừng hẳn. Cái đó
+      đọc ra thành "không có gì đang xảy ra", mà đó không phải khẳng định. Khi
+      một cảnh nói "cái này không nhúc nhích" thì phải có thứ khác đang nhúc
+      nhích để sự đứng im có nghĩa.
+  - device: two_counter_sequences_in_one_slot
+    why_rejected: 'counter() chỉ ẩn giá trị trước CỦA CHÍNH NÓ, nên hai lời gọi cùng
+      toạ độ cho hai dãy cùng hiện: n_dead_tup render ra "02" (0 đè lên 22),
+      last_autovacuum ra "vừalxong". Ghi lại không ngăn được lần sau, nên
+      counter() giờ ném lỗi build khi một ô đã có dãy, và nhận màu theo từng giá
+      trị để một dãy đổi màu được giữa các giá trị.'
+known_limitations:
+  - limitation: Ranh giới ch01 → ch02 đo ra 1.75 và đạt chỉ nhờ trên ngưỡng 1.2. Đó
+      là cú cắt giữa hai khung gần như trống (mực 2.65 và 1.00), nên phép trung
+      bình toàn khung không có gì để bám. Ở ranh giới đó con số nên đọc là "dụng
+      cụ không phân biệt được", không phải "đạt".
+  - limitation: Ba lần đổi biểu diễn của G01 (CH3 vật lý↔giải tích, CH5 thước, CH10
+      dụng cụ đo) đều xảy ra bằng cách THÊM MỘT LỚP cạnh thế giới, không phải
+      bằng cách thế giới tự biến thành biểu diễn khác. Không có morph nào giữ
+      thân phận xuyên qua một phép biến đổi hình học thật. Thế giới bền, nhưng
+      nó bền theo kiểu tích luỹ trạng thái.
+  - limitation: Tỉ lệ không đi đâu cả. Ô luôn 76px suốt mười chương; CH10 dùng 60px
+      nhưng đó là một chương khác chứ không phải một hành trình tỉ lệ. Không có
+      chặng vật → cơ chế cục bộ → cấu trúc hệ → hệ quả tổng → về lại vật. Thế
+      giới bền ở đúng một khoảng cách nhìn.
+  - limitation: Chỗ trống BÊN TRONG khung cấp phát có nghĩa rất rõ (chỗ dùng lại
+      được, chưa bị chiếm). Chỗ trống NGOÀI khung — nửa dưới màn hình ở CH2,
+      CH3, CH6 — phần lớn chỉ là chỗ trống.
+  - limitation: 'CH1 (10s) và CH11 (6.5s) là chữ cộng một thanh lớn dần: 16.5s /
+      175.5s nghiêng về "thông tin được làm cho động" hơn là "khái niệm thành
+      chuyển động". Cố ý đối xứng — mở bằng một khẳng định, đóng bằng một câu
+      hỏi — nhưng vẫn là chỗ yếu nhất của phim theo tiêu chí đó.'
+  - limitation: Dải quét vàng xuất hiện ở năm chương (CH3, CH4, CH7, CH8, CH10). Ở
+      G01 nó là NGỮ PHÁP, không phải thói quen, vì mỗi lần chỉ khác kết quả — đỗ
+      im · dọn được · dọn dồn dập · chạy mà không thu được gì · số về 0 mà biên
+      không đi. Nhưng đây đúng là loại thiết bị dễ trở thành ngữ pháp mặc định
+      của video sau. KHÔNG dùng lại trừ khi chủ đề thật sự có một tiến trình
+      quét qua một không gian và mỗi lần quét cho một kết quả khác.

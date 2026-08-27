@@ -1,0 +1,1009 @@
+video_id: F01-object-level-authz
+title: "IDOR / Broken Object Level Authorization"
+semantics: semantics.yaml
+canvas: { w: 1080, h: 1920, fps: 30 }
+target_runtime_s: 170 # package: 170 đề xuất / 145 tối thiểu
+# Hiệu chỉnh giọng cho RIÊNG video này — không phải mặc định mới của thư viện.
+# Đo được: giọng VoiceStudio mặc định đọc 3.52 âm/s, trong khi ước lượng 166s của package
+# ngầm giả định 4.21 âm/s. speed 1.15 cho 4.04 âm/s, tức là TRẢ VỀ nhịp package đã tính,
+# không phải đẩy nhanh hơn ý đồ. Tỉ lệ 0.872 đo trên 3 đoạn dài ngắn khác nhau, lệch <0.4%.
+voice_calibration:
+  scope: this_video_only
+  provider: VoiceStudio
+  speed: 1
+  language: vi
+  seed: 1
+  why: >-
+    namtre_v2 ở speed 1.00 nói 4.11 âm/s, trong khi package giả định 4.21 âm/s
+    (699 âm tiết / 166s). Lệch 0.10 — không có gì để bù, nên không nhân hệ số
+    nào cả.
+  profile_id: 858f5a83
+  profile_scope_note: "namtre_v2 là giọng được chọn CHO F01, chưa phải mặc định
+    chung cho video sau. Video khác phải chọn lại và đo lại: profile khác thì
+    nhịp âm tiết khác, nên measured_ratio_vs_speed_1_0 ở trên cũng không mang
+    sang được."
+  one_voice_per_video: Cả narration dùng đúng một profile. cv voice generate chốt
+    profile TRƯỚC khi sinh, hỏi lại generation history của provider sau TỪNG
+    segment, và từ chối ghép nếu có segment nào lệch hoặc không xác minh được —
+    vì /generate không nói nó đã dùng giọng nào, và profile_id lạ bị provider bỏ
+    qua im lặng rồi trả về giọng mặc định kèm HTTP 200.
+  profile_name: namtre_v2
+  profile_id_note: "Ghim ID chứ không ghim tên. profiles.py:108 sinh id bằng
+    uuid4()[:8] nên id do server đặt và MỖI runtime mới sẽ khác — bản trước là
+    7ded6c3d trên runtime đã chết. Profile dựng từ giong/namtre_v2.wav (5.36s) +
+    ref_text trong giong/manifest.json của D:\\Project\\whiteboard-video; đã đối
+    chiếu ref_text server trả về khớp manifest từng byte."
+  measured_rate_syllables_per_sec: 4.11
+  retired_speed_1_15: "1.15 được chọn cho GIỌNG MẶC ĐỊNH của provider, là phép bù
+    cho một giọng chậm hơn package giả định. namtre_v2 không phải giọng đó. Đắp
+    1.15 lên nó là nhân tiếp một hệ số mà nguyên nhân đã biến mất, và số đo cho
+    thấy giá phải trả: tỉ lệ lặng của câu ngắn dứt rơi từ 19.5% xuống 11.3% chỉ
+    trong nấc 1.10→1.15, với âm/s thuần GIẢM — toàn bộ phần tăng tốc đi vào ăn
+    khoảng nghỉ. Không dùng 1.15 cho F01 nữa. Xem VOICE_CALIBRATION.md."
+  profile_identity_note: 'ID 858f5a83 do server cấp (uuid4()[:8]) và CHỈ đúng trên runtime Colab đã
+    sinh ra bản audio này. Runtime mất là profile mất; dựng lại sẽ mang id KHÁC.
+    Thứ bền là công thức, không phải id: kind=clone, ref_audio =
+    giong/namtre_v2.wav (5.36s), ref_text + instruct "male, young adult,
+    moderate pitch" lấy từ giong/manifest.json của D:\Project\whiteboard-video.
+    Tạo lại bằng: py src/giong.py bao-dam namtre_v2'
+  frozen_with_this_video: Cấu hình này đã đóng băng cùng F01. Video sau phải chọn giọng lại và hiệu
+    chỉnh tốc độ lại từ đầu — xem VOICE_CALIBRATION.md để biết cách đo, không
+    phải để chép con số.
+
+stage: production
+  # 15/15 shot đã dựng. full_video_review chưa passed nên
+  # cv compose ra prototype_15of15.mp4, không phải final.
+planned_runtime_s: 195
+  # 17 shot, biên độ 3.0s-21.5s. Dựng từ lời ĐO ĐƯỢC ở speed 1.15,
+  # không phải từ ước lượng 166s của package. Package: 170 đề xuất / 145 tối thiểu / >200 là quá dài.
+
+# Step 3 — Visual R&D. Chỉ prototype, không phải shot của video.
+# Ranh giới đã khoá ở Step 2 §7a và §8, nhắc lại vì nó ràng mọi prototype:
+#   - luật chung: mọi truy cập tới object được bảo vệ phải chịu quyết định phân quyền cần thiết.
+#     CHỖ ĐẶT enforcement là lựa chọn kiến trúc, không phải thứ video được kê đơn.
+#   - của riêng kịch bản: assumptions của package nói kiểm quyền đang viết THỦ CÔNG trong từng
+#     handler. Vì thế 1-trên-2 đếm được. Video không được dạy "phải nhân bản thủ công mỗi đường".
+#   - "repository nhận principal" là MỘT cách làm package nêu, đã được scope bằng cụm
+#     "một cách làm". Không phải kiến trúc mà Visual Engine chọn.
+
+shots:
+  - id: p1-authoring
+    status: experiment
+    duration: 10.0
+    engine: hyperframes
+    tests:
+      - "R1 legibility: hai thân handler hoàn chỉnh đọc được ở 1080x1920"
+      - "R2 chưa-từng-có-ở-đó, không placeholder / không skip / không bypass"
+      - "R3 bất đối xứng 1-trên-2 mà không thành dashboard"
+      - "R4 principal có mặt mà không được hỏi tới, không dùng mũi tên"
+    semantic_truth: { scenario: broken, events: [] }
+    camera:
+      motion: static
+      semantic_function: hold_for_reading
+      rationale: >-
+        Người xem đang đọc hai thân hàm và so sánh chúng. Chuyển động cạnh tranh
+        trực tiếp với việc đọc, và phép so sánh cần khung bất động.
+    motion_semantic_function: authored_by_accumulation
+    validation: { caption_zone: true }
+    review:
+      hero_frames: [ 1.0, 1.9, 3.0, 3.7, 6.0, 9.2 ]
+      mute_test: "hai thân hoàn chỉnh; req.principal teal chỉ có ở một thân"
+
+  - id: p2-aha
+    status: experiment
+    duration: 10.0
+    engine: hyperframes
+    tests:
+      - "R5 aha tần suất: ĐƯỢC GIAO so với PHẢI HỎI, một cột hai lượt"
+      - "4-so-1 đọc được mà không cần marker, không placeholder ở ba đường không
+        thực hiện"
+    semantic_truth: { scenario: broken, events: [] }
+    camera:
+      {
+        motion: static,
+        semantic_function: preserve_comparison_geometry,
+        rationale: "Bốn-so-một xảy ra ở CÙNG một cột qua hai lượt. Khung dịch là mất
+          phép so."
+      }
+    motion_semantic_function: arrives_without_asking_vs_performed_once
+    validation: { caption_zone: true }
+    review:
+      hero_frames: [ 1.0, 2.4, 3.4, 5.4, 6.6, 9.4 ]
+      mute_test: "bốn token giống nhau, rồi cùng cột chỉ còn một"
+
+  - id: p4-limits
+    status: experiment
+    duration: 14.0
+    engine: hyperframes
+    tests:
+      - "R6 register 32s bền được: bốn lời dè dặt thành MỘT hình — bản kê dài
+        hơn cái fix"
+      - "độ phủ đếm trên cùng danh sách, không thành dashboard"
+    semantic_truth: { scenario: fixed, events: [] }
+    camera:
+      {
+        motion: static,
+        semantic_function: hold_for_reading,
+        rationale: "Tám dòng có lý do riêng từng dòng. Đây là register đọc."
+      }
+    motion_semantic_function: the_list_outgrows_the_fix
+    validation: { caption_zone: true }
+    review:
+      hero_frames: [ 1.6, 3.2, 5.0, 6.8, 9.0, 13.2 ]
+      mute_test: "bản kê tiếp tục dài ra sau khi fix đã phủ bốn dòng đầu"
+
+  - id: p5-h2-motion
+    status: experiment
+    duration: 9.0
+    engine: hyperframes
+    tests:
+      - "H2 motion: hai cột cùng tồn tại, không có gì biến mất — không thể đọc
+        thành thay thế"
+      - "req.principal vẫn hiện suốt trong khi cột phân quyền được đưa vào"
+    semantic_truth: { scenario: broken, events: [] }
+    camera:
+      {
+        motion: static,
+        semantic_function: preserve_comparison_geometry,
+        rationale: "Quan hệ là CỘNG, không phải thay thế. Hai cột phải cùng ở trong
+          khung suốt shot; khung dịch là mất phép cộng."
+      }
+    motion_semantic_function: identity_arrives_broadly_then_coverage_arrives_beside_it
+    validation: { caption_zone: true }
+    review:
+      hero_frames: [ 1, 2.2, 3.2, 4.2, 6.4, 8.6 ]
+      mute_test: "bốn req.principal teal ở lại; cột phân quyền ochre xuất hiện BÊN
+        CẠNH, chỉ một dòng"
+
+  - id: p6-fix
+    status: experiment
+    duration: 12.0
+    engine: hyperframes
+    tests:
+      - "fix: bất biến trở nên khó bỏ sót, chứng minh bằng THỪA HƯỞNG chứ không
+        bằng di dời"
+      - "semantic fix tách khỏi một-cách-làm bằng một rule và một nhãn ví dụ"
+      - "hàng và token đến CÙNG LÚC — token đáp lên hàng đã có sẽ đọc thành đi
+        thêm check bằng tay"
+    semantic_truth: { scenario: fixed, events: [] }
+    camera:
+      {
+        motion: static,
+        semantic_function: hold_for_reading,
+        rationale: "Bất biến ở trên, danh sách ở giữa, ví dụ ở dưới — ba vùng đọc. Không
+          có di dời không gian nào để camera diễn tả."
+      }
+    motion_semantic_function: a_new_path_arrives_already_subject_to_it
+    validation: { caption_zone: true }
+    review:
+      hero_frames: [ 1, 2.6, 4, 4.8, 7, 8, 11.2 ]
+      mute_test: "một đường chưa từng có xuất hiện và ĐÃ mang quyết định; ví dụ nằm
+        dưới một rule, có nhãn ví dụ"
+
+  - id: p7-detection
+    status: experiment
+    duration: 13.0
+    engine: hyperframes
+    tests:
+      - "detection độc lập khỏi trade-off — không dùng chung mẫu số"
+      - "chủ thể là NHỮNG ROUTE NÀO, không phải tốt bao nhiêu phần trăm: không
+        có % nào trên khung"
+      - "con số duy nhất là số việc cần làm; giới hạn là một danh sách thuộc
+        universe khác"
+    semantic_truth: { scenario: fixed, events: [] }
+    camera:
+      {
+        motion: static,
+        semantic_function: hold_for_reading,
+        rationale: "Hai danh sách thuộc hai universe, phải đọc và không được hợp nhất.
+          Đây là register đọc."
+      }
+    motion_semantic_function: which_ones_not_how_good
+    validation: { caption_zone: true }
+    review:
+      hero_frames: [ 1, 2.6, 4.4, 5.6, 7.6, 9, 12.2 ]
+      mute_test: "nhóm chưa-có-test dài hơn và sáng hơn nhóm đã-có; rồi một danh sách
+        khác hẳn về những gì test không phủ"
+
+  # ==========================================================================
+  # KIẾN TRÚC 15 SHOT — Step 5 production. Xem SHOT_ARCHITECTURE.md cho lý luận.
+  # Marker contract chỉ gắn ở s02 và s05: hai shot duy nhất có một event RUNTIME thật.
+  # Các shot khác là register tác giả hoặc phát biểu — instrument chúng sẽ tạo assertion
+  # rỗng nghĩa, đúng bài học E01.
+  # ==========================================================================
+
+  - id: s01-leak
+    narration_segments: [ 1, 1 ]
+    composition:
+      family: inspection
+      mass_and_anchor: "mass o dai giua, tran het be ngang, dong dai bi mep khung cat;
+        khong le 93"
+      empty_space_means: "khung KHONG chua noi thu no dang cho xem — ban dang cam mot manh"
+      rebuild: true
+    time: [ 0, 7 ]
+    duration: 7
+    engine: hyperframes
+    register: "triệu chứng"
+    visual_operation: inspection
+    semantic_purpose: "hook: người đã bị xoá khỏi workspace vẫn đọc được comment —
+      đọc một response body lẽ ra không tồn tại. 200 là --stale vì chính cái 200
+      đó là vi phạm"
+    semantic_truth: { scenario: broken, events: [] }
+    camera:
+      motion: static
+      semantic_function: hold_for_reading
+      rationale: "Đọc một payload. Chuyển động không giúp gì."
+    motion_semantic_function: body_first_then_who_asked
+    transition: "hard cut giữ vị trí payload"
+    validation: { caption_zone: true }
+    review:
+      hero_frames:
+        - 1.4
+        - 6.85
+      mute_test: "một response body đọc được, rồi mới biết ai gửi request"
+
+  - id: s02-guess
+    narration_segments: [ 2, 5 ]
+    duration: 16.5
+    time: [ 7, 23.5 ]
+    register: "triệu chứng"
+    visual_operation: accumulation
+    semantic_purpose: "giả thuyết đầu tiên được nêu — token — rồi ba dữ kiện đối lập
+      tích tụ: token đã hết hạn, membership đã bị xoá thật, và đường cũ trả 403.
+      Chưa loại gì ở đây; chỉ chất bằng chứng lên"
+    semantic_truth: { scenario: broken, events: [ olddeny ], t_window: [ 0.20, 0.48 ] }
+    composition:
+      family: accumulation
+      mass_and_anchor: "giả thuyết giữ nguyên chỗ; bằng chứng vào VÙNG nó chưa từng chiếm"
+      empty_space_means: "vùng giả thuyết chưa bao giờ đòi — nên bằng chứng không đọc
+        thành phần tiếp của cùng một danh sách"
+      rebuild: true
+    camera:
+      motion: static
+      semantic_function: preserve_comparison_geometry
+      rationale: "Giả thuyết phải đứng yên trong khi bằng chứng chất lên quanh nó."
+    motion_semantic_function: evidence_accumulates_around_a_standing_belief
+    transition: "hard cut — chưa loại gì, nên cắt sang shot loại trừ là một hành
+      động riêng"
+    validation: { caption_zone: true }
+    review:
+      hero_frames:
+        - 1.4
+        - 4.87
+        - 9.81
+        - 12.47
+        - 16.35
+      mute_test: "một niềm tin đứng yên, ba dữ kiện chất quanh nó — chưa gạch gì"
+  - id: s02-eliminate
+    narrowing_object:
+      set: "tập hợp CÁC LỜI GIẢI THÍCH cạnh tranh nhau"
+      spatial_operation: "HỘI TỤ — ứng viên rải rộng, chết vì một dữ kiện, câu còn
+        sống chiếm chỗ chúng vừa nhường"
+    narration_segments: [ 6, 7 ]
+    composition:
+      family: narrowing
+      mass_and_anchor: "ung vien rai tren truong rong, x lech nhau; cau con song ha
+        XUONG THAP vao cho chung vua nhuong"
+      empty_space_means: "vung vua bi bo trong — nhin thay cai da bi loai o cho no tung dung"
+      rebuild: true
+    time: [ 23.5, 33 ]
+    duration: 9.5
+    engine: hyperframes
+    register: "triệu chứng"
+    visual_operation: narrowing
+    semantic_purpose: "một dữ kiện loại ba giả thuyết: token, membership, thu hồi
+      quyền. 403 là --boundary — đường cũ từ chối là hệ thống làm ĐÚNG, và là
+      BẰNG CHỨNG PHỤ chứ không phải nguyên nhân"
+    semantic_truth: { scenario: broken, events: [] }
+    camera:
+      motion: static
+      semantic_function: preserve_comparison_geometry
+      rationale: "Ba giả thuyết bị gạch trong cùng một khung; khung dịch là mất phép
+        loại trừ."
+    motion_semantic_function: three_beliefs_struck_by_one_fact
+    transition: "hard cut — khung RỖNG ĐI, đổi từ lúc-chạy sang lúc-viết. Chuyển
+      THỜI ĐIỂM nên không dùng camera"
+    validation: { caption_zone: true }
+    review:
+      hero_frames:
+        - 1.4
+        - 7.12
+        - 9.35
+      mute_test: "ba dòng bị gạch; 403 màu teal vì nó là hành vi đúng; đóng bằng
+        chỉ-một-đường-khác"
+
+  - id: s03-authored-a
+    narration_segments: [ 8, 9 ]
+    composition:
+      family: code_author
+      mass_and_anchor: "flush-left earned — code can le trai theo ban chat; than ham
+        phai trong hoan chinh"
+      empty_space_means: "cho de doc, va nhin thay CHO THAN HAM KET THUC"
+      rebuild: false
+    time: [ 33, 44 ]
+    duration: 11
+    engine: hyperframes
+    register: "tác giả"
+    visual_operation: accumulation
+    semantic_purpose: "endpoint tài liệu như nó được viết ra: lấy object, rồi một
+      quyết định trên nó. Cả hai đúng, và đến hôm nay vẫn đúng. Token để TRƠN —
+      màu đặt tên reach nào thuộc thân nào, và câu đó chưa tồn tại khi mới có
+      một thân"
+    semantic_truth: { scenario: broken, events: [] }
+    camera:
+      motion: static
+      semantic_function: hold_for_reading
+      rationale: "Đang đọc code. Chuyển động cạnh tranh trực tiếp với việc đọc."
+    motion_semantic_function: a_body_is_written_line_by_line
+    transition: "MATCH CUT sang s04 — thân A phải ở đúng vị trí cũ không đổi một
+      pixel. Đo được: YMAX ảnh hiệu = 0 trên PNG render trực tiếp"
+    validation:
+      focus_in_frame: [ "#hA" ]
+      keeps_moving: "#stage"
+      max_static_sec: 3.6
+      caption_zone: true
+    review:
+      hero_frames:
+        - 1.4
+        - 8.56
+        - 10.85
+      mute_test: "một thân hàm được viết ra từng dòng, token để trơn; đóng bằng một
+        KHẲNG ĐỊNH rằng code này đúng"
+
+  - id: s04-authored-b
+    narration_segments: [ 10, 14 ]
+    composition:
+      family: code_author
+      mass_and_anchor: "flush-left earned — code can le trai theo ban chat; than ham
+        phai trong hoan chinh"
+      empty_space_means: "cho de doc, va nhin thay CHO THAN HAM KET THUC"
+      rebuild: false
+    time: [ 44, 65.5 ]
+    duration: 21.5
+    engine: hyperframes
+    register: "tác giả"
+    visual_operation: comparison
+    semantic_purpose: "đường thứ hai được viết ra. Cùng một req; thân A với tới
+      req.principal VÀ req.params.id, thân B chỉ với tới req.params.id. Bất đối
+      xứng là FIELD NÀO của một object được với tới. Không có gì trông sai"
+    semantic_truth: { scenario: broken, events: [] }
+    camera:
+      motion: static
+      semantic_function: hold_for_reading
+      rationale: "Phép so hai thân hàm cần khung bất động. Camera tĩnh, composition
+        KHÔNG tĩnh: bảy trạng thái trong 19s, mỗi nhịp là phép so được THỰC
+        HIỆN."
+    motion_semantic_function: the_comparison_performed_one_reach_at_a_time
+    transition: "hard cut sang payoff"
+    validation:
+      focus_in_frame: [ "#hA" ]
+      caption_zone: true
+      keeps_moving_removed_because: "keepsMoving chỉ đo hình học và opacity, không đo
+        màu — mà chuyển động của shot này LÀ màu: cùng một reach được gọi tên ở
+        mỗi beat trong khi hai thân handler phải đứng yên từng pixel. Sau khi
+        retiming theo nhịp thoại thật, cửa sổ tĩnh-hình-học dài 7.77s và checker
+        báo lỗi. Đo trực tiếp thì pixel ĐỔI ở 6.47s, 8.33s và 11.87s (YMAX tới
+        52), tức tiền đề của assertion sai chứ shot không chết. KHÔNG được sửa
+        bằng cách thêm chuyển động: hai thân handler đứng yên chính là nội dung,
+        và s03→s04 là match cut đo được YMAX=0."
+    review:
+      hero_frames:
+        - 1.4
+        - 6.28
+        - 9.36
+        - 12.76
+        - 16.56
+        - 21.35
+      mute_test: "req.params.id sáng ở CẢ HAI cùng lúc, rồi req.principal sáng MỘT
+        MÌNH ở thân trên. Không placeholder, không mũi tên, không nhãn
+        thiếu-check"
+
+  - id: s05-response
+    narration_segments: [ 15, 15 ]
+    composition:
+      family: inspection
+      mass_and_anchor: "cung hinh hoc voi s01 — phep van bat buoc khung trung khit"
+      empty_space_means: "nhu s01"
+      rebuild: true
+    time: [ 65.5, 68.5 ]
+    duration: 3
+    engine: hyperframes
+    register: "hệ quả"
+    visual_operation: inspection
+    semantic_purpose: "cùng một quan sát như shot 01 — cùng request, cùng 200, cùng
+      hai comment ở cùng vị trí. Chỉ dòng nguyên nhân là mới"
+    semantic_truth: { scenario: broken, events: [ disclose ], t_window: [ 0.6, 1 ] }
+    camera:
+      motion: static
+      semantic_function: preserve_comparison_geometry
+      rationale: "Vần với shot 01 nên khung phải trùng khít; dịch một pixel là mất
+        phép vần."
+    motion_semantic_function: the_same_observation_now_explained
+    transition: "hard cut, đổi register sang đếm"
+    validation: { caption_zone: true }
+    review:
+      hero_frames:
+        - 1.4
+        - 2.85
+      mute_test: "khung y như shot 01, thêm đúng một dòng: trên đường này không có
+        quyết định nào"
+
+  - id: s06-cadence
+    narration_segments: [ 16, 19 ]
+    composition:
+      family: counting
+      mass_and_anchor: "universe roi nhau thi vung roi nhau, khong dung chung baseline
+        o CA HAI truc"
+      empty_space_means: "khe khong-thang-hang: hai thu nay khong cong duoc voi nhau"
+      rebuild: true
+    time: [ 68.5, 89 ]
+    duration: 20.5
+    engine: hyperframes
+    register: "aha"
+    visual_operation: counting
+    semantic_purpose: "danh tính tới mọi đường và Ở LẠI; phủ phân quyền đến BÊN CẠNH
+      ở cột riêng. Bản kê dài ra từ 2 lên 5 đường, danh tính vẫn tới, phủ thì
+      không theo"
+    semantic_truth: { scenario: broken, events: [] }
+    camera:
+      motion: static
+      semantic_function: preserve_comparison_geometry
+      rationale: "Quan hệ là CỘNG. Hai cột phải cùng ở trong khung suốt shot.
+        one_to_many đã được p5 chứng minh đọc được khi tĩnh — thêm cú máy là
+        trang trí."
+    motion_semantic_function: identity_arrives_unasked_coverage_must_be_performed
+    transition: "hard cut"
+    validation: { caption_zone: true }
+    review:
+      hero_frames:
+        - 1.4
+        - 3.32
+        - 8.18
+        - 13.37
+        - 20.35
+      mute_test: "cột teal đầy dần và không bao giờ mất; cột ochre đứng ở một dòng"
+
+  - id: s07-name
+    narration_segments: [ 20, 20 ]
+    composition:
+      family: naming
+      mass_and_anchor: "cai ten lay ca truong TRUOC, khong cho gi khac vao; phan loai
+        den SAU, o le"
+      empty_space_means: "truong ma mot cai ten can de duoc NHAN, khong phai de duoc DOC"
+      rebuild: true
+    time: [ 89, 96.5 ]
+    duration: 7.5
+    engine: hyperframes
+    register: "đặt tên"
+    visual_operation: naming
+    semantic_purpose: "IDOR · OWASP API Security Top 10 2023 · API1 broken object
+      level authorization"
+    semantic_truth: { scenario: broken, events: [] }
+    camera:
+      motion: static
+      semantic_function: hold_for_reading
+      rationale: "Một cái tên để nhớ, không phải để nghiên cứu."
+    motion_semantic_function: a_name_arrives
+    transition: "cắt nhanh vào loạt từ chối"
+    validation: { caption_zone: true }
+    review:
+      hero_frames:
+        - 1.4
+        - 7.35
+      mute_test: "một cái tên, rồi phân loại chuẩn của nó"
+
+  - id: s08-not-id
+    narrowing_object:
+      set: "PHẠM VI CỦA MỘT LỜI KHẲNG ĐỊNH gắn vào một vật thể có thật"
+      spatial_operation: "LỜI KHẲNG ĐỊNH CO QUANH MỘT VẬT ĐỨNG YÊN — uuid không bị
+        tween nào chạm tới; cái co lại là một DẢI ĐO ĐƯỢC chia ba ô, hai ô
+        scaleX về 0 nên dải thật sự còn một phần ba, nhãn của chúng ở lại tắt
+        đèn đánh dấu phần đất khẳng định không còn phủ"
+      rejected_first_attempt: "đặt width lên container mà chữ không lấp đầy, rồi ghi
+        trong comment rằng phạm vi co lại — gate báo sạch vì không checker nào
+        đọc ý định. Khai một thao tác không gian thay vì thực hiện nó, đúng loại
+        lỗi của match cut 03→04"
+    narration_segments: [ 21, 23 ]
+    composition:
+      family: narrowing
+      mass_and_anchor: "nhu tren"
+      empty_space_means: "nhu tren"
+      rebuild: true
+    time: [ 96.5, 108 ]
+    duration: 11.5
+    engine: hyperframes
+    register: "thu phạm vi"
+    visual_operation: narrowing
+    semantic_purpose: "UUID thật, hiện đủ độ dài. Hai vế theo đúng thứ tự: khó đoán
+      làm việc dò tìm đắt hơn, VÀ nó không sinh ra quyền cũng không xoá đi
+      quyền"
+    semantic_truth: { scenario: broken, events: [] }
+    camera:
+      motion: static
+      semantic_function: preserve_comparison_geometry
+      rationale: "Một lời từ chối. Giữ lâu là mời người xem cân nhắc nó."
+    motion_semantic_function: unguessable_and_irrelevant_at_once
+    transition: "cắt nhanh"
+    validation: { caption_zone: true }
+    review:
+      hero_frames:
+        - 1.4
+        - 5.48
+        - 10.01
+        - 11.35
+      mute_test: "một uuid đủ dài, rồi hai vế: đắt hơn để dò, nhưng không tạo ra quyền"
+
+  - id: s09-not-a-line
+    narrowing_object:
+      set: "một HÀNH ĐỘNG được đề xuất, đúng một cái"
+      spatial_operation: "CẮT BỎ, VÀ LỖ HỔNG Ở LẠI — đề xuất biến mất, chỗ nó từng
+        đứng để trống, lý do xuất hiện ở MỘT VỊ TRÍ KHÁC"
+    narration_segments: [ 24, 24 ]
+    composition:
+      family: narrowing
+      mass_and_anchor: "nhu tren"
+      empty_space_means: "nhu tren"
+      rebuild: true
+    time: [ 108, 114 ]
+    duration: 6
+    engine: hyperframes
+    register: "thu phạm vi"
+    visual_operation: narrowing
+    semantic_purpose: "không phải thêm một dòng check vào handler mới. Gạch một ĐỀ
+      XUẤT, không gạch một bước trong đường thực thi — gạch trong thân handler
+      sẽ dạy \"bước kiểm bị bỏ qua\""
+    semantic_truth: { scenario: broken, events: [] }
+    camera:
+      motion: static
+      semantic_function: preserve_comparison_geometry
+      rationale: "Lời từ chối thứ hai, cùng nhịp với shot 08."
+    motion_semantic_function: a_proposal_is_cancelled_not_a_step
+    transition: "hard cut vào chỗ ngoặt"
+    validation: { caption_zone: true }
+    review:
+      hero_frames:
+        - 1.4
+        - 5.85
+      mute_test: "một dòng code bị gạch, và nó là một ĐỀ XUẤT chứ không phải một bước
+        đang chạy"
+
+  - id: s10-invariant
+    narration_segments: [ 25, 25 ]
+    composition:
+      family: transformation
+      mass_and_anchor: "mass KHONG duoc dich: cau bi bien doi giu tam quang hoc, mot
+        minh, mot ve bi thay tai cho"
+      empty_space_means: "tren la tien de, duoi la nguon — cau o giua LA ca the gioi"
+      rebuild: true
+      geometry_owner: "s11 — bố cục s11 được giữ nguyên, nên s10 là bên khớp lại: bất
+        biến 42px ở 286, kẻ ở 470, nhãn mặc định ở 502, dòng mặc định ở 562,
+        nguồn ở 668"
+    time: [ 114, 122 ]
+    duration: 8
+    engine: hyperframes
+    register: "fix"
+    visual_operation: transformation
+    semantic_purpose: "bất biến KIẾN TRÚC-BẤT-ĐỊNH trước mọi implementation. Rồi mặc
+      định lật: không-có-quyết-định → trả dữ liệu, thành không-có-quyết-định →
+      từ chối (OWASP A01, deny by default)"
+    semantic_truth: { scenario: fixed, events: [] }
+    camera:
+      motion: static
+      semantic_function: hold_for_reading
+      rationale: "Một phát biểu phải đọc, rồi một mặc định lật. Không có nội dung
+        không gian."
+    motion_semantic_function: a_default_flips
+    transition: "match cut vào s11 — khung đóng của s10 LÀ khung mở của s11, phải đo
+      YMAX chứ không được khẳng định"
+    validation: { caption_zone: true }
+    review:
+      hero_frames:
+        - 1.4
+        - 7.85
+      mute_test: "một bất biến, rồi cùng một câu mặc định đổi từ trả-dữ-liệu sang từ-chối"
+
+  - id: s11-inherit
+    narration_segments: [ 26, 28 ]
+    composition:
+      family: code_author
+      mass_and_anchor: "flush-left earned — code can le trai theo ban chat; than ham
+        phai trong hoan chinh"
+      empty_space_means: "cho de doc, va nhin thay CHO THAN HAM KET THUC"
+      rebuild: false
+    time: [ 122, 139.5 ]
+    duration: 17.5
+    engine: hyperframes
+    register: "fix"
+    visual_operation: accumulation
+    semantic_purpose: "một đường chưa từng có xuất hiện và ĐÃ chịu quyết định đó —
+      thừa hưởng, chứng minh chứ không tuyên bố. Ví dụ nằm sau một rule, có nhãn
+      ví dụ, kèm các chỗ đặt khác"
+    semantic_truth: { scenario: fixed, events: [] }
+    camera:
+      motion: static
+      semantic_function: hold_for_reading
+      rationale: "Ba vùng đọc: bất biến, bản kê, ví dụ. Khung di-dời-không-gian đã bị
+        loại vì nó kê đơn một kiến trúc."
+    motion_semantic_function: a_new_path_arrives_already_subject_to_it
+    transition: "hard cut"
+    validation: { caption_zone: true }
+    review:
+      hero_frames:
+        - 1.4
+        - 9.6
+        - 12.79
+        - 17.35
+      mute_test: "các đường đều màu ochre; một đường mới xuất hiện đã ochre sẵn; ví dụ
+        bị quây sau một rule"
+
+  - id: s12-cost
+    narration_segments: [ 29, 29 ]
+    composition:
+      family: accumulation
+      mass_and_anchor: "nhom da biet giu nguyen cho; nhom moi vao VUNG NHOM CU CHUA TUNG CHIEM"
+      empty_space_means: "vung nhom dau chua bao gio doi — nen nhom hai khong doc
+        thanh them dong cua cung danh sach"
+      rebuild: true
+    time: [ 139.5, 151.5 ]
+    duration: 12
+    engine: hyperframes
+    register: "trade-off"
+    visual_operation: accumulation
+    semantic_purpose: "cái giá · job nền và công cụ admin không chạy dưới danh nghĩa
+      người dùng nào, nên phải mở một lối riêng · lối đó là bề mặt rủi ro mới
+      nhưng nằm một chỗ. Ví dụ đúng HAI loại lời thoại nêu: job nền và công cụ
+      admin, không thêm loại thứ ba"
+    semantic_truth: { scenario: fixed, events: [] }
+    camera:
+      motion: static
+      semantic_function: hold_for_reading
+      rationale: "Một nhóm thứ hai tích tụ, phải đọc tên từng dòng."
+    motion_semantic_function: a_second_group_accumulates
+    transition: "hard cut"
+    validation: { caption_zone: true }
+    review:
+      hero_frames:
+        - 1.4
+        - 11.85
+      mute_test: "nhóm chạy-dưới-danh-nghĩa-một-người, rồi nhóm không-chạy-dưới-ai
+        tích tụ dần"
+
+  - id: s13-scope-limits
+    narrowing_object:
+      set: "PHẠM VI ÁP DỤNG của cách sửa"
+      spatial_operation: "KHỐI LƯỢNG DI CHUYỂN XUỐNG khi lời khẳng định trở nên cụ thể
+        hơn — không phải bớt số lượng, mà là hạ độ phổ quát"
+    narration_segments: [ 30, 30 ]
+    composition:
+      family: narrowing
+      mass_and_anchor: "nhu tren"
+      empty_space_means: "nhu tren"
+      rebuild: true
+    time: [ 151.5, 158.5 ]
+    duration: 7
+    engine: hyperframes
+    register: "trade-off"
+    visual_operation: narrowing
+    semantic_purpose: "phủ quan hệ sở hữu và thành viên; còn lại cần một tầng policy
+      thật. KHÔNG CÓ CON SỐ NÀO — đó là điều cho phép cú cắt sang shot 14 tách
+      được hai universe đếm"
+    semantic_truth: { scenario: fixed, events: [] }
+    camera:
+      motion: static
+      semantic_function: hold_for_reading
+      rationale: "Danh sách giới hạn kiến trúc, đọc."
+    motion_semantic_function: reach_stated_then_narrowed
+    transition: "hard cut LÀM VIỆC NGỮ NGHĨA — tách hai universe đếm"
+    validation: { caption_zone: true }
+    review:
+      hero_frames:
+        - 1.4
+        - 6.85
+      mute_test: "phạm vi phủ nói trước và nói xuôi, rồi ba thứ chưa bao giờ trong
+        phạm vi"
+
+  - id: s14-signal
+    narration_segments: [ 31, 31 ]
+    composition:
+      family: counting
+      mass_and_anchor: "nhu tren"
+      empty_space_means: "nhu tren"
+      rebuild: true
+    time: [ 158.5, 171.5 ]
+    duration: 13
+    engine: hyperframes
+    register: "detection"
+    visual_operation: counting
+    semantic_purpose: "tín hiệu · route nào đã có test, route nào chưa · rồi CON SỐ
+      mà lời thoại yêu cầu: phần trăm route đã có test đó. Universe đếm RIÊNG
+      với shot 13"
+    reversed_decision: "Bản trước bỏ hẳn dấu %, lý do là sợ nó bị đọc thành điểm an
+      toàn. Nhưng lời thoại nói thẳng \"rồi đếm xem bao nhiêu phần trăm route đã
+      có test đó\" — package có quy định con số. Bỏ nó đi là Visual Engine quyết
+      thay Content Engine ở đúng chỗ package đã tự phòng: s14-limits tồn tại để
+      nói con số đó chứng minh và KHÔNG chứng minh cái gì. Con số nay hiện bằng
+      màu ink như một phép đo, không teal không vermilion, không thanh không
+      đồng hồ; thứ dẫn mắt là độ đầy của hai dải"
+    semantic_truth: { scenario: fixed, events: [] }
+    camera:
+      motion: static
+      semantic_function: hold_for_reading
+      rationale: "Hai danh sách hai universe, phải đọc và KHÔNG được hợp nhất."
+    motion_semantic_function: which_ones_not_how_good
+    transition: "hard cut, giữ"
+    validation: { caption_zone: true }
+    review:
+      hero_frames:
+        - 1.4
+        - 12.85
+      mute_test: "nhóm chưa-có-test dài hơn và sáng hơn ở dải phải; con số ở chân
+        khung đọc như một PHÉP ĐO, không như điểm số — không thanh, không đồng
+        hồ, không màu phán xét"
+
+  - id: s14-limits
+    narrowing_object:
+      set: "NHỮNG GÌ MỘT TÍN HIỆU CHỨNG MINH"
+      spatial_operation: "LỜI KHẲNG ĐỊNH ĐỨNG YÊN MẤT DẦN TRỌNG LƯỢNG khi các mệnh đề
+        hạn định chất lên bên dưới nó"
+    narration_segments: [ 32, 34 ]
+    duration: 16
+    time: [ 171.5, 187.5 ]
+    register: detection
+    visual_operation: narrowing
+    semantic_purpose: "test xanh chỉ chứng minh principal TRONG FIXTURE bị chặn;
+      không phủ cựu thành viên, quyền vừa thu hồi, vai trò lồng nhau; và không
+      chạm tới đường không qua HTTP. Universe đếm RIÊNG với s14-signal"
+    semantic_truth: { scenario: fixed, events: [] }
+    composition:
+      family: narrowing
+      mass_and_anchor: "KHÔNG dùng lại baseline của s14-signal — hai universe rời nhau
+        thì rời ở cả hai trục, và giờ chúng còn bị tách bởi một cú cắt"
+      empty_space_means: "khe không-thẳng-hàng với shot trước: hai thứ này không cộng
+        được với nhau"
+      rebuild: true
+    camera:
+      motion: static
+      semantic_function: hold_for_reading
+      rationale: "Ba giới hạn có lý do riêng từng dòng, cộng một câu trần. Đây là
+        register đọc."
+    motion_semantic_function: the_claim_is_narrowed_after_it_is_made
+    transition: "hard cut, giữ — câu trần là thứ cuối cùng trước câu hỏi"
+    validation: { caption_zone: true }
+    review:
+      hero_frames:
+        - 1.4
+        - 6.2
+        - 12.98
+        - 15.85
+      mute_test: "một danh sách những gì test KHÔNG phủ, trên một lưới khác hẳn shot
+        trước"
+  - id: s15-question
+    narration_segments: [ 35, 35 ]
+    composition:
+      family: hold
+      mass_and_anchor: "muc o THAP, truong phia tren de mo"
+      empty_space_means: "CHUA DUOC TRA LOI — khong co gi dung truoc cau hoi"
+      rebuild: true
+    time: [ 187.5, 195 ]
+    duration: 7.5
+    engine: hyperframes
+    register: "kết"
+    visual_operation: hold
+    semantic_purpose: "endpoint gần nhất bạn thêm vào — nó tự kiểm quyền trên
+      object, hay tin vào tầng phía trên?"
+    semantic_truth: { scenario: fixed, events: [] }
+    camera:
+      motion: static
+      semantic_function: hold_for_reading
+      rationale: "Câu hỏi trả về phía người xem. Im."
+    motion_semantic_function: three_lines_then_stillness
+    transition: "end"
+    validation: { caption_zone: true }
+    review:
+      hero_frames:
+        - 1.4
+        - 7.35
+      mute_test: "ba dòng, không tổng kết, không kêu gọi"
+
+  # ==========================================================================
+  # STEP 4 REVISION — prototype composition theo OPERATION FAMILY.
+  # Lỗi đang sửa: 15/15 shot đo được nặng trái và nặng trên, 9/15 nửa dưới trống hoàn toàn.
+  # Tám visual_operation đều được hiện thực bằng CÙNG một trang tài liệu góc trên trái.
+  # ==========================================================================
+
+  - id: c1-inspection
+    status: experiment
+    duration: 9.0
+    engine: hyperframes
+    operation_family: inspection
+    covers_shots: "s01, s05"
+    spatial_rule: "cái gì ĐẾN thì chiếm khung; cái gì phải suy nghĩ thì nằm ở lề.
+      Payload là khối lượng của khung: dải giữa, tràn qua mép phải. Không có lề
+      93 vì không ai bày nó ra"
+    semantic_truth: { scenario: broken, events: [] }
+    camera:
+      {
+        motion: static,
+        semantic_function: hold_for_reading,
+        rationale: "Prototype composition. Camera không đổi — vấn đề là composition,
+          không phải camera."
+      }
+    validation: { caption_zone: true }
+    review:
+      hero_frames: [ 0.6, 1.4, 2.4, 3.4, 5.2, 7.2, 8.6 ]
+      mute_test: "đọc một mảnh nội dung bị khung cắt, rồi mới biết ai gửi request"
+
+  - id: c2-narrowing
+    status: experiment
+    duration: 13.0
+    engine: hyperframes
+    operation_family: narrowing
+    covers_shots: "s02, s08, s09, s13"
+    spatial_rule: "vùng bị chiếm CO LẠI và HỘI TỤ. Ứng viên rải trên một trường rộng
+      ở các x khác nhau; khi chúng đi, câu kết luận xuất hiện ĐÚNG chỗ chúng vừa
+      nhường và lớn hơn"
+    semantic_truth: { scenario: broken, events: [] }
+    camera:
+      {
+        motion: static,
+        semantic_function: hold_for_reading,
+        rationale: "Prototype composition. Camera không đổi — vấn đề là composition,
+          không phải camera."
+      }
+    validation: { caption_zone: true }
+    review:
+      hero_frames: [ 0.8, 1.8, 3, 4.8, 6.5, 7.6, 9.4, 11.4, 12.6 ]
+      mute_test: "ba ứng viên rải rộng, một dữ kiện tới giữa chúng, rồi footprint co
+        lại quanh câu còn sống"
+
+  - id: c3-transformation
+    status: experiment
+    duration: 10.0
+    engine: hyperframes
+    operation_family: transformation
+    covers_shots: "s10"
+    spatial_rule: "phép biến đổi là phép toán DUY NHẤT mà khối lượng KHÔNG được
+      dịch. Câu bị biến đổi giữ tâm quang học, một mình; tiền đề ở mép trên,
+      nguồn ở mép dưới"
+    semantic_truth: { scenario: broken, events: [] }
+    camera:
+      {
+        motion: static,
+        semantic_function: hold_for_reading,
+        rationale: "Prototype composition. Camera không đổi — vấn đề là composition,
+          không phải camera."
+      }
+    validation: { caption_zone: true }
+    review:
+      hero_frames: [ 0.7, 1.4, 2.9, 4.2, 5.6, 7.4, 9.6 ]
+      mute_test: "một câu ở giữa khung, vế sau của nó bị thay tại chỗ; trên và dưới
+        chỉ có một dòng mảnh"
+
+  - id: c4-hold
+    status: experiment
+    duration: 7.0
+    engine: hyperframes
+    operation_family: hold
+    covers_shots: "s15"
+    spatial_rule: "để trường mở, và đặt mực ở chỗ KHÔNG có gì đứng trước nó. Shot
+      duy nhất trong video nặng nửa dưới — một câu hỏi chưa trả lời không thể
+      nằm dưới một tiêu đề"
+    semantic_truth: { scenario: broken, events: [] }
+    camera:
+      {
+        motion: static,
+        semantic_function: hold_for_reading,
+        rationale: "Prototype composition. Camera không đổi — vấn đề là composition,
+          không phải camera."
+      }
+    validation: { caption_zone: true }
+    review:
+      hero_frames: [ 0.6, 1.2, 2, 3.2, 4.6, 6.6 ]
+      mute_test: "ba dòng ở thấp, trường phía trên để trống có chủ đích"
+
+  - id: c5-counting-disjoint
+    status: experiment
+    duration: 13.0
+    engine: hyperframes
+    operation_family: counting
+    covers_shots: "s14"
+    spatial_rule: "hai universe rời nhau thì được hai vùng rời nhau và KHÔNG dùng
+      chung baseline. Không có divider — divider sẽ vẽ ra một chu vi, và video
+      này không có chu vi nào"
+    semantic_truth: { scenario: broken, events: [] }
+    camera:
+      {
+        motion: static,
+        semantic_function: hold_for_reading,
+        rationale: "Prototype composition. Camera không đổi — vấn đề là composition,
+          không phải camera."
+      }
+    validation: { caption_zone: true }
+    review:
+      hero_frames: [ 1, 2.4, 3.6, 5.2, 7, 8.4, 10.2, 12.6 ]
+      mute_test: "trường trái: route và test. Trường phải: cái test không phủ. Không
+        dòng nào của bên này thẳng hàng với bên kia"
+full_video_review: passed
+review_notes: "Đo: 195.000s hình / 195.000s tiếng · 35/35 đoạn thoại có chuyển
+  động khớp · match cut s03→s04 và s10→s11 YMAX=0 YAVG=0 (đo bằng PNG) · không
+  khung nào dưới 0.35 mực trên nền · lặng 25.0s toàn bộ ở cuối shot, dài nhất
+  2.98s dưới ngưỡng 3.0s. Nghe: người xác nhận nhịp namtre_v2 @ 1.00 tự nhiên và
+  nhịp toàn bài chấp nhận được."
+status: FROZEN_BENCHMARK
+frozen:
+  at: 2026-08-25
+  output: output/final.mp4
+  sha256: a944d9b5c5c21db0dabb5bbad5991c0ea16f40303077e42a721dc7f3f1123a93
+  duration_s: 195
+  frames: 5850
+  size: 1080x1920
+  fps: 30
+  audio: aac · trung bình -18.0 dB · đỉnh -1.9 dB
+  narration_sha256: 9c961d8131c7260be7a1aa514f5e4a4b40e2657ac58d1c8145254ee9b92a1ee3
+  content_package: "004"
+  review: đo đạc đầy đủ + người nghe xác nhận
+  rule: Không polish F01 sau khi đóng băng. Mọi thay đổi phải là một video mới.
+
+fingerprint:
+  status: FROZEN_BENCHMARK
+  dominant_compositions: [two_bodies_sharing_one_geometry, marks_in_columns_over_a_path_list,
+                          a_fixed_object_with_a_contracting_claim_above_it, an_open_field_above_a_low_question]
+  dominant_geometry: [shared_row_columns_for_one_universe, disjoint_regions_for_disjoint_sets,
+                      a_measured_bar_divided_into_named_cells, ink_low_with_the_field_above_it_open]
+  visual_devices: [presence_marks_instead_of_function_names, a_claim_that_arrives_already_struck,
+                   an_excision_whose_hole_stays_empty, a_span_that_really_contracts_to_one_third,
+                   a_standing_claim_losing_weight_as_qualifications_land]
+  motion_devices: [colour_naming_which_reach_is_which_while_geometry_holds,
+                   a_row_arriving_already_covered_because_nobody_added_anything,
+                   replacement_in_place_only_where_both_cannot_be_true_at_once,
+                   the_survivor_taking_the_field_the_candidates_vacated]
+  typography_usage: [code_is_authored_text_not_decoration, monospace_means_value_never_label,
+                     a_name_takes_the_field_alone_before_its_classification]
+  color_distribution: { dominant: neutral, needs_attention: vermilion,
+                        authorization_decision_exists: ochre, boundary_held: teal,
+                        dead_or_out_of_scope: grey }
+  reference_influences: [engineered_information_design, incident_write_up]
+  distinctive_device: [a_check_that_never_existed_on_this_path_rather_than_one_that_was_skipped]
+  spatial_model: two_paths_to_one_object_where_only_one_carries_a_decision
+
+  known_limitations:
+    - "Lệch trái 16/17 shot và nặng-trên 15/17. Chữ Việt neo trái ở 93 hoặc 140 nên lệch trái
+       là hệ quả của chữ viết. Biên độ trên/dưới trải 16–83% và ba khung nặng dưới đều nặng
+       dưới VÌ NGHĨA. Không đuổi theo 50/50 — đó chính là luân phiên máy móc đã bị cấm."
+    - "Camera tĩnh 17/17. Không phải nguyên tắc, chỉ là chưa shot nào có lý do di chuyển."
+    - "Video thưa. Mực trung bình 2.56 trên nền; hai shot gần như trống là chủ ý
+       (s02-eliminate giữ mỗi người sống sót, s09 giữ mỗi cái lỗ)."
+
+  rejected_devices:
+    - device: writing_the_function_name_into_an_abstract_table
+      why_rejected: >-
+        `req.principal` và `assertMember` là code thật và thuộc về s03/s04, nơi chúng được
+        viết ra. Mang vào bảng năm đường, chúng thôi nghĩa "đường này chịu một quyết định" và
+        thành "đường này gọi hàm đó" — đúng never_say số 5 — đồng thời đặt hai token của H2
+        cạnh nhau, cho không cách đọc thay-thế. Cột nay là dấu hiện diện, tiêu đề cột gánh nghĩa.
+    - device: declaring_a_spatial_operation_in_a_comment_instead_of_performing_it
+      why_rejected: >-
+        Bản đầu của s08 đặt `width` lên container mà chữ không lấp đầy rồi ghi trong comment
+        rằng phạm vi khẳng định co lại. Trên màn hình không gì co cả, và cv gate báo sạch vì
+        không checker nào đọc ý định. Cùng loại lỗi với match cut 03→04 từng bị khẳng định
+        thay vì đo. Bản sau dùng dải chia ba ô, hai ô scaleX về 0.
+    - device: a_repeated_vietnamese_phrase_down_a_monospace_column
+      why_rejected: >-
+        Monospace trong thư viện này nghĩa là GIÁ TRỊ. Một cụm tiếng Việt lặp năm lần trong
+        mono là typography mặc áo nhãn. Đã tái phạm ngay sau khi ghi nó ra làm lý do loại
+        p4-limits — chỉ một luật kiểm được mới ngăn được, ghi lại thì không.
+    - device: removing_a_number_the_package_explicitly_asks_for
+      why_rejected: >-
+        Bỏ dấu % ở s14-signal vì sợ bị đọc thành điểm an toàn. Nhưng lời thoại nói thẳng
+        "rồi đếm xem bao nhiêu phần trăm route đã có test đó", và chính s14-limits tồn tại
+        để nói con số ấy chứng minh và không chứng minh gì. Đó là Visual Engine quyết thay
+        Content Engine ở đúng chỗ Content Engine đã lo.
+    - device: a_camera_move_added_because_every_shot_is_static
+      why_rejected: >-
+        Đa dạng phải đến từ nghĩa. Camera tĩnh 17/17 vẫn đúng vì chưa shot nào có lý do
+        di chuyển; khác biệt không gian nằm ở bố cục và chuyển động nội bộ.
+    - device: mechanically_alternating_left_center_right_to_balance_the_metrics
+      why_rejected: >-
+        Số đo là chẩn đoán, không phải chỉ tiêu. Khung nặng dưới chỉ được nặng dưới khi phần
+        trống phía trên có nghĩa: câu hỏi không đứng dưới tiêu đề; con số đi từ shot trước
+        sang nên nằm thấp; người sống sót chiếm chỗ ba giả thuyết vừa bỏ lại.

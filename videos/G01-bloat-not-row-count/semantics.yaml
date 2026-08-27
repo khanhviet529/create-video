@@ -1,0 +1,194 @@
+# G01 — MVCC bloat: mốc nước cao nhất, không phải phép đo dữ liệu sống.
+#
+# Cơ chế: mỗi UPDATE ghi một phiên bản mới rồi đánh dấu phiên bản cũ là đã chết. Phiên bản
+# chết không xoá được chừng nào còn nhìn thấy được với transaction khác — đó là ĐIỀU KIỆN
+# THƯỜNG TRỰC của MVCC, không phải nguyên nhân. Autovacuum đợi ngưỡng rồi dọn thật, nhưng
+# đánh dấu chỗ đó dùng lại được BÊN TRONG bảng chứ không trả về hệ điều hành.
+#
+# Bất biến bị phá KHÔNG phải "dòng chết không được dọn" — chúng có được dọn. Bất biến bị phá
+# là "dọn dữ liệu chết thì dung lượng trên đĩa giảm".
+#
+# file_bytes ở đây tính theo đơn vị "chỗ cho một nghìn phiên bản" để số đọc được: bảng một
+# triệu dòng sống = 1000 đơn vị. Đây là tham số kịch bản, đúng như package khai với con số
+# một triệu dòng và sáu tháng.
+
+topic: "PostgreSQL MVCC bloat — thu hồi bị trì hoãn và mốc nước cao nhất"
+package: "006"
+
+semantics:
+  never_say:
+    - >-
+      "Postgres không bao giờ xoá row" — sai theo nghĩa đen và là cách nói phổ biến nhất về
+      topic này. VACUUM CÓ xoá phiên bản chết. Dựng theo nghĩa đen thì người xem kết luận
+      không có cách nào lấy lại chỗ và bỏ luôn việc chỉnh autovacuum.
+    - >-
+      "Chạy VACUUM là file nhỏ lại" — sai, và là hiểu lầm dẫn tới hành động sai rõ nhất:
+      chạy VACUUM, thấy dung lượng không đổi, kết luận VACUUM hỏng.
+    - >-
+      "Bảng lớn nghĩa là bảng bị bloat" — sai. Bloat là CHÊNH LỆCH giữa chỗ file chiếm và
+      chỗ dữ liệu sống cần, không phải kích thước tuyệt đối.
+    - >-
+      "n_dead_tup về 0 nghĩa là hết bloat" — sai, và nguy hiểm nhất, vì nó tạo cảm giác an
+      toàn ngay tại công cụ người ta dùng để kiểm. Nó chỉ nói vừa dọn xong.
+    - >-
+      "Dòng chết là bản ghi nghiệp vụ đã bị xoá" — sai. n_dead_tup đếm phiên bản dòng không
+      còn nhìn thấy được, phần lớn sinh từ UPDATE chứ không từ DELETE.
+    - >-
+      "MVCC giữ phiên bản cũ là nguyên nhân gây bloat" — sai vai. Đó là điều kiện thường
+      trực, luôn đúng kể cả khi không có bloat. Nguyên nhân là nhịp UPDATE lặp lại.
+    - >-
+      "Autovacuum chạy xong là thu hồi được" — sai khi có transaction mở lâu. Nó vẫn chạy,
+      vẫn báo xong, và vẫn không dọn được gì.
+
+# simulate.mjs bắt khai field trước khi ghi — một field chưa khai là MODEL ERROR chứ không
+# phải mặc định 0. Đúng như vậy: nó chặn việc bịa state giữa đường.
+# acquire/release cần resource được khai trước — cùng luật với field: một resource chưa
+# khai là MODEL ERROR chứ không phải một cái khoá tự sinh ra.
+resources:
+  - snapshot
+
+state:
+  table.live_rows: 1000
+  table.dead_versions: 0
+  file.bytes: 1000
+  file.reusable_inside: 0
+  os.space_returned: 0
+
+scenarios:
+
+  default_threshold:
+    note: >-
+      Kịch bản chính. Sáu tháng UPDATE lặp lại trên cùng những dòng. Số dòng sống đứng yên
+      suốt. Phiên bản chết tích tụ tới ngưỡng hai mươi phần trăm, autovacuum dọn thật, và
+      file giữ nguyên mốc nước cao nhất.
+    events:
+      - { id: mvcc, t: 0.02, actor: postgres, op: check, subject: dead_version, resource: visibility,
+          pass: false,
+          reason: "ĐIỀU KIỆN THƯỜNG TRỰC — phiên bản chết chưa xoá được chừng nào còn nhìn thấy được. Luôn đúng, kể cả khi không có bloat. Không phải nguyên nhân." }
+
+      - { id: u1, t: 0.10, actor: app, op: write, target: table, field: dead_versions, value: 80,
+          reason: "NGUYÊN NHÂN — mỗi UPDATE ghi phiên bản mới, đánh dấu phiên bản cũ là chết" }
+      - { id: live1, t: 0.11, actor: app, op: write, target: table, field: live_rows, value: 1000,
+          reason: "số dòng sống không đổi — mỗi UPDATE không thêm dòng mới về mặt nghiệp vụ" }
+      - { id: g1, t: 0.12, actor: file, op: write, target: file, field: bytes, value: 1080,
+          reason: "file xin thêm chỗ từ hệ điều hành để chứa cả phiên bản sống lẫn chết" }
+
+      - { id: u2, t: 0.20, actor: app, op: write, target: table, field: dead_versions, value: 150 }
+      - { id: live2, t: 0.21, actor: app, op: write, target: table, field: live_rows, value: 1000 }
+      - { id: g2, t: 0.22, actor: file, op: write, target: file, field: bytes, value: 1150 }
+
+      - { id: u3, t: 0.30, actor: app, op: write, target: table, field: dead_versions, value: 200,
+          reason: "chạm ngưỡng: 20% của một triệu dòng ≈ hai trăm nghìn phiên bản chết" }
+      - { id: live3, t: 0.31, actor: app, op: write, target: table, field: live_rows, value: 1000 }
+      - { id: g3, t: 0.32, actor: file, op: write, target: file, field: bytes, value: 1200,
+          reason: "MỐC NƯỚC — lượng dữ liệu đồng thời lớn nhất bảng từng phải chứa" }
+
+      - { id: trigger, t: 0.40, actor: autovacuum, op: check, subject: autovacuum, resource: threshold,
+          pass: true, reason: "số dòng chết đạt ngưỡng, autovacuum tới lượt" }
+      - { id: reclaim, t: 0.44, actor: autovacuum, op: write, target: table, field: dead_versions, value: 0,
+          reason: "VACUUM DỌN THẬT — số dòng chết về gần không. Đây không phải chỗ cơ chế hỏng." }
+      - { id: mark, t: 0.46, actor: autovacuum, op: write, target: file, field: reusable_inside, value: 200,
+          reason: "chỗ đó được đánh dấu dùng lại được BÊN TRONG bảng" }
+      - { id: keep, t: 0.48, actor: file, op: write, target: file, field: bytes, value: 1200,
+          reason: "BẤT BIẾN BỊ PHÁ — file không nhỏ đi một byte sau khi dọn" }
+      - { id: noreturn, t: 0.50, actor: file, op: write, target: os, field: space_returned, value: 0,
+          reason: "không byte nào được trả về hệ điều hành" }
+
+      - { id: u4, t: 0.60, actor: app, op: write, target: table, field: dead_versions, value: 90,
+          reason: "vòng ghi tiếp theo" }
+      - { id: reuse, t: 0.62, actor: file, op: write, target: file, field: bytes, value: 1200,
+          reason: "TRẠNG THÁI ỔN ĐỊNH — chỗ trống bên trong được tái dùng, bảng ngừng lớn" }
+
+    invariants:
+      - { id: file_never_gives_back_space, kind: monotonic, field: file.bytes, direction: never_decreases,
+          note: "trong PHẠM VI kịch bản này — không chạy VACUUM FULL. Doc nêu ngoại lệ trang trống ở cuối bảng; bảng đang chịu ghi liên tục không thoả điều kiện đó" }
+      - { id: size_tracks_live_data, kind: final_state, field: file.bytes, expected: 1000,
+          note: "kỳ vọng sai của người xem: file đo lượng dữ liệu đang sống (1000 đơn vị)" }
+      - { id: reclaim_returns_space, kind: final_state, field: os.space_returned, expected: 200,
+          note: "kỳ vọng sai: dọn hai trăm nghìn phiên bản chết thì trả chừng ấy chỗ về OS" }
+      - { id: dead_versions_are_reclaimed, kind: bounded, field: table.dead_versions, max: 200,
+          note: "phiên bản chết CÓ được dọn và không vượt ngưỡng — cái này PHẢI đúng" }
+      - { id: live_rows_stay_flat, kind: bounded, field: table.live_rows, max: 1000,
+          note: "số dòng sống đứng yên suốt sáu tháng" }
+    expect:
+      violations: [size_tracks_live_data, reclaim_returns_space]
+
+  blocked_by_open_txn:
+    note: >-
+      Nhánh riêng, không phải cơ chế chính. Một transaction mở rất lâu giữ các phiên bản chết
+      ở trạng thái còn nhìn thấy được. Autovacuum vẫn chạy, vẫn báo xong, và vẫn không dọn
+      được gì — nên số dòng chết KHÔNG về không, và đó là dấu hiệu phân biệt với trường hợp
+      autovacuum đơn giản là không đủ tần suất.
+    events:
+      - { id: mvcc, t: 0.02, actor: postgres, op: check, subject: dead_version, resource: visibility,
+          pass: false }
+      - { id: txn_open, t: 0.05, actor: open_txn, op: acquire, resource: snapshot,
+          reason: "transaction mở rất lâu, giữ chân đường chân trời khả kiến" }
+
+      - { id: u1, t: 0.10, actor: app, op: write, target: table, field: dead_versions, value: 120 }
+      - { id: live1, t: 0.11, actor: app, op: write, target: table, field: live_rows, value: 1000 }
+      - { id: g1, t: 0.12, actor: file, op: write, target: file, field: bytes, value: 1120 }
+
+      - { id: u2, t: 0.20, actor: app, op: write, target: table, field: dead_versions, value: 260 }
+      - { id: live2, t: 0.21, actor: app, op: write, target: table, field: live_rows, value: 1000 }
+      - { id: g2, t: 0.22, actor: file, op: write, target: file, field: bytes, value: 1260 }
+
+      - { id: trigger, t: 0.40, actor: autovacuum, op: check, subject: autovacuum, resource: threshold,
+          pass: true, reason: "ngưỡng đã đạt, autovacuum tới lượt và chạy" }
+      - { id: still_visible, t: 0.42, actor: autovacuum, op: check, subject: dead_version, resource: visibility,
+          pass: false,
+          reason: "những phiên bản chết sinh sau khi transaction kia bắt đầu thì với nó vẫn còn nhìn thấy được" }
+      - { id: no_reclaim, t: 0.44, actor: autovacuum, op: write, target: table, field: dead_versions, value: 260,
+          reason: "vacuum chạy xong và báo xong, nhưng không thu hồi được gì" }
+      - { id: keep, t: 0.48, actor: file, op: write, target: file, field: bytes, value: 1260 }
+      - { id: noreturn, t: 0.50, actor: file, op: write, target: os, field: space_returned, value: 0 }
+
+    invariants:
+      - { id: file_never_gives_back_space, kind: monotonic, field: file.bytes, direction: never_decreases,
+          note: "trong PHẠM VI kịch bản này — không chạy VACUUM FULL. Doc nêu ngoại lệ trang trống ở cuối bảng; bảng đang chịu ghi liên tục không thoả điều kiện đó" }
+      - { id: size_tracks_live_data, kind: final_state, field: file.bytes, expected: 1000 }
+      - { id: reclaim_returns_space, kind: final_state, field: os.space_returned, expected: 200 }
+      - { id: dead_versions_are_reclaimed, kind: bounded, field: table.dead_versions, max: 200,
+          note: "ở nhánh này bất biến NÀY cũng vỡ — phiên bản chết không về không, và đó là dấu phân biệt" }
+      - { id: live_rows_stay_flat, kind: bounded, field: table.live_rows, max: 1000 }
+    expect:
+      violations: [size_tracks_live_data, reclaim_returns_space, dead_versions_are_reclaimed]
+
+  lower_threshold:
+    note: >-
+      Cách sửa: hạ scale factor xuống hai phần trăm cho riêng bảng nóng. Thu hồi xảy ra sớm
+      hơn nên chỗ chết được tái dùng TRƯỚC KHI bảng phải xin thêm chỗ mới — mốc nước bị giữ
+      thấp. Số phiên bản chết sinh ra KHÔNG giảm, và file vẫn không bao giờ tự nhỏ lại.
+    events:
+      - { id: mvcc, t: 0.02, actor: postgres, op: check, subject: dead_version, resource: visibility,
+          pass: false }
+
+      - { id: u1, t: 0.10, actor: app, op: write, target: table, field: dead_versions, value: 20,
+          reason: "cùng nhịp UPDATE — số phiên bản chết sinh ra không giảm đi chút nào" }
+      - { id: live1, t: 0.11, actor: app, op: write, target: table, field: live_rows, value: 1000 }
+      - { id: g1, t: 0.12, actor: file, op: write, target: file, field: bytes, value: 1020 }
+
+      - { id: trigger, t: 0.20, actor: autovacuum, op: check, subject: autovacuum, resource: threshold,
+          pass: true, reason: "ngưỡng 2% đạt sớm hơn nhiều" }
+      - { id: reclaim, t: 0.24, actor: autovacuum, op: write, target: table, field: dead_versions, value: 0 }
+      - { id: mark, t: 0.26, actor: autovacuum, op: write, target: file, field: reusable_inside, value: 20 }
+      - { id: keep, t: 0.28, actor: file, op: write, target: file, field: bytes, value: 1020,
+          reason: "file VẪN không nhỏ lại — cách sửa này không lấy lại chỗ đã mất" }
+
+      - { id: u2, t: 0.40, actor: app, op: write, target: table, field: dead_versions, value: 20 }
+      - { id: live2, t: 0.41, actor: app, op: write, target: table, field: live_rows, value: 1000 }
+      - { id: reuse, t: 0.42, actor: file, op: write, target: file, field: bytes, value: 1020,
+          reason: "chỗ chết được tái dùng trước khi bảng phải xin thêm chỗ — mốc nước giữ ở 1020 thay vì 1200" }
+      - { id: noreturn, t: 0.50, actor: file, op: write, target: os, field: space_returned, value: 0 }
+
+    invariants:
+      - { id: file_never_gives_back_space, kind: monotonic, field: file.bytes, direction: never_decreases,
+          note: "trong PHẠM VI kịch bản này — không chạy VACUUM FULL. Doc nêu ngoại lệ trang trống ở cuối bảng; bảng đang chịu ghi liên tục không thoả điều kiện đó" }
+      - { id: high_water_held_low, kind: bounded, field: file.bytes, max: 1020,
+          note: "CÁI ĐƯỢC: mốc nước bị giữ thấp — 1020 thay vì 1200 ở kịch bản mặc định" }
+      - { id: dead_versions_are_reclaimed, kind: bounded, field: table.dead_versions, max: 20 }
+      - { id: live_rows_stay_flat, kind: bounded, field: table.live_rows, max: 1000 }
+      - { id: reclaim_returns_space, kind: final_state, field: os.space_returned, expected: 200,
+          note: "vẫn vỡ, và PHẢI vỡ: cách sửa không trả byte nào về OS" }
+    expect:
+      violations: [reclaim_returns_space]

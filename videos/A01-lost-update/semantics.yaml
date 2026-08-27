@@ -1,0 +1,68 @@
+id: A01-lost-update
+title: "Lost update: two writers, one stale read"
+domain: concurrency
+audience: "backend engineers, 2-5 years"
+source_narration: "D:/omnivoice-test/bai_lost_update.txt"
+
+# Implementation assumptions must be explicit — the mechanism is only true under these.
+assumptions:
+  - "Single row in a relational store; no row lock taken; autocommit or READ COMMITTED."
+  - "Each request does a read, computes in application memory, then writes an absolute value."
+  - "Writing an absolute value (SET stock = 90) is what makes the update lossy. An in-place
+     delta (SET stock = stock - 10) would not lose the other writer's work."
+
+actors:
+  - { id: req_a, label: "Request A", kind: request }
+  - { id: req_b, label: "Request B", kind: request }
+  - { id: row,   label: "inventory row", kind: store }
+
+state:
+  row.stock: 100
+
+scenarios:
+  broken:
+    note: "no coordination — both writes are computed from the same read"
+    events:
+      - { id: a_read, t: 0.05, actor: req_a, op: read,  target: row, field: stock, into: seen, expect: 100, note: "A sees 100" }
+      - { id: b_read, t: 0.22, actor: req_b, op: read,  target: row, field: stock, into: seen, expect: 100, note: "B sees the same 100" }
+      - { id: a_write, t: 0.55, actor: req_a, op: write, target: row, field: stock, value: { expr: "seen - 10" }, note: "A commits 90" }
+      - { id: b_write, t: 0.82, actor: req_b, op: write, target: row, field: stock, value: { expr: "seen - 20" }, note: "B commits 80 over A" }
+    invariants:
+      - { id: serial_outcome, kind: final_state,     field: row.stock, expected: 70, note: "100 - 10 - 20" }
+      - { id: no_lost_write,  kind: no_lost_write,   field: row.stock }
+      - { id: exclusive_rmw,  kind: mutual_exclusion, field: row.stock }
+    expect:
+      violations: [serial_outcome, no_lost_write, exclusive_rmw]
+
+  optimistic:
+    note: "version check rejects B's write; B re-reads and retries on the current value"
+    events:
+      - { id: a_read, t: 0.05, actor: req_a, op: read,  target: row, field: stock, into: seen, expect: 100 }
+      - { id: b_read, t: 0.22, actor: req_b, op: read,  target: row, field: stock, into: seen, expect: 100 }
+      - { id: a_write, t: 0.48, actor: req_a, op: write, target: row, field: stock, value: { expr: "seen - 10" }, note: "A commits 90 at version 1" }
+      - { id: b_reread, t: 0.66, actor: req_b, op: read,  target: row, field: stock, into: seen, expect: 90, note: "B's write was rejected — B re-reads 90" }
+      - { id: b_write, t: 0.86, actor: req_b, op: write, target: row, field: stock, value: { expr: "seen - 20" }, note: "B commits 70 on the current value" }
+    invariants:
+      - { id: serial_outcome, kind: final_state,     field: row.stock, expected: 70 }
+      - { id: no_lost_write,  kind: no_lost_write,   field: row.stock }
+      - { id: exclusive_rmw,  kind: mutual_exclusion, field: row.stock }
+    expect:
+      violations: []
+
+  pessimistic:
+    note: "the row is locked for the whole read-modify-write; B waits at the barrier"
+    resources: [row_lock]
+    events:
+      - { id: a_lock,   t: 0.05, actor: req_a, op: acquire, resource: row_lock }
+      - { id: a_read,   t: 0.16, actor: req_a, op: read,  target: row, field: stock, into: seen, expect: 100 }
+      - { id: b_lock,   t: 0.26, actor: req_b, op: acquire, resource: row_lock, note: "blocked — A holds it" }
+      - { id: a_write,  t: 0.44, actor: req_a, op: write, target: row, field: stock, value: { expr: "seen - 10" } }
+      - { id: a_unlock, t: 0.54, actor: req_a, op: release, resource: row_lock, note: "barrier lifts, B proceeds" }
+      - { id: b_read,   t: 0.68, actor: req_b, op: read,  target: row, field: stock, into: seen, expect: 90, note: "B reads what A actually committed" }
+      - { id: b_write,  t: 0.88, actor: req_b, op: write, target: row, field: stock, value: { expr: "seen - 20" } }
+    invariants:
+      - { id: serial_outcome, kind: final_state,     field: row.stock, expected: 70 }
+      - { id: no_lost_write,  kind: no_lost_write,   field: row.stock }
+      - { id: exclusive_rmw,  kind: mutual_exclusion, field: row.stock }
+    expect:
+      violations: []

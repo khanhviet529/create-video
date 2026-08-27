@@ -1,0 +1,112 @@
+video_id: C01-n-plus-one
+title: "One list, a hundred round trips"
+semantics: semantics.yaml
+canvas: { w: 1080, h: 1920, fps: 30 }
+target_runtime_s: 66
+arc: symptom -> code -> amplification -> the cheaper shape -> detection
+ladder_path: [user_reality, implementation, state, implementation]
+
+shots:
+  - id: shot_01
+    time: [0.0, 9.0]
+    duration: 9.0
+    engine: ffmpeg
+    status: planned
+    narration: "The endpoint is slow. Every query in the slow log is fast."
+    purpose: "Set up the contradiction that makes N+1 hard to find."
+    representation: [user_reality]
+    semantic: { scenario: broken, events: [] }
+    validation: {}
+
+  - id: shot_02
+    status: superseded            # by shot_02_cam — the camera carries the scale
+    time: [9.0, 22.0]
+    duration: 13.0
+    engine: hyperframes
+    hero: true
+    narration: >-
+      One query returns a hundred rows. Then the loop touches the association on
+      each one, and each touch is its own round trip.
+    purpose: >-
+      Separate COST from RESULT. A hundred rows is what you wanted; a hundred and
+      one queries is what you paid. Make the second quantity accumulate in front
+      of the viewer so its size is felt rather than stated.
+    viewer_belief_before: "A slow endpoint means a slow query."
+    visual_question: "How many times does this page talk to the database?"
+    semantic:
+      scenario: broken
+      events: [page, loop, render]
+      t_window: [-0.02, 1.08]
+    main_focus: "the query field filling up"
+    representation: [implementation, state]
+    visual_direction: >-
+      Code as the emitter, not as an illustration. Three lines of plain type on the
+      ground, no card and no window chrome. The first statement emits its own
+      result: one query mark into the cost field and a strip of a hundred row ticks.
+      Rows and queries get deliberately different glyphs, because confusing them is
+      the misconception. Then the loop runs and every row tick fires its own query
+      mark into the field, staggered, for five and a half seconds — the tedium is
+      the information. It closes by desaturating the ninety-nine marks that did not
+      need to exist.
+    motion_reveal: "statement emits its result -> cascade of one mark per row -> 99 marks go grey"
+    validation:
+      focus_in_frame: ["#code", "#field"]
+      keeps_moving: "#stage"
+      max_static_sec: 2.6
+      caption_zone: true
+    review:
+      hero_frames: [1.0, 1.9, 3.6, 5.6, 8.0, 9.6, 11.4, 12.7]
+      mute_test: "one statement, one mark; one loop, a hundred marks; ninety-nine of them wasted"
+    transition: hard cut
+    viewer_belief_after: "The cost is the number of round trips, and the loop chose it."
+
+  # ---------------------------------------------------------------------------
+  # EXPERIMENT B — scale through camera. Kept alongside shot_02 for comparison.
+  - id: shot_02_cam
+    variant_of: shot_02
+    hero: true
+    time: [9.0, 22.0]
+    duration: 13.0
+    engine: hyperframes
+    camera:
+      motion: pull_back
+      semantic_function: one_to_many
+      moves_during: [3.78, 9.40]      # only across the accumulation. static either side.
+      rationale: >-
+        The static cut has a real defect: at scale 1 a row tick is 2px and a query
+        mark is 20px, so the ONE-row-to-ONE-query relationship — the actual
+        mechanism — is not legible. But zoomed in you cannot see 101 of anything.
+        A static frame has to pick one of those two jobs and fails the other.
+        The camera does both: it opens close enough that a single statement visibly
+        costs a single round trip, then pulls back across the cascade so the count
+        arrives as an experience rather than a caption. It ends at scale 1.0, never
+        below, so nothing is ever smaller than the 26px readability floor.
+      may_leave_view: []
+    narration: >-
+      One query returns a hundred rows. Then the loop touches the association on
+      each one, and each touch is its own round trip.
+    purpose: "As shot_02, but testing whether the camera can carry the scale."
+    visual_question: "How many times does this page talk to the database?"
+    semantic:
+      scenario: broken
+      events: [page, loop, render]
+      t_window: [-0.02, 1.08]
+    representation: [implementation, state]
+    validation:
+      focus_in_frame: ["#code"]
+      keeps_moving: "#stage"
+      caption_zone: true
+    review:
+      hero_frames: [1.3, 3.9, 5.6, 7.4, 9.5, 12.7]
+      mute_test: "one statement one trip, close up; a hundred of them, wide"
+
+fingerprint:
+  dominant_compositions: [code_column_with_emission_field, dense_mark_grid]
+  dominant_geometry: [grid_of_marks, tick_strip, plain_code_type]
+  visual_devices: [code_becomes_execution, cost_vs_result_glyphs, accumulation_field, desaturate_the_waste]
+  camera_devices: [static]
+  motion_devices: [emit, cascade_stagger, fill, desaturate]
+  typography_usage: [plain_source_as_type, single_large_tally]
+  color_distribution: { dominant: neutral, pressure: burnt_orange, discarded: grey }
+  reference_influences: [engineered_information_design, data_storytelling]
+  distinctive_device: [a_statement_emitting_its_own_cost]

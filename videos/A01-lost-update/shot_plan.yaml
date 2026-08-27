@@ -1,0 +1,328 @@
+video_id: A01-lost-update
+title: "Lost update: two writers, one stale read"
+semantics: semantics.yaml
+canvas: { w: 1080, h: 1920, fps: 30 }
+target_runtime_s: 72
+arc: incident -> mechanism -> evidence -> two fixes -> close
+
+# Where the video sits on the representation ladder overall. A video that never
+# leaves one layer is a failure mode, not a style.
+ladder_path: [user_reality, state, implementation, state, system]
+
+shots:
+  # ---------------------------------------------------------------------------
+  - id: shot_01
+    time: [0.0, 11.0]
+    duration: 11.0
+    engine: ffmpeg          # a numeric reveal needs no browser runtime
+    narration: >-
+      The ledger says eighty units. The warehouse shipped thirty.
+      Nobody wrote a bug. Both requests succeeded.
+    purpose: "Open on the symptom, not the mechanism. Establish that the arithmetic is impossible."
+    viewer_belief_before: "Concurrency bugs announce themselves as errors."
+    visual_question: "Two numbers that cannot both be right — which one lied?"
+    semantic:
+      scenario: broken
+      events: []            # symptom shot: quotes final state only, dramatises no event
+      quotes: { final_state: "row.stock", expected: 70 }
+    camera:
+      motion: static
+      semantic_function: sequential_arithmetic_reveal
+      rationale: >-
+        Three figures are counted onto a fixed page so the viewer can re-read them
+        as one sum. The whole point of the shot is that 30 and 80 cannot both be
+        true, and checking that means looking back and forth between them. A camera
+        move would take one of the two terms away at the moment the comparison is
+        being made. Static is the argument, not the default.
+    main_focus: "the gap between 80 and 70"
+    representation: [user_reality, state]
+    visual_direction: >-
+      Adapted from rejected Direction C. Start from the consequence. Two figures
+      counted out against each other in the same monospace, one authoritative and
+      one impossible, with the missing ten arriving last as an absence rather than
+      a highlight. No chrome, no title card.
+    motion_reveal: "count-on, then the third figure fails to appear where it should"
+    validation:
+      duration_s: 11.0
+      must_contain_text: ["80", "70"]
+    transition: hard cut
+    viewer_belief_after: "Ten units of work vanished without an error."
+
+  # ---------------------------------------------------------------------------
+  - id: shot_02
+    status: superseded            # by shot_02_cam — see the A/B in review/
+    time: [11.0, 23.5]
+    duration: 12.5
+    engine: hyperframes
+    hero: true
+    narration: >-
+      Both requests read the same stock level before either of them wrote.
+      Each one subtracted from the number it was holding. The second write
+      replaced the first — it never saw it.
+    purpose: >-
+      Show that a read is a duplication, that a duplicate goes stale silently,
+      and that a write is a replacement rather than a merge.
+    viewer_belief_before: "The database serialises my writes, so my write is safe."
+    visual_question: "What exactly is the number each request is holding?"
+    semantic:
+      scenario: broken
+      events: [a_read, b_read, a_write, b_write]
+      t_window: [-0.06, 1.05]
+    main_focus: "the ledger glyph, then the two copies, then the discarded 90"
+    representation: [state]
+    visual_direction: >-
+      Direction B — shared-state simulation. The ledger is one heavy figure on a
+      hairline, off-centre on the upper third; not a card, not a node. A read peels
+      a translucent duplicate off that figure and carries it away. Each copy mutates
+      in place. Copies land back on the ledger and replace it. At 8.8s B's copy still
+      reads 100 while the ledger reads 90 — the contradiction is the shot. Ends with
+      A's 90 detaching, desaturating to --lost and falling out of frame, leaving an
+      orphaned minus ten.
+    motion_reveal: "peel -> travel -> digit morph -> land/replace -> detach and fall"
+    validation:
+      # must be elements with a REAL painted box; a full-stage container or a
+      # 0x0 wrapper makes staysInFrame vacuous.
+      focus_in_frame: ["#ledgerV0", "#a-basis", "#b-basis"]
+      keeps_moving: "#stage"
+      max_static_sec: 2.6
+      caption_zone: true
+    review:
+      hero_frames: [1.4, 3.4, 4.6, 7.1, 8.9, 10.6, 12.2]
+      mute_test: "duplication -> staleness -> replacement -> loss must read without narration"
+    transition: "carry the ledger figure; it is the only element that survives the cut"
+    viewer_belief_after: "The value I read is a copy, and it expires without telling me."
+
+  # ---------------------------------------------------------------------------
+  - id: shot_03
+    status: planned      # NEEDED: this audience must know which line of their own
+                        # code does it. Without it the video is theory.
+    time: [23.5, 36.5]
+    duration: 13.0
+    engine: hyperframes
+    narration: >-
+      This is the shape of it. Select the stock. Subtract in your application.
+      Write an absolute value back. That last line is the one that loses work.
+    purpose: "Bind the mechanism to the code that causes it. Code is evidence, not decoration."
+    viewer_belief_before: "This is an exotic database problem, not something in my code."
+    visual_question: "Which line is the lossy one?"
+    semantic:
+      scenario: broken
+      events: [a_read, a_write]
+      t_window: [-0.1, 0.75]
+    main_focus: "the UPDATE's assignment operator"
+    representation: [implementation, state]
+    visual_direction: >-
+      No code card, no window chrome, no traffic lights. The two statements sit as
+      plain type on the ground. When SELECT runs, the literal 100 is emitted from
+      the statement itself and becomes the value object from shot 02 — the code
+      produces the object, rather than describing it. When UPDATE runs, the token
+      `= 90` detaches from the statement and lands on the ledger, physically
+      replacing it. The alternative `= stock - 10` fades up underneath as the line
+      that would not have lost anything.
+    motion_reveal: "statement emits its own literal; the assignment token becomes the write"
+    validation:
+      focus_in_frame: ["#sql-select", "#sql-update"]
+      keeps_moving: "#stage"
+      caption_zone: true
+    review:
+      hero_frames: [1.0, 2.6, 5.0, 8.0, 10.4, 12.6]
+    transition: hard cut
+    viewer_belief_after: "Writing an absolute value is the decision that loses the other writer."
+
+  # ---------------------------------------------------------------------------
+  - id: shot_04
+    status: superseded            # by shot_04_cam — the pair must share its camera
+    time: [36.5, 49.5]
+    duration: 13.0
+    engine: hyperframes
+    narration: >-
+      Pessimistic locking takes the row first. The second request does not read a
+      stale value, because it does not get to read at all until the first one is done.
+    purpose: "Show the fix as a change of mechanism inside an unchanged frame."
+    viewer_belief_before: "A lock is just slower — it does not change what I see."
+    visual_question: "Where does the second request stop?"
+    semantic:
+      scenario: pessimistic
+      events: [a_lock, a_read, b_lock, a_write, a_unlock, b_read, b_write]
+      t_window: [-0.04, 1.0]
+    main_focus: "the barrier, and B's copy that never gets taken"
+    representation: [state]
+    visual_direction: >-
+      INTENTIONAL REPETITION. Reuse shot 02's geometry exactly — same ledger
+      position, same trajectories, same rhythm — so the only perceptible difference
+      is the mechanism. A hairline barrier closes across B's path. B never peels a
+      copy; it waits, visibly stalled. The barrier lifts and B's read takes 90,
+      not 100. Same frame, different physics.
+    motion_reveal: "barrier closes -> B stalls -> barrier lifts -> B reads the current value"
+    validation:
+      focus_in_frame: ["#ledgerV0", "#a-basis"]
+      keeps_moving: "#stage"
+      max_static_sec: 2.8
+      caption_zone: true
+    review:
+      hero_frames: [1.2, 2.6, 3.9, 6.2, 7.4, 9.2, 11.6]
+    transition: "hard cut on the same frame — the match cut is the comparison"
+    viewer_belief_after: "The lock removes the overlap, and costs the second request its wait."
+
+  # ---------------------------------------------------------------------------
+  - id: shot_05
+    status: planned      # NEEDED: the pair IS the content. One fix alone reads as
+                        # "the answer" rather than as a trade-off.
+    time: [49.5, 62.5]
+    duration: 13.0
+    engine: hyperframes
+    narration: >-
+      Optimistic locking lets both reads happen, then refuses the write that was
+      computed from a value that has moved. The second request retries on what is
+      actually there.
+    purpose: "Show the second fix in the same frame again, so the two are directly comparable."
+    viewer_belief_before: "Not locking means not being safe."
+    visual_question: "If nothing is locked, what stops the bad write?"
+    semantic:
+      scenario: optimistic
+      events: [a_read, b_read, a_write, b_reread, b_write]
+      t_window: [-0.04, 1.0]
+    main_focus: "the refusal at the ledger"
+    representation: [state]
+    visual_direction: >-
+      INTENTIONAL REPETITION, second instance. Identical geometry again. Both copies
+      peel exactly as in shot 02 — the viewer expects the loss. This time B's copy
+      arrives at the ledger and is refused: it stops short, flips to --stale, and is
+      sent back to re-read. The retry is the payoff, and it costs a round trip that
+      the frame shows as real distance travelled twice.
+    motion_reveal: "peel -> peel -> land -> refuse -> return -> re-read -> land"
+    validation:
+      # must be elements with a REAL painted box; a full-stage container or a
+      # 0x0 wrapper makes staysInFrame vacuous.
+      focus_in_frame: ["#ledgerV0", "#a-basis", "#b-basis"]
+      keeps_moving: "#stage"
+      max_static_sec: 2.8
+      caption_zone: true
+    review:
+      hero_frames: [1.2, 3.4, 6.6, 7.8, 8.9, 11.4, 12.7]
+    transition: hard cut
+    viewer_belief_after: "The conflict is detected at write time instead of prevented at read time."
+
+  # ---------------------------------------------------------------------------
+  - id: shot_06
+    time: [62.5, 72.0]
+    duration: 9.5
+    engine: hyperframes
+    status: planned          # not authored in this R&D cycle
+    narration: >-
+      You will not see this in your error logs. You will see it as a total that
+      drifts. How would you detect it in yours?
+    purpose: "Give the viewer a detection signal and a question to leave with."
+    visual_question: "What would this look like in monitoring?"
+    semantic: { scenario: broken, events: [] }
+    representation: [system]
+    visual_direction: >-
+      Deliberately unresolved. Candidate adopted from rejected SHOT 04 Direction C:
+      the conflict-rate / cost decision field, with the viewer's own system left as
+      an unplotted point.
+    validation: {}
+    transition: end
+
+# ---------------------------------------------------------------------------
+# Written after review, consumed by `cv recall` before the next video is designed.
+  # ---------------------------------------------------------------------------
+  # EXPERIMENT A — reveal through camera. Kept alongside shot_02 for comparison.
+  - id: shot_02_cam
+    variant_of: shot_02
+    hero: true
+    time: [11.0, 23.5]
+    duration: 12.5
+    engine: hyperframes
+    camera:
+      motion: widen
+      semantic_function: single_actor_to_concurrency
+      moves_during: [3.20, 4.20]
+      rationale: >-
+        The static cut shows both request sites from the first frame, so the viewer
+        knows there are two writers before the shot has said anything. That gives
+        away the entire mechanism for free — and it is not how anyone meets this bug.
+        You read one request's code path, it looks correct, and it IS correct in
+        isolation. The camera reproduces that: for two and a half seconds the frame
+        holds exactly one request, doing something unremarkable. Then it widens and
+        there is a second one, already holding the same number. The reveal is not a
+        new element appearing; it is the frame admitting it was cropped.
+      may_leave_view: []
+    narration: >-
+      Both requests read the same stock level before either of them wrote.
+      Each one subtracted from the number it was holding. The second write
+      replaced the first — it never saw it.
+    purpose: "As shot_02, but testing whether the camera can withhold the concurrency."
+    visual_question: "What exactly is the number each request is holding?"
+    semantic:
+      scenario: broken
+      events: [a_read, b_read, a_write, b_write]
+      t_window: [-0.06, 1.05]
+    representation: [state]
+    validation:
+      focus_in_frame: ["#ledgerV0", "#a-basis", "#b-basis"]
+      keeps_moving: "#stage"
+      max_static_sec: 2.6
+      caption_zone: true
+    review:
+      hero_frames: [1.5, 3.1, 3.7, 4.2, 4.8, 8.9, 12.3]
+      mute_test: "one request, then the frame widens onto a second that already read"
+
+  # ---------------------------------------------------------------------------
+  # EXPERIMENT D — camera as part of the reference frame.
+  # Not a third way of moving the camera; a test of a CONSEQUENCE of the first two.
+  - id: shot_04_cam
+    variant_of: shot_04
+    time: [36.5, 49.5]
+    duration: 13.0
+    engine: hyperframes
+    camera:
+      motion: widen
+      semantic_function: camera_as_shared_reference_frame
+      moves_during: [3.20, 4.20]
+      rationale: >-
+        shot_04 exists to be compared against shot_02: identical geometry, changed
+        mechanism, so the only thing the viewer can notice is the mechanism. The
+        moment shot_02 acquires a camera move, that guarantee breaks — a viewer
+        cannot tell whether the frame changed because the mechanism changed or
+        because the camera did. So the camera is not a per-shot decoration; it is
+        part of the reference frame, and a comparison pair has to share it.
+        This variant carries shot_02_cam's move UNCHANGED, verbatim, including its
+        timing. What differs between the two shots is then still only the mechanism:
+        under a lock, the frame widens onto a second request that is WAITING rather
+        than onto one that has already taken a copy.
+      may_leave_view: []
+    narration: >-
+      Pessimistic locking takes the row first. The second request does not read a
+      stale value, because it does not get to read at all until the first one is done.
+    purpose: "Prove that a camera move must be shared by a comparison pair, not chosen per shot."
+    visual_question: "Where does the second request stop?"
+    semantic:
+      scenario: pessimistic
+      events: [a_lock, a_read, b_lock, a_write, a_unlock, b_read, b_write]
+      t_window: [-0.04, 1.0]
+    representation: [state]
+    validation:
+      focus_in_frame: ["#ledgerV0", "#a-basis"]
+      keeps_moving: "#stage"
+      max_static_sec: 2.8
+      caption_zone: true
+    review:
+      hero_frames: [1.5, 3.1, 3.7, 4.2, 4.8, 8.9]
+      mute_test: "same frame opening the same way onto a request that never gets a copy"
+
+fingerprint:
+  dominant_compositions: [three_zone_ledger, stacked_label_figure_pairs]
+  dominant_geometry: [hairlines, bare_numerals, no_boxes]
+  visual_devices: [value_duplication, version_stamp_disagreement, digit_morph, provenance_rail, supersede_and_demote, boundary_as_storage_edge]
+  camera_devices: [static]
+  motion_devices: [rail_draw, descend, digit_roll, press_against_boundary, displace_and_shrink, stall_at_barrier]
+  typography_usage: [hero_numeral, small_caps_labels, tabular_values_with_version_stamps]
+  color_distribution: { dominant: neutral, authoritative: ochre, alert: vermilion, discarded: grey }
+  reference_influences: [engineered_information_design, ledger_typography]
+  distinctive_device: [read_is_a_duplication, a_hairline_that_is_the_storage_boundary]
+  intentional_repetition:
+    - shots: [shot_02, shot_04]
+      reason: >-
+        Same geometry twice on purpose (shot_05 planned, not authored this cycle). The comparison IS the content: identical
+        frame, changed mechanism. Expect the silhouette diagnostic to flag these;
+        the flag is answered here, not designed away.

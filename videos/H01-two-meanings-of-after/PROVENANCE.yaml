@@ -1,0 +1,24 @@
+package_id: "007"
+package_slug: two-meanings-of-after
+schema_version: 1
+package_revision: null
+source_path: D:/Project/technical-content-engine/packages/007-two-meanings-of-after/content-package.yaml
+source_sha256: f62837859b1d1a2f2232c91f029e52fb295ba4750617f05afc28a6e00a646e6d
+source_git_commit: 92ce32aac75eddcfc04fccec22673d220e89ec3b
+imported_at: 2026-08-27T03:33:17.841Z
+validation_result:
+  validator: tools/validate-package.mjs
+  exit_code: 0
+  verdict: 0 lỗi · 0 cảnh báo
+consumed_as: H01-two-meanings-of-after
+snapshot: videos/H01-two-meanings-of-after/content-package.yaml
+snapshot_sha256: f62837859b1d1a2f2232c91f029e52fb295ba4750617f05afc28a6e00a646e6d
+consumed_sha256: f62837859b1d1a2f2232c91f029e52fb295ba4750617f05afc28a6e00a646e6d
+retroactive: false
+topic: Read-your-writes qua read replica - hai nghĩa của chữ sau
+domain: distributed-systems
+source_modified_at: 2026-08-27T03:13:47.797Z
+notes:
+  - package carries no `revision` field, so revision is not expressible in this
+    contract — only content identity is. source_sha256 is what identifies these
+    bytes.

@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=1920" />
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+/* @brand:start */
+:root {
+  --ground: #0C0D0F; --ink: #EDEAE4; --ink-dim: #8B9198;
+  --stale: #E0533D; --lost: #6A6F74;
+  --font-value: "IBM Plex Mono", ui-monospace, monospace;
+  --font-label: "IBM Plex Sans Condensed", "IBM Plex Sans", system-ui, sans-serif;
+  --t-label: 26px; --track-label: 0.18em;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { overflow: hidden; background: var(--ground); color: var(--ink); font-family: var(--font-label); }
+.label { font-family: var(--font-label); font-size: var(--t-label); letter-spacing: var(--track-label);
+         text-transform: uppercase; color: var(--ink-dim); font-weight: 500; }
+/* @brand:end */
+
+html, body { width: 1080px; height: 1920px; }
+#stage { position: absolute; inset: 0; }
+
+/* ---------------------------------------------------------------------------
+   REGRESSION FIXTURE — overlap that exists only in the FINAL HELD STATE.
+
+   Reproduces the exact geometry that shipped clean out of
+   `cv gate F01-object-level-authz p7-detection` and was then caught by eye in the
+   contact sheet at 12.2s of a 13s shot:
+
+     #a  .label 26px, left 93, top 1184, width 894 — long enough to wrap to two
+         lines, so its real box runs to about y=1250
+     #b  30px sans, left 93, top 1244, width 894, two lines
+
+   The two boxes intersect by roughly 6px. Both elements fade in early and are then
+   held, unchanged, to the end of the composition — no tween boundary sits near the
+   moment the overlap is visible.
+
+   The fixture is deliberately geometry-faithful rather than exaggerated: an overlap
+   of 200px would prove nothing about the threshold that let 6px through.
+--------------------------------------------------------------------------- */
+#a { position: absolute; left: 93px; top: 1184px; width: 894px; color: var(--lost); }
+#b { position: absolute; left: 93px; top: 1244px; width: 894px;
+     font-family: var(--font-label); font-size: 30px; line-height: 1.26;
+     letter-spacing: var(--track-label); text-transform: uppercase;
+     color: var(--stale); font-weight: 500; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="13"
+     data-width="1080" data-height="1920">
+  <div id="stage" class="clip" data-start="0" data-duration="13" data-track-index="0">
+    <div id="a" class="label">và không chạm tới đường nào không đi qua route http</div>
+    <div id="b">phủ hết mọi route cũng chỉ chứng minh CÓ một quyết định ở mỗi đường &mdash;<br />không chứng minh quyết định đó đúng</div>
+  </div>
+</div>
+
+<script>
+window.__timelines = window.__timelines || {};
+const tl = gsap.timeline({ paused: true });
+gsap.set(['#a', '#b'], { opacity: 0 });
+/* Both settle well before the end and are never touched again. The overlap therefore
+   exists continuously from 8.6s to 13s with no tween boundary anywhere near it. */
+tl.to('#a', { opacity: 1, duration: .4, ease: 'power3.out' }, 8.20)
+  .to('#b', { opacity: 1, duration: .5, ease: 'power3.out' }, 10.00);
+window.__timelines['main'] = tl;
+</script>
+</body>
+</html>

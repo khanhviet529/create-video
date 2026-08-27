@@ -1,0 +1,353 @@
+{
+  "built_from_audio_sha256": "2b00831fb5c741f54d2cfc24f516d1878bce8bdeec47d3dd548821c21893207a",
+  "built_from_profile_id": "858f5a83",
+  "speech_total": 169.12,
+  "shots": {
+    "s01-leak": {
+      "shot_start": 0,
+      "duration": 7,
+      "speech": 5.13,
+      "hold_at_end": 1.87,
+      "beats": [
+        {
+          "seg": 1,
+          "start": 0,
+          "duration": 5.13,
+          "text": "Một người đã bị xoá khỏi workspace ba tháng trướ"
+        }
+      ]
+    },
+    "s02-guess": {
+      "shot_start": 7,
+      "duration": 16.5,
+      "speech": 15.13,
+      "hold_at_end": 1.37,
+      "beats": [
+        {
+          "seg": 2,
+          "start": 0,
+          "duration": 3.52,
+          "text": "Nghi ngờ rơi ngay vào token. Chắc phiên đăng nhậ"
+        },
+        {
+          "seg": 3,
+          "start": 3.52,
+          "duration": 4.89,
+          "text": "Nhưng token đó hết hạn từ lâu. Người này đang đă"
+        },
+        {
+          "seg": 4,
+          "start": 8.41,
+          "duration": 2.65,
+          "text": "Trong database, membership của họ đã bị xoá thật"
+        },
+        {
+          "seg": 5,
+          "start": 11.06,
+          "duration": 4.07,
+          "text": "Và gọi thẳng vào endpoint tài liệu, server trả v"
+        }
+      ]
+    },
+    "s02-eliminate": {
+      "shot_start": 23.5,
+      "duration": 9.5,
+      "speech": 8.24,
+      "hold_at_end": 1.26,
+      "beats": [
+        {
+          "seg": 6,
+          "start": 0,
+          "duration": 5.68,
+          "text": "Một dữ kiện, ba giả thuyết bị loại. Xác thực khô"
+        },
+        {
+          "seg": 7,
+          "start": 5.68,
+          "duration": 2.56,
+          "text": "Chỉ có một đường khác không trả về bốn không ba."
+        }
+      ]
+    },
+    "s03-authored-a": {
+      "shot_start": 33,
+      "duration": 11,
+      "speech": 9.2,
+      "hold_at_end": 1.8,
+      "beats": [
+        {
+          "seg": 8,
+          "start": 0,
+          "duration": 7.14,
+          "text": "Xem lại lúc hệ thống được viết ra. Endpoint đọc "
+        },
+        {
+          "seg": 9,
+          "start": 7.14,
+          "duration": 2.06,
+          "text": "Cả hai bước đều đúng. Đến hôm nay vẫn đúng."
+        }
+      ]
+    },
+    "s04-authored-b": {
+      "shot_start": 44,
+      "duration": 21.5,
+      "speech": 19.87,
+      "hold_at_end": 1.63,
+      "beats": [
+        {
+          "seg": 10,
+          "start": 0,
+          "duration": 4.92,
+          "text": "Ba tháng sau, đội thêm một tính năng. Xem commen"
+        },
+        {
+          "seg": 11,
+          "start": 4.92,
+          "duration": 2.93,
+          "text": "Handler đó nhận id của tài liệu, rồi nạp comment"
+        },
+        {
+          "seg": 12,
+          "start": 7.85,
+          "duration": 3.35,
+          "text": "Middleware xác thực vẫn chạy. Nó xác nhận đúng n"
+        },
+        {
+          "seg": 13,
+          "start": 11.2,
+          "duration": 3.47,
+          "text": "Nhưng không có dòng nào hỏi: người này có quyền "
+        },
+        {
+          "seg": 14,
+          "start": 14.67,
+          "duration": 5.2,
+          "text": "Không phải ai đó bỏ qua bước kiểm. Bước kiểm chư"
+        }
+      ]
+    },
+    "s05-response": {
+      "shot_start": 65.5,
+      "duration": 3,
+      "speech": 1.89,
+      "hold_at_end": 1.11,
+      "beats": [
+        {
+          "seg": 15,
+          "start": 0,
+          "duration": 1.89,
+          "text": "Server trả về hai trăm, kèm dữ liệu."
+        }
+      ]
+    },
+    "s06-cadence": {
+      "shot_start": 68.5,
+      "duration": 20.5,
+      "speech": 18.82,
+      "hold_at_end": 1.68,
+      "beats": [
+        {
+          "seg": 16,
+          "start": 0,
+          "duration": 1.61,
+          "text": "Hai câu hỏi ở đây không cùng nhịp."
+        },
+        {
+          "seg": 17,
+          "start": 1.61,
+          "duration": 4.85,
+          "text": "Câu \"anh là ai\" được hỏi một lần cho mỗi request"
+        },
+        {
+          "seg": 18,
+          "start": 6.46,
+          "duration": 5.24,
+          "text": "Câu \"anh được chạm vào object này không\" thì khá"
+        },
+        {
+          "seg": 19,
+          "start": 11.7,
+          "duration": 7.12,
+          "text": "Số đường thì tăng theo thời gian. Thêm endpoint,"
+        }
+      ]
+    },
+    "s07-name": {
+      "shot_start": 89,
+      "duration": 7.5,
+      "speech": 6.86,
+      "hold_at_end": 0.64,
+      "beats": [
+        {
+          "seg": 20,
+          "start": 0,
+          "duration": 6.86,
+          "text": "Lỗi này có tên. Phía web gọi là IDOR. Trong danh"
+        }
+      ]
+    },
+    "s08-not-id": {
+      "shot_start": 96.5,
+      "duration": 11.5,
+      "speech": 10.61,
+      "hold_at_end": 0.89,
+      "beats": [
+        {
+          "seg": 21,
+          "start": 0,
+          "duration": 3.94,
+          "text": "Ở đây id là UUID. Người kia không đoán ra nó. Họ"
+        },
+        {
+          "seg": 22,
+          "start": 3.94,
+          "duration": 4.55,
+          "text": "Id khó đoán làm việc dò tìm đắt hơn. Nó không si"
+        },
+        {
+          "seg": 23,
+          "start": 8.49,
+          "duration": 2.12,
+          "text": "Nên cách sửa không nằm ở việc đổi id."
+        }
+      ]
+    },
+    "s09-not-a-line": {
+      "shot_start": 108,
+      "duration": 6,
+      "speech": 4.88,
+      "hold_at_end": 1.12,
+      "beats": [
+        {
+          "seg": 24,
+          "start": 0,
+          "duration": 4.88,
+          "text": "Cũng không nằm ở việc thêm một dòng check vào ha"
+        }
+      ]
+    },
+    "s10-invariant": {
+      "shot_start": 114,
+      "duration": 8,
+      "speech": 6.41,
+      "hold_at_end": 1.59,
+      "beats": [
+        {
+          "seg": 25,
+          "start": 0,
+          "duration": 6.41,
+          "text": "OWASP viết thẳng hai vế. Trừ tài nguyên công kha"
+        }
+      ]
+    },
+    "s11-inherit": {
+      "shot_start": 122,
+      "duration": 17.5,
+      "speech": 15.75,
+      "hold_at_end": 1.75,
+      "beats": [
+        {
+          "seg": 26,
+          "start": 0,
+          "duration": 8.16,
+          "text": "Dịch sang code thì một cách làm là thế này. Khôn"
+        },
+        {
+          "seg": 27,
+          "start": 8.16,
+          "duration": 3.17,
+          "text": "Endpoint thêm sau thừa hưởng chuyện đó. Không ai"
+        },
+        {
+          "seg": 28,
+          "start": 11.33,
+          "duration": 4.42,
+          "text": "Authentication giữ nguyên. URL giữ nguyên. Handl"
+        }
+      ]
+    },
+    "s12-cost": {
+      "shot_start": 139.5,
+      "duration": 12,
+      "speech": 10.69,
+      "hold_at_end": 1.31,
+      "beats": [
+        {
+          "seg": 29,
+          "start": 0,
+          "duration": 10.69,
+          "text": "Cách này không miễn phí. Job nền và công cụ admi"
+        }
+      ]
+    },
+    "s13-scope-limits": {
+      "shot_start": 151.5,
+      "duration": 7,
+      "speech": 5.76,
+      "hold_at_end": 1.24,
+      "beats": [
+        {
+          "seg": 30,
+          "start": 0,
+          "duration": 5.76,
+          "text": "Và nó chỉ phủ quan hệ sở hữu. Chia sẻ có điều ki"
+        }
+      ]
+    },
+    "s14-signal": {
+      "shot_start": 158.5,
+      "duration": 13,
+      "speech": 11.76,
+      "hold_at_end": 1.24,
+      "beats": [
+        {
+          "seg": 31,
+          "start": 0,
+          "duration": 11.76,
+          "text": "Cách kiểm thì đơn giản. Với mỗi route nhận id từ"
+        }
+      ]
+    },
+    "s14-limits": {
+      "shot_start": 171.5,
+      "duration": 16,
+      "speech": 13.6,
+      "hold_at_end": 2.4,
+      "beats": [
+        {
+          "seg": 32,
+          "start": 0,
+          "duration": 4.48,
+          "text": "Con số đó nói cho bạn biết còn đường nào chưa ai"
+        },
+        {
+          "seg": 33,
+          "start": 4.48,
+          "duration": 6.12,
+          "text": "Test xanh chỉ chứng minh tài khoản trong fixture"
+        },
+        {
+          "seg": 34,
+          "start": 10.6,
+          "duration": 3,
+          "text": "Và nó không chạm tới đường nào không đi qua rout"
+        }
+      ]
+    },
+    "s15-question": {
+      "shot_start": 187.5,
+      "duration": 7.5,
+      "speech": 4.52,
+      "hold_at_end": 2.98,
+      "beats": [
+        {
+          "seg": 35,
+          "start": 0,
+          "duration": 4.52,
+          "text": "Endpoint gần nhất bạn thêm vào. Nó tự kiểm quyền"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,45 @@
+id: C01-n-plus-one
+title: "One list, a hundred round trips"
+domain: performance
+audience: "backend engineers, 2-5 years"
+
+assumptions:
+  - "The association is lazy-loaded: touching it on a row issues that row's own SELECT."
+  - "Round-trip cost dominates; each individual query is trivially fast."
+  - "Page size is 100. That is the page size, not a measured benchmark — no timing
+     figure in this video is claimed as a production measurement."
+
+actors:
+  - { id: handler, label: "index action", kind: service }
+  - { id: db,      label: "postgres",     kind: store }
+
+state:
+  db.page: 100
+
+scenarios:
+  broken:
+    note: "one query for the rows, then one more per row"
+    events:
+      - { id: page,   t: 0.08, actor: handler, op: read,  target: db, field: page, into: n, expect: 100,
+          note: "one query returns one hundred rows" }
+      - { id: loop,   t: 0.30, actor: handler, op: spawn, count: { expr: "n" }, of: "read:db",
+          note: "the association is touched once per row" }
+      - { id: render, t: 0.90, actor: handler, op: access, subject: handler, resource: response,
+          note: "the page finally renders" }
+    invariants:
+      - { id: query_budget, kind: work_ratio, count_op: "read:db", max: 2,
+          note: "a page should cost one query for the rows and one for their associations" }
+    expect:
+      violations: [query_budget]
+
+  fixed:
+    note: "the associations are fetched in one further query"
+    events:
+      - { id: page,   t: 0.10, actor: handler, op: read, target: db, field: page, into: n, expect: 100 }
+      - { id: batch,  t: 0.45, actor: handler, op: read, target: db, field: page,
+          note: "one SELECT ... WHERE user_id IN (...)" }
+      - { id: render, t: 0.90, actor: handler, op: access, subject: handler, resource: response }
+    invariants:
+      - { id: query_budget, kind: work_ratio, count_op: "read:db", max: 2 }
+    expect:
+      violations: []

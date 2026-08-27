@@ -1,0 +1,14 @@
+{
+  "duration": 11,
+  "assertions": [
+    {
+      "kind": "staysInFrame",
+      "selector": "#hA"
+    },
+    {
+      "kind": "keepsMoving",
+      "withinSelector": "#stage",
+      "maxStaticSec": 3.6
+    }
+  ]
+}

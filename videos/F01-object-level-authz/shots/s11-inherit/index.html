@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=1920" />
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+/* @brand:start */
+:root {
+  --ground: #0C0D0F; --ground-lift: #14161A;
+  --ink: #EDEAE4; --ink-mid: #9AA0A6; --ink-dim: #8B9198; --ink-ghost: #3A3E42;
+  --rule: #23272A; --rule-bright: #3D4348; --hair: 1.5px;
+  --authoritative: #C9A227; --stale: #E0533D; --lost: #6A6F74;
+  --boundary: #4E8C7D; --pressure: #B4623A; --counterfactual: #7A8086;
+  --font-value: "IBM Plex Mono", ui-monospace, monospace;
+  --font-label: "IBM Plex Sans Condensed", "IBM Plex Sans", system-ui, sans-serif;
+  --t-hero: 200px; --t-value: 64px; --t-body: 36px; --t-label: 26px; --track-label: 0.18em;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { overflow: hidden; background: var(--ground); color: var(--ink); font-family: var(--font-label); }
+.label { font-family: var(--font-label); font-size: var(--t-label); letter-spacing: var(--track-label);
+         text-transform: uppercase; color: var(--ink-dim); font-weight: 500; }
+/* @brand:end */
+
+html, body { width: 1080px; height: 1920px; }
+#stage { position: absolute; inset: 0; }
+
+/* ---------------------------------------------------------------------------
+   SHOT 11 — INHERITANCE. 14s. Register: fix. Operation: accumulation.
+
+   Opens on shot 10's closing frame — invariant, rule, the flipped default, the source
+   line — and lets the default block yield to the list. Same match-cut grammar as
+   03 -> 04: the incoming shot carries the outgoing state and gives it up on purpose.
+
+   THE PROOF IS A NEW ROW. `/docs/:id/print` did not exist a moment ago, and it arrives
+   ALREADY ochre. Nobody coloured it, nobody added a line to it. That is the package's
+   own mechanism — "endpoint thêm sau thừa hưởng, không ai phải nhớ" — and it says
+   nothing about where enforcement lives.
+
+   REJECTED, and this is why there is no token column: an earlier cut put the phrase
+   `quyết định phân quyền` beside every row, five times, in ochre monospace. Monospace
+   means VALUE in this library, so a repeated Vietnamese phrase in it is typography
+   wearing a label's clothes. Ochre already means the authorization decision by the
+   time the viewer arrives here, so the PATHS carry the colour and nothing is repeated.
+   That also removes any call for the viewer to read as something a handler makes.
+
+   Rows arrive already ochre, never plain-then-ochre. A recolour sweeping over rows
+   that were already there would read as somebody going around adding checks by hand,
+   which is the fix the package explicitly rejects.
+
+   The example is fenced: a rule, a label that says it is an example, other valid
+   placements underneath, and a closing line naming the separation as a rule. The
+   causal reason `/docs/:id/print` is covered is legible from the invariant at the top
+   of the frame, not from the example — so inheritance is what the EXAMPLE achieves,
+   not a universal law being taught.
+--------------------------------------------------------------------------- */
+#invLbl  { position: absolute; left: 93px; top: 236px; }
+#invText { position: absolute; left: 93px; top: 286px; width: 894px;
+           font-family: var(--font-label); font-size: 42px; line-height: 1.18;
+           letter-spacing: 0.01em; color: var(--ink); font-weight: 600; }
+
+/* carried in from shot 10, then yields */
+#rule0 { position: absolute; left: 93px; top: 470px; width: 894px; height: var(--hair);
+         background: var(--rule-bright); }
+#dLbl  { position: absolute; left: 93px; top: 502px; }
+#d2    { position: absolute; left: 93px; top: 562px; font-family: var(--font-value);
+         font-size: 40px; line-height: 1; color: var(--boundary); white-space: pre; }
+#src   { position: absolute; left: 93px; top: 668px; color: var(--lost); }
+
+#lblList { position: absolute; left: 93px; top: 470px; }
+.p    { position: absolute; left: 93px; font-family: var(--font-value); font-size: 38px;
+        line-height: 1; color: var(--authoritative); white-space: pre; }
+.pnew { font-weight: 600; }
+
+#proofLbl { position: absolute; left: 93px; top: 940px; width: 894px; color: var(--authoritative); }
+
+#rule   { position: absolute; left: 93px; top: 1004px; width: 894px; height: var(--hair);
+          background: var(--rule-bright); transform-origin: left center; }
+#exLbl  { position: absolute; left: 93px; top: 1034px; }
+#exText { position: absolute; left: 93px; top: 1078px; width: 894px;
+          font-family: var(--font-label); font-size: 34px; letter-spacing: 0.01em;
+          color: var(--ink-mid); font-weight: 500; }
+#altText{ position: absolute; left: 93px; top: 1138px; width: 894px; color: var(--lost);
+          line-height: 1.3; }
+#sep    { position: absolute; left: 93px; top: 1252px; width: 894px;
+          font-family: var(--font-label); font-size: 32px; letter-spacing: var(--track-label);
+          text-transform: uppercase; color: var(--stale); font-weight: 600; }
+#unch   { position: absolute; left: 93px; top: 1336px; width: 894px; color: var(--ink-dim);
+          line-height: 1.3; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="17.5"
+     data-width="1080" data-height="1920">
+  <div id="stage" class="clip" data-start="0" data-duration="17.5" data-track-index="0">
+
+    <div id="invLbl" class="label">bất biến phải giữ</div>
+    <div id="invText">mọi truy cập tới object được bảo vệ đều phải chịu quyết định phân quyền cần thiết</div>
+
+    <div id="rule0"></div>
+    <div id="dLbl" class="label">và mặc định của nó</div>
+    <div id="d2">không có quyết định  &rarr;  từ chối</div>
+    <div id="src" class="label">owasp top 10 2021 &middot; a01 broken access control</div>
+
+    <div id="lblList" class="label">khi bất biến đó được thực thi</div>
+    <div id="rows"></div>
+
+    <div id="proofLbl" class="label">đường vừa được thêm &middot; không ai thêm gì cho nó</div>
+
+    <div id="rule"></div>
+    <div id="exLbl" class="label">một cách làm &middot; ví dụ</div>
+    <div id="exText">repository nhận principal, không nhận mỗi id</div>
+    <div id="altText" class="label">chỗ đặt khác cũng thoả bất biến &mdash; policy engine &middot;
+      guard theo route &middot; scope ở tầng nạp dữ liệu</div>
+    <div id="sep">bất biến là bắt buộc &middot; chỗ đặt là lựa chọn kiến trúc</div>
+    <div id="unch" class="label">authentication không đổi &middot; url không đổi &middot;
+      handler cũ đang đúng thì không phải viết lại</div>
+
+  </div>
+</div>
+
+<script>
+const ROWS = ['/docs/:id', '/docs/:id/comments', '/docs/:id/history', '/docs/:id/exports'];
+const NEW = '/docs/:id/print';
+const TOP = 530, PITCH = 82;
+
+const host = document.getElementById('rows');
+const rowEls = [];
+[...ROWS, NEW].forEach((p, i) => {
+  const d = document.createElement('div');
+  d.className = 'p' + (i === ROWS.length ? ' pnew' : '');
+  d.style.top = (TOP + i * PITCH) + 'px'; d.textContent = p;
+  host.appendChild(d); rowEls.push(d);
+});
+
+window.__timelines = window.__timelines || {};
+const tl = gsap.timeline({ paused: true });
+const R = 'power3.out', T = 'power2.inOut';
+
+/* invLbl / invText / rule0 / dLbl / d2 / src are shot 10's closing state — visible at t=0 */
+gsap.set([...rowEls, '#lblList', '#proofLbl', '#exLbl', '#exText', '#altText', '#sep', '#unch'], { opacity: 0 });
+gsap.set('#rule', { scaleX: 0 });
+
+/* ---- 1.00  the default block yields to the list ----------------------- */
+// beat 1 (0.00-8.20) is the EXAMPLE, so s10's default block yields to it first and the
+// list waits for beat 2. Positions are unchanged; only the order in time follows the words.
+tl.to(['#rule0', '#dLbl', '#d2', '#src'], { opacity: 0, duration: .5, ease: 'power2.in' }, 0.90);
+
+/* ---- 2.20  four paths, each already subject to it -------------------- */
+// beat 2 (8.20-11.39): "endpoint thêm sau thừa hưởng chuyện đó. không ai phải nhớ."
+tl.to('#lblList', { opacity: 1, duration: .4, ease: R }, 8.30);
+ROWS.forEach((_, i) => {
+  tl.to(rowEls[i], { opacity: 1, duration: .26, ease: R }, 8.70 + i * 0.22);
+});
+
+/* ---- 4.30  THE PROOF: a path that did not exist, arriving already covered */
+tl.to(rowEls[ROWS.length], { opacity: 1, duration: .4, ease: R }, 9.90)
+  .to('#proofLbl', { opacity: 1, duration: .4, ease: R }, 10.50);
+
+/* ---- 6.40  and only now an example, fenced off ----------------------- */
+tl.to('#rule', { scaleX: 1, duration: .65, ease: T }, 1.50)
+  .to('#exLbl', { opacity: 1, duration: .35, ease: R }, 1.85)
+  .to('#exText', { opacity: 1, duration: .4, ease: R }, 3.30)
+  .to('#altText', { opacity: 1, duration: .4, ease: R }, 5.60);
+
+/* ---- 10.00  the separation, as the rule it is ------------------------ */
+tl.to('#sep', { opacity: 1, duration: .45, ease: R }, 6.80);
+
+/* ---- 11.60  and what the fix does NOT change ------------------------- */
+// beat 3 (11.39-16.16): "authentication giữ nguyên. url giữ nguyên. handler cũ…"
+tl.to('#unch', { opacity: 1, duration: .45, ease: R }, 11.60);
+
+window.__timelines['main'] = tl;
+</script>
+</body>
+</html>

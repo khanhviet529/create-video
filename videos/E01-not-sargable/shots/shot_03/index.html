@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=1920" />
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+/* @brand:start */
+:root {
+  --ground: #0C0D0F; --ground-lift: #14161A;
+  --ink: #EDEAE4; --ink-mid: #9AA0A6; --ink-dim: #8B9198; --ink-ghost: #3A3E42;
+  --rule: #23272A; --rule-bright: #3D4348; --hair: 1.5px;
+  --authoritative: #C9A227; --stale: #E0533D; --lost: #6A6F74;
+  --boundary: #4E8C7D; --pressure: #B4623A; --counterfactual: #7A8086;
+  --font-value: "IBM Plex Mono", ui-monospace, monospace;
+  --font-label: "IBM Plex Sans Condensed", "IBM Plex Sans", system-ui, sans-serif;
+  --t-hero: 200px; --t-value: 64px; --t-body: 36px; --t-label: 26px; --track-label: 0.18em;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { overflow: hidden; background: var(--ground); color: var(--ink); font-family: var(--font-label); }
+.label { font-family: var(--font-label); font-size: var(--t-label); letter-spacing: var(--track-label);
+         text-transform: uppercase; color: var(--ink-dim); font-weight: 500; }
+/* @brand:end */
+
+html, body { width: 1080px; height: 1920px; }
+#stage { position: absolute; inset: 0; }
+
+/* ---------------------------------------------------------------------------
+   SHOT 03 — LOCALISE THE CAUSE BY SUBTRACTION
+
+   Two queries against the SAME index, one of which uses it. Everything the two
+   statements share cannot be the cause, so it is removed — literally: the shared
+   prefix dims and the remainders slide left into the space it vacated. What is
+   left is the only place the cause can be.
+
+   Deliberately does NOT align the two remainders on a shared `email` column with
+   connectors. That is shot_06's reveal, and spending it here would leave shot_06
+   with nothing to discover. Here the remainders stay two ordinary lines of code:
+   the claim is only "the difference is in the WHERE clause", not yet "these two
+   expressions are not the same expression".
+
+   Prefix width is arithmetic, not eyeballed: IBM Plex Mono advances exactly 0.6em,
+   the shared prefix is 26 characters, so at 34px it is 530px. Both remainders travel
+   the same 530px, which is what makes the cancellation legible as cancellation.
+--------------------------------------------------------------------------- */
+#topLbl { position: absolute; left: 93px; top: 300px; }
+
+.q      { position: absolute; font-family: var(--font-value); font-size: 34px;
+          line-height: 1; white-space: pre; }
+#qaPre, #qbPre { left: 93px;  color: var(--ink-mid); }
+#qaTail, #qbTail { left: 623px; color: var(--ink); transform-origin: left center; }
+#qaPre, #qaTail { top: 700px; }
+#qbPre, #qbTail { top: 900px; }
+
+/* the region the subtraction leaves behind — the answer of the shot */
+#diff   { position: absolute; left: 78px; top: 664px; width: 620px; height: 348px;
+          background: var(--ground-lift); }
+
+#va     { position: absolute; left: 93px;  top: 762px; color: var(--boundary); }
+#vb     { position: absolute; left: 93px;  top: 962px; color: var(--stale); }
+
+#diffLbl { position: absolute; left: 93px; top: 1084px; width: 894px;
+           font-family: var(--font-label); font-size: 34px; letter-spacing: var(--track-label);
+           text-transform: uppercase; color: var(--ink); font-weight: 600; }
+#next    { position: absolute; left: 93px; top: 1160px; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="9"
+     data-width="1080" data-height="1920">
+  <div id="stage" class="clip" data-start="0" data-duration="9" data-track-index="0">
+
+    <div id="topLbl" class="label">hai câu &mdash; cùng một bảng, cùng một index</div>
+
+    <div id="diff"></div>
+
+    <div class="q" id="qaPre">SELECT * FROM users WHERE </div>
+    <div class="q" id="qaTail">email = $1</div>
+    <div id="va" class="label">index scan</div>
+
+    <div class="q" id="qbPre">SELECT * FROM users WHERE </div>
+    <div class="q" id="qbTail">lower(email) = $1</div>
+    <div id="vb" class="label">seq scan</div>
+
+    <div id="diffLbl">khác biệt duy nhất: mệnh đề where</div>
+    <div id="next" class="label">mọi thứ khác đã bị trừ đi</div>
+
+  </div>
+</div>
+
+<script>
+window.__timelines = window.__timelines || {};
+const tl = gsap.timeline({ paused: true });
+const R = 'power3.out', T = 'power2.inOut';
+
+const PREFIX_PX = 530;   /* 26 chars x 0.6em x 34px */
+
+gsap.set(['#qaPre', '#qaTail', '#qbPre', '#qbTail', '#va', '#vb', '#diffLbl', '#next'], { opacity: 0 });
+gsap.set('#diff', { opacity: 0 });
+
+/* ---- 0.20  the setup: same table, same index ------------------------- */
+tl.fromTo('#topLbl', { opacity: 0 }, { opacity: 1, duration: .4, ease: R }, 0.20);
+
+/* ---- 0.60  the query that works ------------------------------------- */
+tl.to(['#qaPre', '#qaTail'], { opacity: 1, duration: .45, ease: R }, 0.60)
+  .to('#va', { opacity: 1, duration: .35, ease: R }, 1.10);
+
+/* ---- 1.75  the query that does not --------------------------------- */
+tl.to(['#qbPre', '#qbTail'], { opacity: 1, duration: .45, ease: R }, 1.75)
+  .to('#vb', { opacity: 1, duration: .35, ease: R }, 2.25);
+
+/* ---- 3.20–4.30  THE SUBTRACTION -------------------------------------
+   The shared prefix does not fade out and leave a hole. It dims first — becoming
+   something you have decided to stop looking at — and only then do the remainders
+   move through the space it occupied. Both travel exactly 530px, together: a
+   difference of speed here would read as one of them being more important. */
+tl.to(['#qaPre', '#qbPre'], { color: '#6A6F74', duration: .45, ease: 'none' }, 3.20)
+  .to(['#qaPre', '#qbPre'], { opacity: 0, duration: .5, ease: T }, 3.55)
+  .to(['#qaTail', '#qbTail'], { x: -PREFIX_PX, duration: .85, ease: T }, 3.60);
+
+/* ---- 4.55  what is left gets the room the subtraction freed ---------
+   Growth is not decoration: the remainder is now the whole subject, so it is now
+   the largest thing in the frame. 1.65x takes 34px to 56px. */
+tl.to(['#qaTail', '#qbTail'], { scale: 1.65, duration: .75, ease: T }, 4.55)
+  .fromTo('#diff', { opacity: 0 }, { opacity: 1, duration: .6, ease: R }, 4.70);
+
+/* ---- 5.85  name the conclusion, after it is already visible ---------- */
+tl.to('#diffLbl', { opacity: 1, duration: .45, ease: R }, 5.85)
+  .to('#next', { opacity: 1, duration: .45, ease: R }, 7.10);
+
+window.__timelines['main'] = tl;
+</script>
+</body>
+</html>

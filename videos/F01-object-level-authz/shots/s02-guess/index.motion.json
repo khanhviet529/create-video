@@ -1,0 +1,10 @@
+{
+  "duration": 16.5,
+  "assertions": [
+    {
+      "kind": "appearsBy",
+      "selector": "#ev-olddeny",
+      "bySec": 14.443
+    }
+  ]
+}

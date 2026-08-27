@@ -1,0 +1,1207 @@
+# G01 — Step 3, Hero Visual R&D. Không phải bản dựng video.
+#
+# stage: r_and_d nên cv compose ra r_and_d.mp4, không phải prototype hay final. Tên file nói
+# đúng nó là gì: một loạt thăm dò, chưa phải một bản cắt của video.
+
+video_id: G01-bloat-not-row-count
+package: "006"
+stage: production
+full_video_review: passed
+planned_runtime_s: 157
+
+voice_calibration:
+  scope: this_video_only
+  status: resolved
+  note: >-
+    Chưa chọn giọng cho 006. F01 chốt namtre_v2 @ 1.00 CHO RIÊNG F01; ở đây phải
+    thử lại và đo lại từ đầu. Profile id do server cấp nên sẽ khác trên mỗi
+    runtime.
+  profile_id: a666ed5a
+  profile_name: namtre_v2
+  speed: 1
+  seed: 1
+  language: vi
+  profile_identity_note: 'ID do server cấp (uuid4()[:8]) nên chỉ đúng trên runtime
+    này — F01 từng là 7ded6c3d rồi 858f5a83 trên hai runtime khác. Thứ bền là
+    CÔNG THỨC: kind=clone, ref_audio = giong/namtre_v2.wav (5.36s), ref_text +
+    instruct "male, young adult, moderate pitch" lấy từ giong/manifest.json của
+    D:\Project\whiteboard-video. Dựng lại bằng: py src/giong.py bao-dam
+    namtre_v2. Đã đối chiếu ref_text server trả về khớp manifest từng byte.'
+  speed_note: "Bắt đầu ở 1.00 vì đó là nhịp tự nhiên của namtre_v2 — F01 đo được
+    4.11 âm/s ở tốc độ này. KHÔNG kế thừa kết luận đó: package 006 có nhịp âm
+    tiết riêng và phải đo lại."
+
+world:
+  note: >-
+    Một thế giới dùng chung cho mọi prototype, khai ở tools/gen-g01-proto.mjs. Ô
+    là chỗ lưu trữ VẬT LÝ; màu là trạng thái và chỉ là trạng thái. Biên cấp phát
+    là một vật hình học KHÁC với trạng thái ô — đó là thứ giữ cho "dùng lại bên
+    trong" và "trả về OS" không bao giờ trông giống nhau.
+  physical_rule: >-
+    UPDATE không sửa ô tại chỗ. Nó làm ô cũ chết TẠI CHỖ và ghi phiên bản sống
+    mới ở ô trống đầu tiên — một chỗ KHÁC. Biên chỉ nở khi bên trong hết chỗ.
+  anchor: >-
+    Neo là một ĐẠI LƯỢNG chứ không phải một vị trí: vùng "chỗ dữ liệu sống cần"
+    giữ nguyên diện tích vì SỐ phiên bản sống là hằng số, dù mọi phiên bản bên
+    trong đều đã bị ghi lại ở chỗ khác. Bloat là khoảng cách giữa vùng đó và
+    biên cấp phát.
+  contract: "Xem CHAPTER_ARCHITECTURE.md §1. Cố định cho cả video: ô đặc ink =
+    phiên bản sống · ô đặc lost = phiên bản chết nằm đúng chỗ nó chết · ô viền
+    rule-bright = trống, dùng lại được BÊN TRONG · khung ngoài rule-bright =
+    phần ĐÃ CẤP, chỉ nở ra · vạch teal = chỗ dữ liệu sống cần, KHÔNG BAO GIỜ đổi
+    độ dài · vạch vermilion = chỗ đã cấp · chân trời nét đứt = đường khả kiến
+    của transaction mở · ochre = sự kiện sweep. Không màu nào, không hình học
+    nào được đổi nghĩa về sau vì một cảnh khác cần nó."
+  measurement_is_not_a_region: 'Bản Step 3 vẽ "chỗ dữ liệu sống cần" thành khung
+    bao quanh mấy hàng ô đầu. Đo lại chính nội dung nó bao thì nó ôm cả ô trống
+    và bỏ sót ô sống nằm dưới — nó đọc thành phân vùng vật lý của relation, và
+    điều đó SAI: phiên bản sống nằm rải khắp phần đã cấp. Phép đo nay sống trên
+    MỘT TRỤC ở register đỉnh; thế giới chỉ còn MỘT khung, là phần đã cấp. Vạch
+    trên trục và ô trong khung là hai loại hình học khác nhau nên hai mức không
+    thể lẫn. Chứng minh ở p5-measure-register.'
+  vacuum_changes: ô lost -> ô viền · số phiên bản chết về ~0
+  vacuum_does_not_change: "khung ngoài · vạch vermilion · số phiên bản sống · vạch
+    teal. Ràng buộc dựng: trong chương VACUUM không được có MỘT tween nào chạm
+    khung ngoài hay vạch vermilion — kiểm bằng đọc timeline, không bằng nhìn."
+
+shots:
+  - id: p1-world-30s
+    status: experiment
+    duration: 30
+    time: [ 0, 30 ]
+    engine: hyperframes
+    risk: R1
+    question: "Một thế giới bền có mang nổi cơ chế suốt 30 giây mà không reset thành
+      cảnh rời không?"
+    camera:
+      {
+        motion: static,
+        semantic_function: none_yet,
+        rationale: "R1 kiểm thế giới, không kiểm camera"
+      }
+    review:
+      hero_frames: [ 2.5, 8, 14, 19.8, 23, 29.8 ]
+      mute_test: "số ô sống không đổi trong khi vùng ô bị chiếm lớn dần; sweep làm ô
+        chết TRỐNG; biên không nhúc nhích"
+
+  - id: p2a-reuse-inside
+    status: experiment
+    duration: 10
+    time: [ 30, 40 ]
+    engine: hyperframes
+    risk: R2
+    question: "Thu hồi thành chỗ dùng lại được BÊN TRONG đọc ra như thế nào khi
+      không có chữ?"
+    camera:
+      {
+        motion: static,
+        semantic_function: none_yet,
+        rationale: "biên phải đứng im, nên camera cũng vậy"
+      }
+    review:
+      hero_frames: [ 0.5, 3, 6, 9.8 ]
+      mute_test: "trạng thái ô đổi, biên không có tween nào cả"
+
+  - id: p2b-return-to-os
+    status: experiment
+    duration: 10
+    time: [ 40, 50 ]
+    engine: hyperframes
+    risk: R2
+    question: "Trả chỗ về OS có đọc ra khác hẳn không, hay vẫn bị nhầm với thu hồi
+      bên trong?"
+    camera:
+      {
+        motion: static,
+        semantic_function: none_yet,
+        rationale: "chuyển động thuộc về vật thể"
+      }
+    review:
+      hero_frames: [ 0.5, 2.5, 5, 7.5, 9.8 ]
+      mute_test: "PHẢI thấy hai vật chứa tồn tại cùng lúc — đó là chỗ đĩa thêm"
+
+  - id: p3a-boundary-offscreen
+    status: experiment
+    duration: 12
+    time: [ 50, 62 ]
+    engine: hyperframes
+    risk: R3
+    question: "Biên vượt mép khung: đọc thành vật lớn lên hay thành camera lại gần?"
+    camera:
+      {
+        motion: static,
+        semantic_function: none_yet,
+        rationale: "không transform nào — nếu vẫn đọc thành zoom thì đó là phát hiện"
+      }
+    review:
+      hero_frames: [ 1, 4, 8, 11.8 ]
+      mute_test: "nội dung giữ nguyên cỡ, biên đi ra khỏi khung"
+
+  - id: p3b-boundary-measured
+    status: experiment
+    duration: 12
+    time: [ 62, 74 ]
+    engine: hyperframes
+    risk: R3
+    question: "Thước đo cố định có mang được thông tin tỉ lệ mà không cần biên rời
+      khung không?"
+    camera:
+      {
+        motion: static,
+        semantic_function: none_yet,
+        rationale: "thế giới thu nhỏ, khung không đổi"
+      }
+    review:
+      hero_frames: [ 1, 4, 8, 11.8 ]
+      mute_test: "vạch teal đứng yên, vạch vermilion dài ra — chênh lệch là bloat"
+
+  - id: p4a-churn-interleaved
+    status: experiment
+    duration: 12
+    time: [ 74, 86 ]
+    engine: hyperframes
+    risk: R4
+    question: "Ô chết nằm rải đúng chỗ chúng chết: có đếm nổi 20% không?"
+    camera: { motion: static, semantic_function: none_yet, rationale: "-" }
+    review:
+      hero_frames: [ 1, 5, 9, 11.8 ]
+      mute_test: "chết rải khắp, đúng bố cục lưu trữ — nhưng đếm được không?"
+
+  - id: p4b-churn-aggregated
+    status: experiment
+    duration: 12
+    time: [ 86, 98 ]
+    engine: hyperframes
+    risk: R4
+    question: "Gom ô chết lại để đếm có bị đọc thành bố cục vật lý không?"
+    camera: { motion: static, semantic_function: none_yet, rationale: "-" }
+    review:
+      hero_frames: [ 1, 5, 8.5, 11.8 ]
+      mute_test: "cú DI CHUYỂN của ô chết phải đọc ra là ĐỔI CÁCH BÀY, không phải đổi
+        chỗ lưu"
+  - id: p5-measure-register
+    status: experiment
+    duration: 18
+    time:
+      - 98
+      - 116
+    engine: hyperframes
+    risk: LOCK
+    question: "Tách mức đo ra khỏi thế giới vật lý: thước mang lượng, khung mang chỗ
+      chiếm. Có còn đọc thành phân vùng vật lý không?"
+    camera:
+      motion: static
+      semantic_function: none_yet
+      rationale: "-"
+    review:
+      hero_frames:
+        - 2
+        - 6
+        - 11
+        - 12.5
+        - 15
+        - 17.8
+      mute_test: KHÔNG có khung nào bao quanh một nhóm ô. Vạch teal đứng yên, vạch
+        vermilion dài ra, khoảng hở giữa hai đầu phải là bloat
+  - id: p1-roundtrip
+    status: experiment
+    duration: 22
+    time:
+      - 116
+      - 138
+    engine: hyperframes
+    risk: P1
+    question: "vòng đi-về của mức giải tích: ô chết đi xuống khối gom, đếm, rồi QUAY
+      VỀ đúng slot cũ. Ghost ở lại chỗ cũ suốt thời gian đó"
+    camera:
+      motion: static
+      semantic_function: none
+      rationale: >-
+        chuyển động của vật đã mang hết nghĩa; camera không hé lộ thêm gì. Quyết định
+        ở Step 5, không còn để mở
+    review:
+      hero_frames:
+        - 1
+        - 7.7
+        - 13.2
+        - 21.8
+      mute_test: "vòng đi-về của mức giải tích: ô chết đi xuống khối gom, đếm, rồi
+        QUAY VỀ đúng slot cũ. Ghost ở lại chỗ cũ suốt thời gian đó"
+  - id: p2-threshold-vs-snapshot
+    status: experiment
+    duration: 30
+    time:
+      - 138
+      - 168
+    engine: hyperframes
+    risk: P2
+    question: "ba pha một thế giới: chưa tới ngưỡng (KHÔNG sweep) · tới ngưỡng
+      (sweep dọn được) · có snapshot cũ (SWEEP CHẠY mà không dọn được gì)"
+    camera:
+      motion: static
+      semantic_function: none
+      rationale: >-
+        chuyển động của vật đã mang hết nghĩa; camera không hé lộ thêm gì. Quyết định
+        ở Step 5, không còn để mở
+    review:
+      hero_frames:
+        - 1
+        - 10.5
+        - 18
+        - 29.8
+      mute_test: "ba pha một thế giới: chưa tới ngưỡng (KHÔNG sweep) · tới ngưỡng
+        (sweep dọn được) · có snapshot cũ (SWEEP CHẠY mà không dọn được gì)"
+    vacuum_invariant:
+      from: 9
+      to: 11.6
+      note: pha 2 — sweep dọn được. Biên cấp phát phải đứng im qua đúng cửa sổ này
+  - id: p3a-static-ruler
+    status: experiment
+    duration: 12
+    time:
+      - 168
+      - 180
+    engine: hyperframes
+    risk: P3
+    question: camera tĩnh + thước
+    camera:
+      motion: static
+      semantic_function: none
+      rationale: >-
+        chuyển động của vật đã mang hết nghĩa; camera không hé lộ thêm gì. Quyết định
+        ở Step 5, không còn để mở
+    review:
+      hero_frames:
+        - 1
+        - 4.2
+        - 7.2
+        - 11.8
+      mute_test: camera tĩnh + thước
+  - id: p3b-pullback
+    status: experiment
+    duration: 12
+    time:
+      - 180
+      - 192
+    engine: hyperframes
+    risk: P3
+    question: cùng nội dung + cú lùi. Chỉ giữ nếu lộ ra thứ A không truyền được
+    camera:
+      motion: pull_back
+      semantic_function: none
+      rationale: >-
+        chuyển động của vật đã mang hết nghĩa; camera không hé lộ thêm gì. Quyết định
+        ở Step 5, không còn để mở
+    review:
+      hero_frames:
+        - 1
+        - 4.2
+        - 7.2
+        - 11.8
+      mute_test: cùng nội dung + cú lùi. Chỉ giữ nếu lộ ra thứ A không truyền được
+  - id: p4-rewrite-lock
+    status: experiment
+    duration: 20
+    time:
+      - 192
+      - 212
+    engine: hyperframes
+    risk: P4
+    question: viết lại vào vật chứa thứ hai; churn NGỪNG suốt lúc chép — sự đứng im
+      đó là cái khoá
+    camera:
+      motion: static
+      semantic_function: none
+      rationale: >-
+        chuyển động của vật đã mang hết nghĩa; camera không hé lộ thêm gì. Quyết định
+        ở Step 5, không còn để mở
+    review:
+      hero_frames:
+        - 1
+        - 7
+        - 12
+        - 19.8
+      mute_test: viết lại vào vật chứa thứ hai; churn NGỪNG suốt lúc chép — sự đứng im
+        đó là cái khoá
+  - id: p5-ch2-26s
+    status: experiment
+    duration: 26
+    time:
+      - 212
+      - 238
+    engine: hyperframes
+    risk: P5
+    question: "CH2 dài 26s: thế giới có nhàm không, một con số duy nhất, không nhãn"
+    camera:
+      motion: static
+      semantic_function: none
+      rationale: >-
+        chuyển động của vật đã mang hết nghĩa; camera không hé lộ thêm gì. Quyết định
+        ở Step 5, không còn để mở
+    review:
+      hero_frames:
+        - 1
+        - 9.1
+        - 15.6
+        - 25.8
+      mute_test: "CH2 dài 26s: thế giới có nhàm không, một con số duy nhất, không nhãn"
+  - id: ch01-quan-sat
+    chapter: CH1
+    name: Quan sát
+    narration_segments:
+      - 1
+      - 3
+    duration: 10
+    time:
+      - 0
+      - 10
+    engine: hyperframes
+    level: hệ thống thật
+    purpose: "hai con số không khớp: dòng đứng yên, dung lượng tăng. Chưa có thế
+      giới — câu đố phải đứng một mình"
+    transition_in: LIÊN TỤC — cùng thế giới
+    camera:
+      motion: static
+      semantic_function: none
+      rationale: chuyển động của vật đã đủ mang nghĩa
+    review:
+      hero_frames: [ 1.4, 5, 7.4, 9.7 ]
+      mute_test: "hai con số không khớp: dòng đứng yên, dung lượng tăng. Chưa có thế
+        giới — câu đố phải đứng một mình"
+  - id: ch02-co-che-ghi
+    chapter: CH2
+    name: Cơ chế ghi
+    narration_segments:
+      - 4
+      - 9
+    duration: 29
+    time:
+      - 10
+      - 39
+    engine: hyperframes
+    level: vật lý (gần)
+    purpose: thế giới sinh ra; UPDATE làm ô cũ chết TẠI CHỖ và ghi ô sống mới ở CHỖ
+      KHÁC; khung nở chỉ khi hết chỗ
+    transition_in: "CẮT — đổi mức: hệ thống thật → bên trong chỗ lưu trữ"
+    camera:
+      motion: static
+      semantic_function: none
+      rationale: >-
+        cú vào gần đã tự chứng minh và TRƯỢT. Đổi mức trừu tượng là thật nhưng đã có người
+        mang: lượt hé lộ dân số theo thứ tự đọc chiếm trọn beat 0 (đo YMAX 94-198 liên tục
+        0.25s → 5.0s). Camera đặt lên đó nói lại cùng một điều, và không có chủ thể nào trong
+        CH1 để vào gần. Xem rejected_devices
+    review:
+      hero_frames: [ 1.4, 7.1, 9.8, 13.6, 19.6, 25.7, 28.7 ]
+      mute_test: thế giới sinh ra; UPDATE làm ô cũ chết TẠI CHỖ và ghi ô sống mới ở
+        CHỖ KHÁC; khung nở chỉ khi hết chỗ
+  - id: ch03-nguong
+    chapter: CH3
+    name: Ngưỡng
+    narration_segments:
+      - 10
+      - 12
+    duration: 15
+    time:
+      - 39
+      - 54
+    engine: hyperframes
+    level: vật lý + giải tích
+    purpose: "cần một con số, nên mức giải tích kiếm được quyền tồn tại: ô chết ĐI
+      xuống khối gom, đếm, rồi QUAY VỀ đúng chỗ cũ"
+    transition_in: LIÊN TỤC — cùng thế giới
+    camera:
+      motion: static
+      semantic_function: none
+      rationale: chuyển động của vật đã đủ mang nghĩa
+    review:
+      hero_frames: [ 1.4, 4.8, 9.1, 14.7 ]
+      mute_test: "cần một con số, nên mức giải tích kiếm được quyền tồn tại: ô chết ĐI
+        xuống khối gom, đếm, rồi QUAY VỀ đúng chỗ cũ"
+  - id: ch04-cu-lat
+    chapter: CH4
+    name: Cú lật
+    narration_segments:
+      - 13
+      - 16
+    duration: 16
+    time:
+      - 54
+      - 70
+    engine: hyperframes
+    level: vật lý
+    purpose: "ba beat không nén được: VACUUM dọn thật -> không trả về OS -> file
+      không nhỏ"
+    transition_in: LIÊN TỤC — cùng thế giới
+    camera:
+      motion: static
+      semantic_function: none
+      rationale: chuyển động của vật đã đủ mang nghĩa
+    review:
+      hero_frames: [ 1.4, 5.5, 8.8, 14.1, 15.7 ]
+      mute_test: "ba beat không nén được: VACUUM dọn thật -> không trả về OS -> file
+        không nhỏ"
+    vacuum_invariant:
+      from: 1.9
+      to: 12.7
+      note: sweep dọn thật trải suốt beat 2-4; biên cấp phát phải đứng im qua toàn bộ
+  - id: ch05-doc-lai-con-so
+    chapter: CH5
+    name: Đọc lại con số
+    narration_segments:
+      - 17
+      - 20
+    duration: 16
+    time:
+      - 70
+      - 86
+    engine: hyperframes
+    level: phép đo
+    purpose: thước xuất hiện MUỘN, như câu trả lời cho câu hỏi người xem đã tự hỏi.
+      Khoảng hở hai vạch LÀ bloat
+    transition_in: LIÊN TỤC — thước lên register đỉnh, thế giới ở lại
+    camera:
+      motion: static
+      semantic_function: none
+      rationale: chuyển động của vật đã đủ mang nghĩa
+    review:
+      hero_frames: [ 1.4, 4.7, 9, 10.9, 15.7 ]
+      mute_test: thước xuất hiện MUỘN, như câu trả lời cho câu hỏi người xem đã tự
+        hỏi. Khoảng hở hai vạch LÀ bloat
+  - id: ch06-on-dinh
+    extent_invariant:
+      from: 1
+      to: 7.2
+      note: >-
+        tám lần ghi chạy suốt chương và đều rơi vào chỗ bảng đã có, nên biên cấp phát không
+        được dịch một pixel nào. "Ngừng lớn" là chuyện của biên, không phải của thế giới
+    chapter: CH6
+    name: Trạng thái ổn định
+    narration_segments:
+      - 21
+      - 22
+    duration: 8
+    time:
+      - 86
+      - 94
+    engine: hyperframes
+    level: vật lý
+    purpose: ghi sau rơi vào ô viền, không đẩy khung; vermilion CHẠM TRẦN RỒI ĐI NGANG
+    transition_in: LIÊN TỤC — cùng thế giới
+    camera:
+      motion: static
+      semantic_function: none
+      rationale: chuyển động của vật đã đủ mang nghĩa
+    review:
+      hero_frames: [ 1.4, 4.9, 7.7 ]
+      mute_test: ghi sau rơi vào ô viền, không đẩy khung; vermilion CHẠM TRẦN RỒI ĐI NGANG
+  - id: ch07-cach-sua
+    chapter: CH7
+    name: Cách sửa
+    narration_segments:
+      - 23
+      - 27
+    duration: 26
+    time:
+      - 94
+      - 120
+    engine: hyperframes
+    level: vật lý + phép đo
+    purpose: ngưỡng hạ -> sweep nổ sớm hơn -> vermilion dừng gần teal hơn nhiều; rồi
+      cái không đổi; rồi cái giá
+    transition_in: LIÊN TỤC — cùng thế giới
+    camera:
+      motion: static
+      semantic_function: none
+      rationale: chuyển động của vật đã đủ mang nghĩa
+    review:
+      hero_frames: [ 1.4, 4.2, 9.2, 15.4, 20.3, 25.7 ]
+      mute_test: ngưỡng hạ -> sweep nổ sớm hơn -> vermilion dừng gần teal hơn nhiều;
+        rồi cái không đổi; rồi cái giá
+    vacuum_invariant:
+      from: 0.5
+      to: 2.6
+      note: sweep tay ở beat 1 — chạy mà biên không nhúc nhích, đó là lý do chạy tay
+        không phải cách sửa
+  - id: ch08-vacuum-vo-ich
+    chapter: CH8
+    name: Vacuum chạy mà vô ích
+    narration_segments:
+      - 28
+      - 30
+    duration: 13
+    time:
+      - 120
+      - 133
+    engine: hyperframes
+    level: vật lý + chân trời
+    purpose: "CÙNG thế giới, BIẾN KHÁC: sweep CÓ xảy ra, thấy rõ, và ô sau đường
+      chân trời không đổi"
+    transition_in: LIÊN TỤC — cùng thế giới
+    camera:
+      motion: static
+      semantic_function: none
+      rationale: chuyển động của vật đã đủ mang nghĩa
+    review:
+      hero_frames: [ 1.4, 2.9, 7.9, 12.7 ]
+      mute_test: "CÙNG thế giới, BIẾN KHÁC: sweep CÓ xảy ra, thấy rõ, và ô sau đường
+        chân trời không đổi"
+    vacuum_invariant:
+      from: 7
+      to: 9.5
+      note: sweep chạy mà không thu hồi được gì; biên cũng không đổi
+  - id: ch09-viet-lai
+    chapter: CH9
+    name: Viết lại cả bảng
+    narration_segments:
+      - 31
+      - 33
+    duration: 14
+    time:
+      - 133
+      - 147
+    engine: hyperframes
+    level: vật lý -> hai vật chứa
+    purpose: vật chứa thứ hai tồn tại ĐỒNG THỜI — đó là đĩa thêm; lần DUY NHẤT khung
+      ngoài được co
+    transition_in: LIÊN TỤC — cùng thế giới
+    camera:
+      motion: static
+      semantic_function: none
+      rationale: chuyển động của vật đã đủ mang nghĩa
+    review:
+      hero_frames: [ 1.4, 5.5, 11.9, 13.7 ]
+      mute_test: vật chứa thứ hai tồn tại ĐỒNG THỜI — đó là đĩa thêm; lần DUY NHẤT
+        khung ngoài được co
+  - id: ch10-cong-cu-do
+    chapter: CH10
+    name: Công cụ đo
+    narration_segments:
+      - 34
+      - 37
+    duration: 22
+    extent_invariant:
+      from: 11.3
+      to: 16.4
+      y_min: 560
+      note: >-
+        beat 3 — sweep chạy, n_dead_tup về 0, biên cấp phát KHÔNG đi theo. Đúng khẳng định
+        của CH4, nhìn từ phía công cụ đo
+    time:
+      - 147
+      - 169
+    engine: hyperframes
+    level: thiết bị
+    purpose: >-
+      hai cột pg_stat_user_tables, và mỗi câu "KHÔNG chứng minh" là một trạng thái của
+      chính thế giới đó — khung cấp phát giữ nguyên suốt beat 3-4 trong khi ruột nó
+      mang ba nghĩa khác nhau
+    transition_in: CẮT — rời thế giới bền, lần duy nhất
+    camera:
+      motion: static
+      semantic_function: none
+      rationale: chuyển động của vật đã đủ mang nghĩa
+    review:
+      hero_frames: [ 4.5, 9.5, 13.5, 15.8, 19.5, 21.5 ]
+      mute_test: >-
+        n_dead_tup leo lên rồi về 0 mà khung cấp phát không dịch một pixel; sau đó ruột
+        khung đầy dần trong khi khung vẫn y nguyên, và khoảng chênh lệch tự đóng lại
+  - id: ch11-cau-hoi
+    chapter: CH11
+    name: Câu hỏi
+    narration_segments:
+      - 38
+      - 38
+    duration: 6.5
+    time:
+      - 169
+      - 175.5
+    engine: hyperframes
+    level: "-"
+    purpose: giữ
+    transition_in: CẮT — hết
+    camera:
+      motion: static
+      semantic_function: none
+      rationale: chuyển động của vật đã đủ mang nghĩa
+    review:
+      hero_frames: [ 1.4, 6.2 ]
+      mute_test: giữ
+chapters:
+  - id: CH1
+    name: Quan sát
+    beats:
+      - 1
+      - 3
+    level: hệ thống thật
+    provisional_s: 11
+    purpose: "hai con số không khớp: dòng đứng yên, dung lượng tăng. Chưa có thế
+      giới — câu đố phải đứng một mình"
+    transition_out: CẮT + camera vào — đổi mức
+    real_speech_s: 8.19
+    duration_s: 10
+    hold_at_end_s: 1.81
+    time:
+      - 0
+      - 10
+    timing_decision: SHORTEN
+    beat_offsets:
+      - beat: 1
+        start: 0
+        duration: 3.61
+      - beat: 2
+        start: 3.61
+        duration: 2.36
+      - beat: 3
+        start: 5.97
+        duration: 2.22
+  - id: CH2
+    name: Cơ chế ghi
+    beats:
+      - 4
+      - 9
+    level: vật lý (gần)
+    provisional_s: 26
+    purpose: thế giới sinh ra; UPDATE làm ô cũ chết TẠI CHỖ và ghi ô sống mới ở CHỖ
+      KHÁC; khung nở chỉ khi hết chỗ
+    persists: khung ngoài · lưới ô · số phiên bản sống
+    note: beat 7-8 là ĐIỀU KIỆN THƯỜNG TRỰC, phải hiện như thuộc tính của thế giới,
+      KHÔNG như một sự kiện
+    transition_out: LIÊN TỤC — mức giải tích vào bằng chuyển động
+    real_speech_s: 27.65
+    duration_s: 29
+    hold_at_end_s: 1.35
+    time:
+      - 10
+      - 39
+    timing_decision: EXTEND
+    beat_offsets:
+      - beat: 4
+        start: 0
+        duration: 5.74
+      - beat: 5
+        start: 5.74
+        duration: 2.69
+      - beat: 6
+        start: 8.43
+        duration: 3.8
+      - beat: 7
+        start: 12.23
+        duration: 5.93
+      - beat: 8
+        start: 18.16
+        duration: 6.16
+      - beat: 9
+        start: 24.32
+        duration: 3.33
+  - id: CH3
+    name: Ngưỡng
+    beats:
+      - 10
+      - 12
+    level: vật lý + giải tích
+    provisional_s: 15
+    purpose: "cần một con số, nên mức giải tích kiếm được quyền tồn tại: ô chết ĐI
+      xuống khối gom, đếm, rồi QUAY VỀ đúng chỗ cũ"
+    risk: không quay về thì mức giải tích lặng lẽ thành bố cục vật lý
+    transition_out: LIÊN TỤC
+    real_speech_s: 13.49
+    duration_s: 15
+    hold_at_end_s: 1.51
+    time:
+      - 39
+      - 54
+    timing_decision: KEEP
+    beat_offsets:
+      - beat: 10
+        start: 0
+        duration: 3.42
+      - beat: 11
+        start: 3.42
+        duration: 4.25
+      - beat: 12
+        start: 7.67
+        duration: 5.82
+  - id: CH4
+    name: Cú lật
+    beats:
+      - 13
+      - 16
+    level: vật lý
+    provisional_s: 15
+    purpose: "ba beat không nén được: VACUUM dọn thật -> không trả về OS -> file
+      không nhỏ"
+    persists: khung ngoài TUYỆT ĐỐI đứng im
+    transition_out: CẮT + camera lùi — đổi mức sang phép đo
+    real_speech_s: 14.69
+    duration_s: 16
+    hold_at_end_s: 1.31
+    time:
+      - 54
+      - 70
+    timing_decision: EXTEND
+    beat_offsets:
+      - beat: 13
+        start: 0
+        duration: 4.11
+      - beat: 14
+        start: 4.11
+        duration: 3.24
+      - beat: 15
+        start: 7.35
+        duration: 5.38
+      - beat: 16
+        start: 12.73
+        duration: 1.96
+  - id: CH5
+    name: Đọc lại con số
+    beats:
+      - 17
+      - 20
+    level: phép đo
+    provisional_s: 16
+    purpose: thước xuất hiện MUỘN, như câu trả lời cho câu hỏi người xem đã tự hỏi.
+      Khoảng hở hai vạch LÀ bloat
+    transition_out: LIÊN TỤC
+    real_speech_s: 13.17
+    duration_s: 16
+    hold_at_end_s: 2.83
+    time:
+      - 70
+      - 86
+    timing_decision: KEEP
+    beat_offsets:
+      - beat: 17
+        start: 0
+        duration: 3.27
+      - beat: 18
+        start: 3.27
+        duration: 4.35
+      - beat: 19
+        start: 7.62
+        duration: 1.85
+      - beat: 20
+        start: 9.47
+        duration: 3.7
+  - id: CH6
+    name: Trạng thái ổn định
+    beats:
+      - 21
+      - 22
+    level: vật lý
+    provisional_s: 8
+    purpose: ghi sau rơi vào ô viền, không đẩy khung; vermilion CHẠM TRẦN RỒI ĐI NGANG
+    transition_out: LIÊN TỤC
+    real_speech_s: 6.71
+    duration_s: 8
+    hold_at_end_s: 1.29
+    time:
+      - 86
+      - 94
+    timing_decision: KEEP
+    beat_offsets:
+      - beat: 21
+        start: 0
+        duration: 3.55
+      - beat: 22
+        start: 3.55
+        duration: 3.16
+  - id: CH7
+    name: Cách sửa
+    beats:
+      - 23
+      - 27
+    level: vật lý + phép đo
+    provisional_s: 23
+    purpose: ngưỡng hạ -> sweep nổ sớm hơn -> vermilion dừng gần teal hơn nhiều; rồi
+      cái không đổi; rồi cái giá
+    transition_out: LIÊN TỤC
+    real_speech_s: 24.73
+    duration_s: 26
+    hold_at_end_s: 1.27
+    time:
+      - 94
+      - 120
+    timing_decision: EXTEND
+    beat_offsets:
+      - beat: 23
+        start: 0
+        duration: 2.82
+      - beat: 24
+        start: 2.82
+        duration: 4.97
+      - beat: 25
+        start: 7.79
+        duration: 6.23
+      - beat: 26
+        start: 14.02
+        duration: 4.92
+      - beat: 27
+        start: 18.94
+        duration: 5.79
+  - id: CH8
+    name: Vacuum chạy mà vô ích
+    beats:
+      - 28
+      - 30
+    level: vật lý + chân trời
+    provisional_s: 14
+    purpose: "CÙNG thế giới, BIẾN KHÁC: sweep CÓ xảy ra, thấy rõ, và ô sau đường
+      chân trời không đổi"
+    contrast_with: CH3 — ở đó sweep KHÔNG xảy ra. Cùng kết quả nhìn thấy, hai nguyên
+      nhân khác nhau
+    transition_out: LIÊN TỤC — cắt ở đây sẽ giết chính sự tương phản
+    real_speech_s: 10.84
+    duration_s: 13
+    hold_at_end_s: 2.16
+    time:
+      - 120
+      - 133
+    timing_decision: SHORTEN
+    beat_offsets:
+      - beat: 28
+        start: 0
+        duration: 1.48
+      - beat: 29
+        start: 1.48
+        duration: 5.02
+      - beat: 30
+        start: 6.5
+        duration: 4.34
+  - id: CH9
+    name: Viết lại cả bảng
+    beats:
+      - 31
+      - 33
+    level: vật lý -> hai vật chứa
+    provisional_s: 14
+    purpose: vật chứa thứ hai tồn tại ĐỒNG THỜI — đó là đĩa thêm; lần DUY NHẤT khung
+      ngoài được co
+    lock: "khoá bảng phải có trong hình: trong khoảng chép, thế giới KHÔNG nhận
+      UPDATE nào. Sự đứng im đó LÀ cái khoá"
+    must_not_imply: không hàm ý luôn cần gấp đôi đĩa · không hàm ý VACUUM thường
+      cũng thế · không phải một bảng thứ hai người dùng thấy
+    transition_out: CẮT — rời thế giới
+    real_speech_s: 12.87
+    duration_s: 14
+    hold_at_end_s: 1.13
+    time:
+      - 133
+      - 147
+    timing_decision: KEEP
+    beat_offsets:
+      - beat: 31
+        start: 0
+        duration: 4.06
+      - beat: 32
+        start: 4.06
+        duration: 6.4
+      - beat: 33
+        start: 10.46
+        duration: 2.41
+  - id: CH10
+    name: Công cụ đo
+    beats:
+      - 34
+      - 37
+    level: thiết bị
+    provisional_s: 15
+    purpose: hai cột pg_stat_user_tables, rồi ba câu KHÔNG chứng minh
+    transition_out: CẮT
+    real_speech_s: 20.73
+    duration_s: 22
+    hold_at_end_s: 1.27
+    time:
+      - 147
+      - 169
+    timing_decision: EXTEND
+    beat_offsets:
+      - beat: 34
+        start: 0
+        duration: 5.9
+      - beat: 35
+        start: 5.9
+        duration: 4.74
+      - beat: 36
+        start: 10.64
+        duration: 5.92
+      - beat: 37
+        start: 16.56
+        duration: 4.17
+  - id: CH11
+    name: Câu hỏi
+    beats:
+      - 38
+      - 38
+    level: "-"
+    provisional_s: 6
+    purpose: giữ
+    real_speech_s: 3.62
+    duration_s: 6.5
+    hold_at_end_s: 2.88
+    time:
+      - 169
+      - 175.5
+    timing_decision: EXTEND
+    beat_offsets:
+      - beat: 38
+        start: 0
+        duration: 3.62
+camera_semantics:
+  default: tĩnh
+  earned: []
+  rejected:
+    - at: CH1 -> CH2
+      op: vào gần
+      why_rejected: >-
+        đổi mức trừu tượng là thật, nhưng nó đã có người mang: CH2 hé lộ dân số theo thứ tự
+        đọc suốt trọn beat 0. Đo trên artifact, beat đó kín chuyển động (YMAX 94-198 liên tục
+        từ 0.25s tới 5.0s, lắng đúng lúc beat 1 mở). Một cú vào gần đặt lên đó là chuyển động
+        thứ hai nói lại cùng một điều — và nó không có chủ thể: trong CH1 không có vật nào
+        trở thành thế giới CH2, thanh dung lượng là phép ĐO cái bảng chứ không phải ruột bảng.
+        Camera lúc đó chỉ còn là trang trí.
+    - at: CH4 -> CH5
+      op: lùi ra
+      why_rejected: "P3 đo: cùng thước, cùng thời điểm, B thu ô xuống 62% và không
+        thêm thông tin nào. Tệ hơn, thu nhỏ triệt tiêu một phần chính tín hiệu
+        lớn lên"
+typography_budget:
+  rule: chữ NEO, không mang cơ chế. Không đoạn văn, không trang tài liệu, không
+    panel code — cơ chế này sống trong chỗ lưu trữ chứ không trong code
+  numbers_allowed:
+    - at: CH2
+      what: số phiên bản sống — MỘT con số duy nhất
+      why: lời khẳng định "số dòng đứng yên" phải KIỂM ĐƯỢC; đếm 44 ô bằng mắt không
+        phải là kiểm. Prototype hiện ba con số là để kiểm trong lúc R&D, không
+        phải để dựng
+    - at: CH3
+      what: ngưỡng 20% ~ 200 nghìn
+      why: package nói thẳng; bỏ đi thì việc bảng phải mang chỗ dư thành vô lý
+    - at: CH10
+      what: tên hai cột pg_stat_user_tables
+      why: đây là thiết bị đo, và tên cột là thứ người xem sẽ gõ
+cuts:
+  count: 4
+  rationale: cắt khi MỨC BIỂU DIỄN đổi, không khi hết beat. Bốn cú cắt là HỆ QUẢ
+    của việc chỉ có bốn lần đổi mức, không phải chỉ tiêu — Step 5 phát hiện lý
+    do thật thì cắt thêm
+  where:
+    - CH1->CH2 vào thế giới
+    - CH4->CH5 lên mức đo
+    - CH9->CH10 rời thế giới
+    - CH10->CH11 hết
+  not_a_score: match cut không tự động tốt, và một cú cắt không phải thất bại
+timing_status:
+  state: MEASURED
+  provisional_total_s: 163
+  package_recommends_s: 157
+  reason: Đo thật trên namtre_v2 @ speed 1.00, seed 1, vi. Nhịp đo được 4.20 âm/s
+    so với 4.19 âm/s package giả định — không cần hiệu chỉnh tốc độ. Thời lượng
+    narration 156.69s so với 157s package ước, lệch 0.3s.
+  voice_procedure: KHÔNG kế thừa profile id của F01. Thử namtre_v2 trước · dựng
+    lại profile trên runtime đang chạy, id SẼ khác · bắt đầu speed 1.00 · xác
+    minh từng segment qua provider history · chỉ hiệu chỉnh tốc độ nếu số đo cho
+    thấy lệch đáng kể · URL lấy từ env
+  real_narration_s: 156.69
+  video_runtime_s: 175.5
+  total_hold_s: 18.81
+  measured_rate_syllables_per_sec: 4.2
+  hold_rule: "Mỗi chương giữ trong khoảng [0.6s, 3.0s]. Trần 3.0s là luật F01 đã
+    chứng minh: quá đó thì khoảng giữ thôi là một nhịp và thành khoảng chết."
+prototypes_needed_before_step5:
+  - id: P1
+    what: cú đi/về của mức giải tích (CH3)
+    risk: cao nhất
+    why: nếu cú QUAY VỀ không đọc ra thì mức giải tích đã lặng lẽ thành bố cục vật
+      lý, và ngưỡng 20% phải tìm cách khác. Nó đụng vào chính luật vật lý của
+      thế giới
+  - id: P2
+    what: CH4 và CH8 xem liền mạch, câm, không nhãn
+    why: hai chương phải đọc ra là HAI LÝ DO khác nhau. Không phân biệt được "chưa
+      dọn" với "dọn rồi mà không dọn được" là chỗ mất nhiều nhất
+  - id: P3
+    what: cú lùi CH4->CH5
+    why: mặc định là bỏ. Chỉ giữ nếu prototype chứng minh nó lộ ra thông tin mà
+      thước không truyền được
+  - id: P4
+    what: CH9 hai vật chứa + khoá bảng
+    why: sự đứng im trong lúc chép phải đọc ra là KHOÁ, không đọc ra là hình bị treo
+  - id: P5
+    what: CH2 dài 26 giây mang thêm beat 7-8
+    why: p1 đã chứng minh 30s không reset, nhưng điều kiện thường trực khó vẽ hơn sự
+      kiện
+step45_result:
+  visual_architecture: READY_FOR_STEP_5_PRODUCTION
+  timing: MEASURED — namtre_v2 @ 1.00, 156.69s lời, video 175.5s
+  P1: đạt — cú quay về đọc được; ghost 3px opacity đầy (bản 2px/.5 render ra gần
+    như không có gì)
+  P2: "đạt — cùng animation sweep, hai kết cục: 12.4s đã dọn so với 23.5s không
+    dọn được"
+  P3: LOẠI cú lùi — ô còn 62%, thước không đổi, không thêm thông tin
+  P4: đạt sau ba lần sửa — hai vật chứa tách bạch, churn ngừng hẳn 10s là cái khoá
+  P5: đạt — 26s không thành screensaver; CH2 thật là 29s, dài hơn 3s so với thứ đã
+    chứng minh
+  vacuum_invariant: đo trên artifact, thử ngược thoát mã 1
+  architecture_unchanged: Không chương nào bị gộp hay tách. Không beat nào bị dời
+    sang chương khác. Chỉ thời lượng khung đổi.
+open_risk_for_step5:
+  - id: CH2-29s
+    what: CH2 mang 27.65s lời trong khung 29s
+    why: P5 mới chứng minh thế giới sống được 26s. 29s là dài hơn 3 giây so với thứ
+      đã đo. Xem lại khi dựng, và nếu nhàm thì thêm một trạng thái trung gian
+      chứ KHÔNG cắt chương
+  - id: CH10-22s
+    what: CH10 là 22s ở mức thiết bị, chương dài thứ hai
+    why: đây là chương DUY NHẤT rời thế giới bền. 22s ở một register chưa prototype
+      là rủi ro chưa đo
+  - id: CH1-camera
+    what: cú vào gần CH1→CH2 vẫn chưa tự chứng minh
+    why: P3 đã loại cú lùi bằng đo; cú vào gần phải chịu cùng một phép thử
+production_notes:
+  continuity_is_constructed: "Thế giới liên tục không phải lời hứa mà là cấu trúc:
+    mô phỏng chạy ở Node, và mỗi chương được sinh ra với ĐÚNG trạng thái đóng
+    của chương trước. Một chương không thể trôi khỏi chương trước vì nó không
+    bao giờ tự tính điểm xuất phát của mình."
+  bug_animation_only_op: "Bản vá beat thêm một sweep tay ở CH7 beat 1 và năm cặp
+    update+sweep ở beat 5 vào ANIMATION mà không thêm vào mô phỏng. Ba ranh giới
+    khai LIÊN TỤC đo ra khác hẳn. Luật rút ra: mọi thao tác chương ANIMATE đều
+    phải có trong mô phỏng, cùng thứ tự."
+  bug_build_time_state: firstFree() đọc cells[] — thứ chỉ đổi lúc PHÁT — trong khi
+    nó được gọi lúc DỰNG timeline. Tám update của CH6 đều nhắm vào cùng một ô,
+    và chương kết thúc ở một trạng thái chương sau chưa từng thừa hưởng. Sửa
+    bằng một bản trạng thái song song cập nhật đồng bộ lúc dựng.
+  both_found_by_measurement: Cả hai lộ ra từ phép đo YAVG giữa khung cuối chương
+    này và khung đầu chương kế, không từ việc đọc lại code. Xem một chương riêng
+    lẻ thì cả hai đều trông đúng.
+  bug_array_order: "Thứ tự mảng cũng là trạng thái. pickLive index vào `live`; mô phỏng giữ nó
+    theo lịch sử thay-thế-tại-chỗ, còn chương dựng lại nó bằng cách quét INIT
+    theo chỉ số. Cùng tập phần tử, khác thứ tự thì cùng một u cho ra ô khác. Khó
+    thấy nhất trong ba bug: INIT đúng, u đúng, nextFree đúng, alloc đúng — chỉ
+    THỨ TỰ sai, và thứ tự không xuất hiện ở bất kỳ giá trị nào người ta nghĩ tới
+    khi kiểm trạng thái. Sửa: snap() mang theo live.slice()."
+  continuity_is_measurable: So khung cuối chương này với khung đầu chương kế bằng YAVG. Ranh giới khai
+    LIÊN TỤC phải thấp, dưới 1.2; khai CẮT phải cao. Đây là cách biến "thế giới
+    có bền không" thành một câu đo được thay vì một câu cảm nhận.
+
+status: FROZEN_BENCHMARK
+fingerprint:
+  status: FROZEN_BENCHMARK
+  dominant_compositions:
+    - one_storage_world_held_for_137_seconds_across_seven_chapters
+    - a_register_band_above_the_world_reading_what_the_world_contains
+    - a_ruler_below_the_world_where_a_quantity_becomes_a_distance
+    - an_analytical_tray_the_world_lends_objects_to_and_takes_back
+    - text_alone_at_the_open_and_at_the_close
+  dominant_geometry:
+    - a_cell_grid_whose_ALLOCATED_extent_is_a_frame_that_only_ever_grows
+    - free_space_INSIDE_the_frame_meaning_reusable_not_returned
+    - two_bars_on_one_axis_whose_GAP_is_the_subject
+    - a_second_world_written_beneath_the_first_while_both_must_exist
+  visual_devices:
+    - a_population_read_in_reading_order_rather_than_appearing_whole
+    - a_ghost_holding_a_slot_while_its_depiction_is_away
+    - an_idle_machine_as_a_LINE_that_thickens_into_a_band_when_it_runs
+    - a_horizon_arriving_above_the_world_to_mean_an_open_transaction
+    - a_counterfactual_world_labelled_and_kept_separate_from_the_real_one
+    - a_frame_held_motionless_while_its_interior_takes_three_meanings
+  motion_devices:
+    - a_sweep_that_runs_the_full_height_while_the_boundary_does_not_move
+    - growth_that_happens_only_when_the_interior_has_run_out_of_room
+    - writes_that_KEEP_landing_under_the_sentence_saying_growth_has_stopped
+    - a_reading_returning_to_zero_without_the_extent_returning_with_it
+    - a_gap_closing_because_the_interior_filled_not_because_the_size_changed
+    - the_old_world_greying_out_while_the_new_one_is_written_beneath_it
+  typography_usage:
+    - column_names_because_they_are_what_the_viewer_will_type
+    - one_number_per_slot_read_off_the_world_never_a_literal
+    - two_word_anchors_pinned_to_a_geometry_mocnuoc_chenhlech
+    - no_paragraph_no_code_panel_no_document_page
+  color_distribution:
+    dominant: neutral
+    live_version: ink
+    dead_version: lost_grey
+    reclaimable_slot: ground_with_a_bright_ring
+    the_cleaner: authoritative_ochre
+    allocated_extent: stale_vermilion
+    what_live_data_needs: boundary_teal
+    counterfactual: counterfactual_grey
+  reference_influences:
+    - persistent_system_world_progressive_disclosure
+    - engineered_information_design
+  distinctive_device:
+    - an_invariant_asserted_by_the_ABSENCE_of_a_movement_and_verified_by_measuring_the_artifact
+  spatial_model: >-
+    one table interior whose occupancy changes constantly and whose allocated boundary is a
+    high-water mark: it moves outward when the interior runs out of room and never moves back,
+    so bloat is the DISTANCE between what is occupied and what is allocated
+  rejected_devices:
+    - device: idle_cleaner_parked_as_a_filled_band_over_live_cells
+      why_rejected: >-
+        CH3 beat 1 cần cỗ máy dọn CÓ MẶT mà KHÔNG chạy, và bản đầu để nó đỗ thành một dải phủ
+        hai hàng đầu ở opacity .22. --authoritative là màu của cỗ máy dọn, nên phủ nó lên 22 ô
+        SỐNG trong 15s là nói một điều không đúng về những ô đó; tệ hơn, ở beat 2 vài phiên bản
+        chết đi ra khỏi ô của chúng từ dưới lớp phủ. Dời dải lên trên thế giới thì nó nằm sau
+        dải thanh ghi và gate bắt được contrast #cDead tụt còn 2.67:1 (WCAG AA cần 3:1). Máy
+        đang đỗ không phải một VÙNG mà là một VỊ TRÍ: nó đỗ thành một đường 4px trên mép cấp
+        phát, không chạm ô nào, rồi DÀY LÊN thành dải khi autovacuum tới lượt. Cú dày lên đó
+        chính là beat.
+    - device: a_thumbnail_of_the_world_placed_beside_a_claim_it_does_not_witness
+      why_rejected: >-
+        CH10 bản đầu là bốn câu chữ xếp dọc cạnh một hình thu nhỏ bất động của bảng đã gói chặt
+        sau VACUUM FULL — 0 dòng chết và cũng không bloat — đặt ngay cạnh câu "dòng chết bằng 0
+        không chứng minh hết bloat", tức trạng thái duy nhất mà câu ấy KHÔNG nói về. Comment
+        trong code còn khẳng định extent của nó vẫn là mốc nước cao nhất, điều đã sai sau khi
+        CH9 viết lại bảng. Một hình đúng về mặt kỹ thuật vẫn có thể là nhân chứng sai. Lời thoại
+        tự chỉ ra hai thiết bị đã có: "mốc nước vẫn nằm nguyên đó" = khung cấp phát, "bloat là
+        chênh lệch, không phải kích thước" = thước.
+    - device: camera_push_in_across_an_abstraction_change_that_already_has_a_carrier
+      why_rejected: >-
+        Cú vào gần CH1 → CH2 từng được ghi là earned. Đo trên artifact thì beat 0 của CH2 đã kín
+        chuyển động (YMAX 94-198 liên tục từ 0.25s tới 5.0s, lắng đúng lúc beat 1 mở) vì lượt hé
+        lộ dân số theo thứ tự đọc CHÍNH LÀ cú đổi mức trừu tượng. Camera đặt lên đó là chuyển
+        động thứ hai nói lại cùng một điều. Và nó không có chủ thể: trong CH1 không có vật nào
+        trở thành thế giới CH2 — thanh dung lượng là phép ĐO cái bảng, không phải ruột bảng.
+    - device: camera_pull_back_to_reveal_the_allocation_boundary
+      why_rejected: >-
+        P3 đo hai bản cùng thước cùng thời điểm: bản lùi ra thu ô xuống 62% và không thêm một
+        thông tin nào. Tệ hơn, thu nhỏ triệt tiêu một phần chính tín hiệu "lớn lên" mà chương
+        đang phải cho thấy.
+    - device: packing_a_chapters_operations_into_its_first_beat
+      why_rejected: >-
+        CH6 dồn cả tám lần ghi vào beat 1, nên beat 2 — "ổn định thì ngừng lớn, nó chỉ không nhỏ
+        lại" — chạy 3.46s trên một khung đã dừng hẳn. Cái đó đọc ra thành "không có gì đang xảy
+        ra", mà đó không phải khẳng định. Khi một cảnh nói "cái này không nhúc nhích" thì phải có
+        thứ khác đang nhúc nhích để sự đứng im có nghĩa.
+    - device: two_counter_sequences_in_one_slot
+      why_rejected: >-
+        counter() chỉ ẩn giá trị trước CỦA CHÍNH NÓ, nên hai lời gọi cùng toạ độ cho hai dãy cùng
+        hiện: n_dead_tup render ra "02" (0 đè lên 22), last_autovacuum ra "vừalxong". Ghi lại
+        không ngăn được lần sau, nên counter() giờ ném lỗi build khi một ô đã có dãy, và nhận màu
+        theo từng giá trị để một dãy đổi màu được giữa các giá trị.
+  known_limitations:
+    - limitation: >-
+        Ranh giới ch01 → ch02 đo ra 1.75 và đạt chỉ nhờ trên ngưỡng 1.2. Đó là cú cắt giữa hai
+        khung gần như trống (mực 2.65 và 1.00), nên phép trung bình toàn khung không có gì để
+        bám. Ở ranh giới đó con số nên đọc là "dụng cụ không phân biệt được", không phải "đạt".
+    - limitation: >-
+        Ba lần đổi biểu diễn của G01 (CH3 vật lý↔giải tích, CH5 thước, CH10 dụng cụ đo) đều xảy
+        ra bằng cách THÊM MỘT LỚP cạnh thế giới, không phải bằng cách thế giới tự biến thành
+        biểu diễn khác. Không có morph nào giữ thân phận xuyên qua một phép biến đổi hình học
+        thật. Thế giới bền, nhưng nó bền theo kiểu tích luỹ trạng thái.
+    - limitation: >-
+        Tỉ lệ không đi đâu cả. Ô luôn 76px suốt mười chương; CH10 dùng 60px nhưng đó là một
+        chương khác chứ không phải một hành trình tỉ lệ. Không có chặng vật → cơ chế cục bộ →
+        cấu trúc hệ → hệ quả tổng → về lại vật. Thế giới bền ở đúng một khoảng cách nhìn.
+    - limitation: >-
+        Chỗ trống BÊN TRONG khung cấp phát có nghĩa rất rõ (chỗ dùng lại được, chưa bị chiếm).
+        Chỗ trống NGOÀI khung — nửa dưới màn hình ở CH2, CH3, CH6 — phần lớn chỉ là chỗ trống.
+    - limitation: >-
+        CH1 (10s) và CH11 (6.5s) là chữ cộng một thanh lớn dần: 16.5s / 175.5s nghiêng về "thông
+        tin được làm cho động" hơn là "khái niệm thành chuyển động". Cố ý đối xứng — mở bằng một
+        khẳng định, đóng bằng một câu hỏi — nhưng vẫn là chỗ yếu nhất của phim theo tiêu chí đó.
+    - limitation: >-
+        Dải quét vàng xuất hiện ở năm chương (CH3, CH4, CH7, CH8, CH10). Ở G01 nó là NGỮ PHÁP,
+        không phải thói quen, vì mỗi lần chỉ khác kết quả — đỗ im · dọn được · dọn dồn dập ·
+        chạy mà không thu được gì · số về 0 mà biên không đi. Nhưng đây đúng là loại thiết bị
+        dễ trở thành ngữ pháp mặc định của video sau. KHÔNG dùng lại trừ khi chủ đề thật sự có
+        một tiến trình quét qua một không gian và mỗi lần quét cho một kết quả khác.

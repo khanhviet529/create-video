@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=1920" />
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+/* @brand:start */
+:root {
+  --ground: #0C0D0F; --ground-lift: #14161A;
+  --ink: #EDEAE4; --ink-mid: #9AA0A6; --ink-dim: #8B9198; --ink-ghost: #3A3E42;
+  --rule: #23272A; --rule-bright: #3D4348; --hair: 1.5px;
+  --authoritative: #C9A227; --stale: #E0533D; --lost: #6A6F74;
+  --boundary: #4E8C7D; --pressure: #B4623A; --counterfactual: #7A8086;
+  --font-value: "IBM Plex Mono", ui-monospace, monospace;
+  --font-label: "IBM Plex Sans Condensed", "IBM Plex Sans", system-ui, sans-serif;
+  --t-hero: 200px; --t-value: 64px; --t-body: 36px; --t-label: 26px; --track-label: 0.18em;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { overflow: hidden; background: var(--ground); color: var(--ink); font-family: var(--font-label); }
+.label { font-family: var(--font-label); font-size: var(--t-label); letter-spacing: var(--track-label);
+         text-transform: uppercase; color: var(--ink-dim); font-weight: 500; }
+/* @brand:end */
+
+html, body { width: 1080px; height: 1920px; }
+#stage { position: absolute; inset: 0; }
+
+/* ---------------------------------------------------------------------------
+   P1 — THE AUTHORING REGISTER. Prototype, not a shot.
+
+   Four Step-2 risks are all properties of this one frame, so one prototype tests
+   all four rather than three alternatives testing one:
+
+   R1 legibility — two COMPLETE handler bodies readable at 1080x1920.
+      Measured, not judged: mono advance is 0.6em, so at 34px a line holds
+      894/20.4 = 43 chars. Longest line here is 40. Stacked vertically because
+      side by side would leave ~20 chars a column, which is not code any more.
+
+   R2 "never existed here" with no placeholder / skip / bypass semantics.
+      Handler B is two lines and COMPLETE. Nothing dashed, nothing empty, no gap
+      in a sequence. The absence is legible only by comparison with a body that
+      is equally finished. Motion is accumulation — a second path gets authored
+      below the first — never traversal, so nothing is ever seen jumping over
+      anything.
+
+   R3 the 1-of-2 asymmetry without a dashboard. The count is a count of a token
+      visible in frame: `assertMember` appears once across two bodies. Stated as
+      a sentence, not a gauge. No score, no health colour.
+
+   R4 principal present but unused, without arrows. Both bodies reach into the
+      SAME object, `req`. Handler A reaches for `req.principal` AND
+      `req.params.id`; handler B reaches only for `req.params.id`. The asymmetry
+      is which field of one object gets touched — so authentication is visibly
+      available and visibly unconsulted. No unused local variable, because an
+      unused local is something a linter would flag, and rule R2 requires that
+      nothing look wrong.
+--------------------------------------------------------------------------- */
+#lblWhen  { position: absolute; left: 93px; top: 244px; }
+#lblLater { position: absolute; left: 93px; top: 700px; }
+
+.h    { position: absolute; left: 93px; }
+.ln   { font-family: var(--font-value); font-size: 38px; line-height: 58px;
+        color: var(--ink-mid); white-space: pre; }
+.rt   { color: var(--ink-dim); }
+.pid  { color: var(--ink); }
+.dec  { color: var(--authoritative); font-weight: 600; }
+.pri  { color: var(--boundary); }
+
+#hA { top: 340px; }
+#hB { top: 786px; }
+
+/* No annotation layer at all. The decision is marked by the COLOUR of its own token,
+   and the count sentence below binds that colour to the concept. An inline label collided
+   with the code at 38px, and a bar in the margin of handler A raised the same risk a
+   placeholder does: its absence beside handler B could read as a missing marker. */
+
+#count1, #count2 { position: absolute; left: 93px; width: 894px; font-family: var(--font-label);
+                   font-size: 40px; letter-spacing: 0.01em; font-weight: 600; }
+#count1 { top: 1000px; color: var(--ink); }
+#count2 { top: 1058px; color: var(--authoritative); }
+#count1 b, #count2 b { font-family: var(--font-value); font-weight: 600; }
+
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="10"
+     data-width="1080" data-height="1920">
+  <div id="stage" class="clip" data-start="0" data-duration="10" data-track-index="0">
+
+    <div id="lblWhen" class="label">khi endpoint tài liệu được viết ra</div>
+
+    <div class="h" id="hA">
+      <div class="ln rt">GET  /documents/:id</div>
+      <div class="ln">  const doc = docs.byId(req.<span class="pid">params.id</span>)</div>
+      <div class="ln">  <span class="dec">assertMember</span>(req.<span class="pri">principal</span>, doc)</div>
+      <div class="ln">  return doc</div>
+    </div>
+
+    <div id="lblLater" class="label">một tính năng khác, một đường khác</div>
+
+    <div class="h" id="hB">
+      <div class="ln rt">GET  /documents/:id/comments</div>
+      <div class="ln">  return comments.byDoc(req.<span class="pid">params.id</span>)</div>
+    </div>
+
+
+    <div id="count1"><b>2</b> đường tới cùng dữ liệu đó</div>
+    <div id="count2"><b>1</b> đường chịu quyết định phân quyền</div>
+
+
+  </div>
+</div>
+
+<script>
+window.__timelines = window.__timelines || {};
+const tl = gsap.timeline({ paused: true });
+const R = 'power3.out';
+
+const linesA = gsap.utils.toArray('#hA .ln');
+const linesB = gsap.utils.toArray('#hB .ln');
+
+gsap.set([...linesA, ...linesB], { opacity: 0 });
+gsap.set(['#lblWhen', '#lblLater', '#count1', '#count2'], { opacity: 0 });
+
+/* ---- 0.25–1.70  handler A is authored ---------------------------------
+   Lines appear; nothing types and nothing travels. By 1.70 this body is complete
+   and correct, and it stays correct for the rest of the video. */
+tl.to('#lblWhen', { opacity: 1, duration: .4, ease: R }, 0.25)
+  .to(linesA, { opacity: 1, duration: .3, ease: R, stagger: .30 }, 0.55);
+
+/* ---- 2.30–3.35  a second path is authored -----------------------------
+   Temporal ORDER only. Elapsed time is not the cause; the cause is that a path
+   was added and the existing object-level authorization did not come with it. */
+tl.to('#lblLater', { opacity: 1, duration: .4, ease: R }, 2.30)
+  .to(linesB, { opacity: 1, duration: .3, ease: R, stagger: .34 }, 2.60);
+
+/* ---- 5.30  the count, as a sentence about what is on screen ----------- */
+tl.to(['#count1', '#count2'], { opacity: 1, duration: .45, ease: R, stagger: .55 }, 5.30);
+
+window.__timelines['main'] = tl;
+</script>
+</body>
+</html>

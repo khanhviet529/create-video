@@ -1,0 +1,339 @@
+provider: VoiceStudio
+source_repo: D:\Project\VoiceStudio
+provider_endpoint_identity: trycloudflare.com · sha256:ca0ff487b51e1b61
+narration_sha256: 13550cce8da8d0a9ab6a358a6fcccdfdadc1ecb0fc52d7e3e546b9dad4f7c031
+voice_model:
+  engine: (provider default)
+  profile_id: a666ed5a
+  profile_name: namtre_v2
+  profile_pinned_as: a666ed5a
+  profile_verified: per segment, against the provider's generation history —
+    /generate does not report which voice it used, and an unknown profile_id
+    silently falls back to the default voice with HTTP 200
+  device: cuda (Tesla T4)
+  backend_version: 0.5.0
+generation_parameters:
+  speed: 1
+  seed: 1
+  language: vi
+  profile_id: a666ed5a
+  pronounce: "(provider default: true)"
+generation_parameters_source:
+  speed: shot_plan.yaml voice_calibration
+  seed: shot_plan.yaml voice_calibration
+  language: shot_plan.yaml voice_calibration
+seed_used: "1"
+generated_at: 2026-08-26T03:56:37.973Z
+audio_file: videos/G01-bloat-not-row-count/voice/narration.wav
+audio_sha256: 162f70eb6401e6c63941bca90342247ebc0abbf5d1d17b15c4056094f2c80cf7
+audio_duration: 156.69
+segments:
+  - index: 1
+    chars: 79
+    duration: 3.61
+    seed: "1"
+    text_sha256: abd641bb59220e47
+    first_words: Bảng đơn hàng của bạn có một triệu dòng. Sáu thá
+    audio_id: 66d942d4
+    profile_id: a666ed5a
+  - index: 2
+    chars: 42
+    duration: 2.36
+    seed: "1"
+    text_sha256: c48b1a1e3f1a3c40
+    first_words: Dung lượng thì tăng đều suốt sáu tháng đó.
+    audio_id: 5302106c
+    profile_id: a666ed5a
+  - index: 3
+    chars: 41
+    duration: 2.22
+    seed: "1"
+    text_sha256: 533c72e250c1ebc9
+    first_words: Số dòng đứng yên. Chỗ nó chiếm thì không.
+    audio_id: 489d3b11
+    profile_id: a666ed5a
+  - index: 4
+    chars: 115
+    duration: 5.74
+    seed: "1"
+    text_sha256: 9ceea5fc7de6bcf0
+    first_words: Tua lại sáu tháng vừa rồi. Mỗi đơn hàng bị UPDAT
+    audio_id: e525d05f
+    profile_id: a666ed5a
+  - index: 5
+    chars: 48
+    duration: 2.69
+    seed: "1"
+    text_sha256: 5655719978feafc9
+    first_words: Và UPDATE trong Postgres không sửa dòng tại chỗ.
+    audio_id: "09175639"
+    profile_id: a666ed5a
+  - index: 6
+    chars: 75
+    duration: 3.8
+    seed: "1"
+    text_sha256: b1a8d23f5aebaf03
+    first_words: Nó ghi một phiên bản mới của dòng đó, rồi đánh d
+    audio_id: 33a3f7cb
+    profile_id: a666ed5a
+  - index: 7
+    chars: 120
+    duration: 5.93
+    seed: "1"
+    text_sha256: 49c7e5eaf9f68f98
+    first_words: Doc Postgres nói rõ vì sao. Phiên bản cũ không đ
+    audio_id: 9878a66c
+    profile_id: a666ed5a
+  - index: 8
+    chars: 118
+    duration: 6.16
+    seed: "1"
+    text_sha256: 4750d459d1c910eb
+    first_words: "Đó không phải Postgres lười. Đó là điều kiện để "
+    audio_id: f630493c
+    profile_id: a666ed5a
+  - index: 9
+    chars: 64
+    duration: 3.33
+    seed: "1"
+    text_sha256: 55cff6905c2cc85d
+    first_words: Nên sau mỗi lần UPDATE, bảng có thêm một phiên b
+    audio_id: d38d2402
+    profile_id: a666ed5a
+  - index: 10
+    chars: 66
+    duration: 3.42
+    seed: "1"
+    text_sha256: f02a0354008ef603
+    first_words: Postgres có autovacuum để dọn chúng. Nhưng nó kh
+    audio_id: 9f4bc8d3
+    profile_id: a666ed5a
+  - index: 11
+    chars: 86
+    duration: 4.25
+    seed: "1"
+    text_sha256: 64effc86fa80b2cf
+    first_words: Mặc định, autovacuum đợi tới khi số dòng chết đạ
+    audio_id: 7f5fa3e7
+    profile_id: a666ed5a
+  - index: 12
+    chars: 124
+    duration: 5.82
+    seed: "1"
+    text_sha256: 755ce56323a6a886
+    first_words: Bảng một triệu dòng thì đó là khoảng hai trăm ng
+    audio_id: 4bdd22a9
+    profile_id: a666ed5a
+  - index: 13
+    chars: 80
+    duration: 4.11
+    seed: "1"
+    text_sha256: ec72c0b86c373aa9
+    first_words: Rồi autovacuum tới lượt, và chạy VACUUM trên bản
+    audio_id: 23d9b96f
+    profile_id: a666ed5a
+  - index: 14
+    chars: 61
+    duration: 3.24
+    seed: "1"
+    text_sha256: 4e231a917a760985
+    first_words: "VACUUM có dọn phiên bản chết thật. Số dòng chết "
+    audio_id: 94fab033
+    profile_id: a666ed5a
+  - index: 15
+    chars: 105
+    duration: 5.38
+    seed: "1"
+    text_sha256: 77804309ecdf0ec2
+    first_words: Nhưng nó không trả chỗ đó về cho hệ điều hành. N
+    audio_id: b5d78487
+    profile_id: a666ed5a
+  - index: 16
+    chars: 27
+    duration: 1.96
+    seed: "1"
+    text_sha256: 459bce2cef4fdbe8
+    first_words: File không nhỏ đi một byte.
+    audio_id: 7f7de90f
+    profile_id: a666ed5a
+  - index: 17
+    chars: 60
+    duration: 3.27
+    seed: "1"
+    text_sha256: 59604ef207c27f5e
+    first_words: Kích thước file không đo lượng dữ liệu đang sống
+    audio_id: c6a51211
+    profile_id: a666ed5a
+  - index: 18
+    chars: 84
+    duration: 4.35
+    seed: "1"
+    text_sha256: c7ce2cd47ceb1112
+    first_words: Nó là mốc nước cao nhất. Là lượng dữ liệu đồng t
+    audio_id: 66eea05c
+    profile_id: a666ed5a
+  - index: 19
+    chars: 24
+    duration: 1.85
+    seed: "1"
+    text_sha256: 8a131eb26c3ed0e3
+    first_words: Mốc nước thì chỉ đi lên.
+    audio_id: 31e14f68
+    profile_id: a666ed5a
+  - index: 20
+    chars: 76
+    duration: 3.7
+    seed: "1"
+    text_sha256: 1a2683b6018b709b
+    first_words: Chênh lệch giữa chỗ file chiếm và chỗ dữ liệu số
+    audio_id: d15af667
+    profile_id: a666ed5a
+  - index: 21
+    chars: 72
+    duration: 3.55
+    seed: "1"
+    text_sha256: 12e79b42cbb7a7cc
+    first_words: Có một tin tốt ở đây. Chỗ trống bên trong được t
+    audio_id: 8e76d1bd
+    profile_id: a666ed5a
+  - index: 22
+    chars: 66
+    duration: 3.16
+    seed: "1"
+    text_sha256: 804b24011ecc5223
+    first_words: "Nên bảng ở trạng thái ổn định thì ngừng lớn. Nó "
+    audio_id: 8b53c089
+    profile_id: a666ed5a
+  - index: 23
+    chars: 57
+    duration: 2.82
+    seed: "1"
+    text_sha256: 837a624df8bd535c
+    first_words: Cách sửa không phải chạy VACUUM tay cho thường x
+    audio_id: 3cb238a4
+    profile_id: a666ed5a
+  - index: 24
+    chars: 102
+    duration: 4.97
+    seed: "1"
+    text_sha256: e2517a7d72ae8feb
+    first_words: "Là hạ ngưỡng thu hồi cho riêng bảng nóng. Ví dụ "
+    audio_id: 6ee192b5
+    profile_id: a666ed5a
+  - index: 25
+    chars: 121
+    duration: 6.23
+    seed: "1"
+    text_sha256: 47a1e954b6291b93
+    first_words: Số phiên bản chết sinh ra không giảm đi. File vẫ
+    audio_id: 9e80ee38
+    profile_id: a666ed5a
+  - index: 26
+    chars: 94
+    duration: 4.92
+    seed: "1"
+    text_sha256: 8a8385ef0e20b2a7
+    first_words: "Cái được là mốc nước bị giữ thấp. Chỗ chết được "
+    audio_id: 54761bd0
+    profile_id: a666ed5a
+  - index: 27
+    chars: 113
+    duration: 5.79
+    seed: "1"
+    text_sha256: c34f159d3b9e622d
+    first_words: Đổi lấy chuyện đó, autovacuum chạy thường hơn và
+    audio_id: 9006869e
+    profile_id: a666ed5a
+  - index: 28
+    chars: 35
+    duration: 1.48
+    seed: "1"
+    text_sha256: bb818cb89bafeef4
+    first_words: Còn một trường hợp riêng phải biết.
+    audio_id: 9144893e
+    profile_id: a666ed5a
+  - index: 29
+    chars: 95
+    duration: 5.02
+    seed: "1"
+    text_sha256: 816219ddeea62376
+    first_words: Nếu có một transaction mở rất lâu, autovacuum vẫ
+    audio_id: 0e9ddf56
+    profile_id: a666ed5a
+  - index: 30
+    chars: 85
+    duration: 4.34
+    seed: "1"
+    text_sha256: fc08855b0b11f0d3
+    first_words: Vì những phiên bản chết sinh ra sau khi nó bắt đ
+    audio_id: 72ed62cd
+    profile_id: a666ed5a
+  - index: 31
+    chars: 84
+    duration: 4.06
+    seed: "1"
+    text_sha256: dbd1d072ada701da
+    first_words: Muốn file thật sự nhỏ lại thì phải viết lại cả b
+    audio_id: e229e033
+    profile_id: a666ed5a
+  - index: 32
+    chars: 126
+    duration: 6.4
+    seed: "1"
+    text_sha256: 44e0d14be5f93243
+    first_words: Nhưng nó khoá bảng ở mức cao nhất suốt thời gian
+    audio_id: "3e204210"
+    profile_id: a666ed5a
+  - index: 33
+    chars: 46
+    duration: 2.41
+    seed: "1"
+    text_sha256: 5e12cf1321d2f553
+    first_words: Lúc đĩa gần đầy chính là lúc khó chạy nó nhất.
+    audio_id: 4aad67f8
+    profile_id: a666ed5a
+  - index: 34
+    chars: 111
+    duration: 5.9
+    seed: "1"
+    text_sha256: 39f7cbaf8c17791a
+    first_words: Muốn biết mình đang ở đâu thì nhìn hai cột trong
+    audio_id: 957c57fc
+    profile_id: a666ed5a
+  - index: 35
+    chars: 93
+    duration: 4.74
+    seed: "1"
+    text_sha256: eaa306eab11ad395
+    first_words: "Dòng chết cao kèm lần dọn gần nhất đã cũ, nghĩa "
+    audio_id: 9d19793e
+    profile_id: a666ed5a
+  - index: 36
+    chars: 118
+    duration: 5.92
+    seed: "1"
+    text_sha256: 77542ca06c9f8bf0
+    first_words: "Nhưng dòng chết bằng không thì không chứng minh "
+    audio_id: 1491a654
+    profile_id: a666ed5a
+  - index: 37
+    chars: 84
+    duration: 4.17
+    seed: "1"
+    text_sha256: 7db4b31dd81c123d
+    first_words: Và bảng lớn cũng không chứng minh bloat. Bloat l
+    audio_id: 26dcece3
+    profile_id: a666ed5a
+  - index: 38
+    chars: 76
+    duration: 3.62
+    seed: "1"
+    text_sha256: 9425e8d8804d48be
+    first_words: Trong database của bạn, bảng nào có số dòng đứng
+    audio_id: e7e0c769
+    profile_id: a666ed5a
+segmentation: per authored paragraph; splitNarration verifies the rejoin equals
+  the canonical text. No silence inserted between segments — inter-beat pauses
+  are a video decision, not a measurement.
+generation_time_sec: 250.4
+package_estimate_sec: 157

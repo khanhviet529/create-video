@@ -1,0 +1,122 @@
+video_id: E01-not-sargable
+status: FROZEN_BENCHMARK
+title: Index tồn tại nhưng planner không dùng
+domain: database
+shots: 8
+engines:
+  - ffmpeg
+  - hyperframes
+representation_layers:
+  - user_reality
+  - state
+  - implementation
+  - system
+camera:
+  - shot: shot_01
+    motion: static
+    semantic_function: preserve_comparison_geometry
+  - shot: shot_02
+    motion: static
+    semantic_function: preserve_comparison_geometry
+  - shot: shot_03
+    motion: static
+    semantic_function: preserve_comparison_geometry
+  - shot: shot_04
+    motion: expand
+    semantic_function: object_to_its_contents
+  - shot: shot_06
+    motion: static
+    semantic_function: preserve_comparison_geometry
+  - shot: shot_07
+    motion: static
+    semantic_function: preserve_comparison_geometry
+  - shot: shot_08
+    motion: static
+    semantic_function: two_times_one_place
+  - shot: shot_09
+    motion: static
+    semantic_function: hold_for_reading
+dominant_compositions:
+  - opened_structure_as_a_list
+  - two_expressions_on_a_shared_column
+  - no_content_stage
+dominant_geometry:
+  - sorted_text_rows
+  - shared_character_column
+  - one_ordered_column_and_one_empty
+visual_devices:
+  - strings_as_the_unit
+  - the_column_the_index_does_not_have
+  - wrapper_with_nothing_above_it
+  - empty_rules_where_values_would_be
+motion_devices:
+  - cause_stated_before_consequence_is_drawn
+  - wrapper_clamps_onto_column
+  - index_gains_the_expression
+typography_usage:
+  - text_is_the_subject_not_the_label
+  - real_values_not_marks
+  - expression_as_physical_shape
+color_distribution:
+  dominant: neutral
+  mismatch: vermilion
+  agreement: teal
+  cost: burnt_orange
+  counterfactual: grey
+reference_influences:
+  - engineered_information_design
+  - typographic_specimen
+distinctive_device:
+  - a_structural_absence_rather_than_a_failed_action
+spatial_model: opened_object_with_a_missing_column
+rejected_devices:
+  - device: reading_head_descends_and_lands_on_an_empty_slot
+    why_rejected: "Vẽ ra một đường thực thi Postgres không đi: thử index, trượt,
+      quay sang seq scan. Planner loại index ở lúc PLAN. Attempt-and-miss dạy
+      runtime failure, và caption không rút lại được cái người xem đã đọc thành
+      hành động."
+  - device: bracket_grown_to_the_smallest_range_containing_every_match
+    why_rejected: 'Vẽ ra "các dòng thoả nằm rải rác nên phải quét cả bảng" — sai
+      chiều nhân quả. Một câu phủ định trong cùng khung không cứu được: hình lập
+      luận, chữ chỉ rút lại.'
+  - device: wrapper_relocates_from_predicate_to_index
+    why_rejected: SAI kỹ thuật. CREATE INDEX ... (lower(email)) THÊM biểu thức vào
+      định nghĩa index; predicate không đổi. Wrapper rời khỏi predicate sẽ là
+      một QUERY khác.
+intentional_repetition:
+  - shots:
+      - shot_06
+      - shot_07
+    reason: 'Cùng cột ký tự, cùng vị trí hai vế, cùng camera. Điểm khác duy nhất là
+      vế INDEX được xây thêm biểu thức lower() — predicate không đổi một ký tự
+      nào. Đó chính là toàn bộ cách sửa, nên match cut là nội dung, không phải
+      hiệu ứng. LƯU Ý CHO SHOT SAU: bản mô tả đầu tiên ở đây viết "dấu ngoặc đổi
+      vế" và nó SAI về kỹ thuật — wrapper rời khỏi predicate sẽ là một query
+      khác, không phải một index khác. Sai này từng nằm trong creative memory,
+      tức là shot sau sẽ tái dùng nó. WHY trong memory phải đúng cơ chế, không
+      chỉ đúng hình.'
+notes: "Video đầu tiên trong thư viện mà đơn vị thông tin là một chuỗi có thứ tự
+  chứ không phải một số đếm, và đầu tiên mà typography chở cơ chế thay vì dán
+  nhãn cho nó. Điều đó do vật liệu quyết định: một dấu mark không tra cứu được
+  và không cho thấy được CAROL sắp trước alice."
+known_limitations:
+  - Event `scatter` vẫn nằm trong scenario broken (đã ghi rõ là "hệ quả quan sát
+    được, không phải nguyên nhân"). Không shot nào instrument nó. Nó là một cái
+    bẫy còn mở cho shot tương lai đọc nhầm thành cơ chế.
+  - facts.descent_lands_at vẫn được tính và verify vì narration claim 3 dựa vào
+    nó, nhưng không frame nào vẽ nó nữa. Khẳng định đó tồn tại trong lời, không
+    trong hình.
+  - 'Câu narration "trong danh sách đó không có giá trị nào như vậy" đúng với dữ
+    liệu nhưng KHÔNG được đánh dấu trong khung — người xem phải tự suy ra. Cố ý:
+    đánh dấu nó sẽ nâng một bằng chứng phụ thành một khẳng định thị giác.'
+  - shot_01 dùng engine ffmpeg nên `cv gate` bỏ qua nó hoàn toàn (không lint,
+    không layout, không contrast, không motion). Nó chỉ được soát bằng mắt.
+  - Chưa có track narration. Mốc thời gian dựa trên một lần đọc đo được 81s so
+    với bản cắt 84s; khi có voice thật, nhịp có thể phải chỉnh lại.
+  - "Đo được: `cv gate` (lệnh check) chạy trên chrome-headless-shell
+    131.0.6778.204 từ cache puppeteer, còn `cv render` chạy trên 152.0.7977.30
+    từ cache hyperframes. Tức là layout, contrast và overlap được đo trên một
+    bản Chrome, còn pixel xuất ra do một bản khác sinh. Chưa quy được hiện tượng
+    nào cho việc này. Ghi lại, không truy tiếp — E01 đã đóng băng. (Ghi chú
+    trước đây trong repo nói ngược lại chiều này; nó được suy ra từ một dòng
+    debug của lệnh check, và đã sai.)"

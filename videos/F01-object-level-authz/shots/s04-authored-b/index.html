@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=1920" />
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+/* @brand:start */
+:root {
+  --ground: #0C0D0F; --ground-lift: #14161A;
+  --ink: #EDEAE4; --ink-mid: #9AA0A6; --ink-dim: #8B9198; --ink-ghost: #3A3E42;
+  --rule: #23272A; --rule-bright: #3D4348; --hair: 1.5px;
+  --authoritative: #C9A227; --stale: #E0533D; --lost: #6A6F74;
+  --boundary: #4E8C7D; --pressure: #B4623A; --counterfactual: #7A8086;
+  --font-value: "IBM Plex Mono", ui-monospace, monospace;
+  --font-label: "IBM Plex Sans Condensed", "IBM Plex Sans", system-ui, sans-serif;
+  --t-hero: 200px; --t-value: 64px; --t-body: 36px; --t-label: 26px; --track-label: 0.18em;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { overflow: hidden; background: var(--ground); color: var(--ink); font-family: var(--font-label); }
+.label { font-family: var(--font-label); font-size: var(--t-label); letter-spacing: var(--track-label);
+         text-transform: uppercase; color: var(--ink-dim); font-weight: 500; }
+/* @brand:end */
+
+html, body { width: 1080px; height: 1920px; }
+#stage { position: absolute; inset: 0; }
+
+/* ---------------------------------------------------------------------------
+   SHOT 04 — THE COMPARISON. 19s, and the shot the whole mechanism lives in.
+
+   Opens on shot 03's closing frame exactly: handler A in the same position, same
+   38px, same plain --ink-mid. Nothing moves for the first 0.8s, because the content
+   of that hold is "A did not change" — A is correct at the start of this shot and
+   still correct at the end of the video.
+
+   CAMERA IS STATIC; COMPOSITION IS NOT. 19s of internal beats, one per narration
+   sentence of this passage, and each beat is the comparison being PERFORMED rather
+   than decorated:
+
+     1.0  a second path is authored          (authorship — accumulation)
+     5.6  `req.params.id` named in BOTH      (the shared reach)
+     8.0  `req.principal` named in A alone   (the reach only one body makes)
+    10.6  `assertMember` named as the decision
+    13.2  the two counts
+    16.4  the point
+
+   Colour arrives late on purpose. Shot 03 leaves every token plain, so the naming of
+   reaches happens HERE, where the comparison is. A colour change is a state change,
+   not decoration: each one answers "which body reaches this".
+
+   WHAT IS NOT HERE, and must never be added to rescue it: no placeholder or empty
+   slot in B, no arrow, no "missing check" label, no warning colour on B. B is two
+   lines, complete, and does exactly what it says. The whole point is that nothing
+   looks wrong — which is why the closing line is allowed to say so, and is the only
+   sentence in the shot that is not a count.
+
+   No unused local variable either. `req` is reached in both bodies; the asymmetry is
+   WHICH FIELD of it each body reaches. An unused local would be something a linter
+   flags, i.e. something that looks wrong.
+--------------------------------------------------------------------------- */
+#lblWhen  { position: absolute; left: 93px; top: 244px; }
+#lblLater { position: absolute; left: 93px; top: 700px; }
+
+/* carried in from shot 03 so the match cut is pixel-identical, then yields to path B */
+#steps { position: absolute; left: 93px; top: 660px; width: 894px; }
+.claim { position: absolute; left: 93px; width: 894px; font-family: var(--font-label);
+         font-size: 42px; letter-spacing: 0.01em; font-weight: 600; }
+#k1 { top: 760px; color: var(--ink); }
+#k2 { top: 818px; color: var(--boundary); }
+
+.h    { position: absolute; left: 93px; }
+.ln   { font-family: var(--font-value); font-size: 38px; line-height: 58px;
+        color: var(--ink-mid); white-space: pre; }
+.rt   { color: var(--ink-dim); }
+#hA { top: 340px; }
+#hB { top: 786px; }
+
+/* every token starts plain. Colour is applied when the comparison reaches it. */
+.reach, .pri, .dec { color: var(--ink-mid); }
+.dec { font-weight: 600; }
+
+.cnt { position: absolute; left: 93px; width: 894px; font-family: var(--font-label);
+       font-size: 40px; letter-spacing: 0.01em; font-weight: 600; }
+#c1 { top: 1000px; color: var(--ink); }
+#c2 { top: 1058px; color: var(--authoritative); }
+#c1 b, #c2 b { font-family: var(--font-value); font-weight: 600; }
+
+#point { position: absolute; left: 93px; top: 1168px; width: 894px;
+         font-family: var(--font-label); font-size: 46px; letter-spacing: 0.01em;
+         color: var(--ink); font-weight: 600; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="21.5"
+     data-width="1080" data-height="1920">
+  <div id="stage" class="clip" data-start="0" data-duration="21.5" data-track-index="0">
+
+    <div id="lblWhen" class="label">endpoint tài liệu, như nó được viết ra</div>
+
+    <div class="h" id="hA">
+      <div class="ln rt">GET  /documents/:id</div>
+      <div class="ln">  const doc = docs.byId(<span class="reach">req.params.id</span>)</div>
+      <div class="ln">  <span class="dec">assertMember</span>(<span class="pri">req.principal</span>, doc)</div>
+      <div class="ln">  return doc</div>
+    </div>
+
+    <div id="steps" class="label">hai bước &mdash; lấy object, rồi một quyết định trên nó</div>
+    <div class="claim" id="k1">cả hai đều đúng</div>
+    <div class="claim" id="k2">và đến hôm nay vẫn đúng</div>
+
+    <div id="lblLater" class="label">một tính năng khác, một đường khác</div>
+
+    <div class="h" id="hB">
+      <div class="ln rt">GET  /documents/:id/comments</div>
+      <div class="ln">  return comments.byDoc(<span class="reach">req.params.id</span>)</div>
+    </div>
+
+    <div class="cnt" id="c1"><b>2</b> đường tới cùng dữ liệu đó</div>
+    <div class="cnt" id="c2"><b>1</b> đường chịu quyết định phân quyền</div>
+
+    <div id="point">không có gì trông sai</div>
+
+  </div>
+</div>
+
+<script>
+window.__timelines = window.__timelines || {};
+const tl = gsap.timeline({ paused: true });
+const R = 'power3.out';
+
+const linesB = gsap.utils.toArray('#hB .ln');
+const reach = gsap.utils.toArray('.reach');          // req.params.id — in BOTH bodies
+const pri   = gsap.utils.toArray('.pri');            // req.principal — in A only
+const dec   = gsap.utils.toArray('.dec');            // assertMember  — in A only
+
+/* Handler A and its label are ALREADY on screen at t=0: this shot opens on shot 03's
+   closing frame and the match cut must not move a pixel. Only B and the closing
+   statements start hidden. */
+gsap.set([...linesB, '#lblLater', '#c1', '#c2', '#point'], { opacity: 0 });
+/* #steps / #k1 / #k2 start VISIBLE — they are shot 03s closing state */
+
+/* ---- 0.0–0.8  the hold that says "A did not change" ------------------- */
+
+/* ---- 1.0–3.6  a second path is authored ------------------------------- */
+// beat 1 (0.00-4.88): "ba tháng sau… đường dẫn mới, handler mới"
+tl.to(['#steps', '#k1', '#k2'], { opacity: 0, duration: .5, ease: 'power2.in' }, 1.10)
+  .to('#lblLater', { opacity: 1, duration: .4, ease: R }, 1.70)
+  .to(linesB[0], { opacity: 1, duration: .32, ease: R }, 2.60)
+// beat 2 (4.88-7.96): "handler đó nhận id… rồi nạp comment theo id"
+  .to(linesB[1], { opacity: 1, duration: .32, ease: R }, 5.20);
+
+/* ---- 5.6  the SHARED reach, named in both bodies at once --------------
+   Simultaneity is the content: this is one reach that both bodies make. */
+tl.to(reach, { color: '#EDEAE4', duration: .55, ease: 'none' }, 6.40);
+
+/* ---- 8.0  the reach only ONE body makes ------------------------------
+   Alone, and 2.4s after the paired one, so solitude is legible as solitude.
+   `req` is present in both bodies; what differs is which field is reached. */
+// beat 3 (7.96-11.36): "middleware xác thực vẫn chạy. nó xác nhận đúng người này là ai."
+tl.to(pri, { color: '#4E8C7D', duration: .55, ease: 'none' }, 8.40);
+
+/* ---- 10.6  and that reach is the authorization decision --------------- */
+// beat 4 (11.36-15.16): "nhưng không có dòng nào hỏi…"
+tl.to(dec, { color: '#C9A227', duration: .55, ease: 'none' }, 11.64);
+
+/* ---- 13.2  the counts, over what is on screen ------------------------- */
+tl.to('#c1', { opacity: 1, duration: .45, ease: R }, 13.04)
+  .to('#c2', { opacity: 1, duration: .45, ease: R }, 13.94);
+
+/* ---- 16.4  the point. The only line here that is not a count. --------- */
+// beat 5 (15.16-20.36): "không phải ai đó bỏ qua bước kiểm. bước kiểm chưa từng tồn tại."
+tl.to('#point', { opacity: 1, duration: .5, ease: R }, 15.61);
+
+window.__timelines['main'] = tl;
+</script>
+</body>
+</html>

@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=1920" />
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+/* @brand:start */
+:root {
+  --ground: #0C0D0F; --ground-lift: #14161A;
+  --ink: #EDEAE4; --ink-mid: #9AA0A6; --ink-dim: #8B9198; --ink-ghost: #3A3E42;
+  --rule: #23272A; --rule-bright: #3D4348; --hair: 1.5px;
+  --authoritative: #C9A227; --stale: #E0533D; --lost: #6A6F74;
+  --boundary: #4E8C7D; --pressure: #B4623A; --counterfactual: #7A8086;
+  --font-value: "IBM Plex Mono", ui-monospace, monospace;
+  --font-label: "IBM Plex Sans Condensed", "IBM Plex Sans", system-ui, sans-serif;
+  --t-hero: 200px; --t-value: 64px; --t-body: 36px; --t-label: 26px; --track-label: 0.18em;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { overflow: hidden; background: var(--ground); color: var(--ink); font-family: var(--font-label); }
+.label { font-family: var(--font-label); font-size: var(--t-label); letter-spacing: var(--track-label);
+         text-transform: uppercase; color: var(--ink-dim); font-weight: 500; }
+/* @brand:end */
+
+html, body { width: 1080px; height: 1920px; }
+#stage { position: absolute; inset: 0; }
+.mono { position: absolute; font-family: var(--font-value); line-height: 1; white-space: pre; }
+.sans { position: absolute; font-family: var(--font-label); letter-spacing: 0.01em; font-weight: 600; }
+
+/* ---------------------------------------------------------------------------
+   s14-signal — THE CHECK, AND WHICH ROUTES HAVE IT. counting over DISJOINT groups.
+
+   THE PERCENTAGE IS BACK, and removing it was the mistake. The narration ends "rồi đếm xem
+   bao nhiêu phần trăm route đã có test đó" — the package prescribes the number. Dropping it
+   because a percentage might be misread as a safety score was the Visual Engine overruling
+   Content Engine on a point the package already handles: the very next shot exists to say
+   what the number does and does not prove.
+
+   So the number is stated plainly, in ink, as a measurement — not teal, not vermilion, not a
+   verdict, no bar, no gauge. What steers the eye is the fill of the two bands, and the band
+   that needs work is the larger and the brighter one.
+
+   Two DISJOINT groups, so two regions. Unlike s06, where the two columns are two facts about
+   the same five paths and therefore share rows.
+--------------------------------------------------------------------------- */
+#sigLbl { position: absolute; left: 93px; top: 236px; }
+.rec { left: 93px; font-size: 30px; color: var(--ink); }
+#rule { position: absolute; left: 93px; top: 530px; width: 894px; height: var(--hair);
+        background: var(--rule-bright); transform-origin: left center; }
+#g1Lbl { position: absolute; left: 93px;  top: 566px; width: 440px; color: var(--ink-dim); }
+#g2Lbl { position: absolute; left: 580px; top: 566px; width: 440px; color: var(--stale); }
+.r  { font-size: 32px; }
+.r1 { left: 93px;  color: var(--ink-mid); }
+.r2 { left: 580px; color: var(--ink); }
+#pctLbl { position: absolute; left: 93px; top: 890px; width: 894px; }
+#pct { left: 93px; top: 936px; font-size: 56px; color: var(--ink); }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="13"
+     data-width="1080" data-height="1920">
+  <div id="stage" class="clip" data-start="0" data-duration="13" data-track-index="0">
+
+    <div id="sigLbl" class="label">cách kiểm</div>
+    <div class="mono rec" id="s1" style="top:286px">route nhận object id từ client</div>
+    <div class="mono rec" id="s2" style="top:336px">&rarr; gọi lại bằng tài khoản thứ hai</div>
+    <div class="mono rec" id="s3" style="top:386px">&rarr; tài khoản đó không có quyền</div>
+    <div class="mono rec" id="s4" style="top:436px">&rarr; khẳng định nó không nhận 200</div>
+
+    <div id="rule"></div>
+    <div id="g1Lbl" class="label">đã có test đó</div>
+    <div class="mono r r1" id="a1" style="top:616px">/docs/:id</div>
+    <div class="mono r r1" id="a2" style="top:664px">/docs/:id/comments</div>
+
+    <div id="g2Lbl" class="label">chưa có &middot; cần soát</div>
+    <div class="mono r r2" id="b1" style="top:616px">/docs/:id/history</div>
+    <div class="mono r r2" id="b2" style="top:664px">/docs/:id/exports</div>
+    <div class="mono r r2" id="b3" style="top:712px">/docs/:id/print</div>
+
+    <div id="pctLbl" class="label">phần trăm route đã có test đó</div>
+    <div class="mono" id="pct">40%</div>
+
+  </div>
+</div>
+
+<script>
+window.__timelines = window.__timelines || {};
+const tl = gsap.timeline({ paused: true });
+const R = 'power3.out', T = 'power2.inOut';
+
+gsap.set(['#sigLbl','#s1','#s2','#s3','#s4','#g1Lbl','#a1','#a2','#g2Lbl','#b1','#b2','#b3','#pctLbl','#pct'], { opacity: 0 });
+gsap.set('#rule', { scaleX: 0 });
+
+/* the recipe, one line per sentence of the narration */
+tl.to('#sigLbl', { opacity: 1, duration: .3, ease: R }, 0.30)
+  .to('#s1', { opacity: 1, duration: .3, ease: R }, 1.20)
+  .to('#s2', { opacity: 1, duration: .3, ease: R }, 2.60)
+  .to('#s3', { opacity: 1, duration: .3, ease: R }, 5.40)
+  .to('#s4', { opacity: 1, duration: .3, ease: R }, 6.50);
+
+/* the two groups, each in its own region */
+tl.to('#rule', { scaleX: 1, duration: .5, ease: T }, 8.10)
+  .to('#g1Lbl', { opacity: 1, duration: .3, ease: R }, 8.30)
+  .to(['#a1','#a2'], { opacity: 1, duration: .26, ease: R, stagger: .22 }, 8.55)
+  .to('#g2Lbl', { opacity: 1, duration: .35, ease: R }, 9.40)
+  .to(['#b1','#b2','#b3'], { opacity: 1, duration: .28, ease: R, stagger: .30 }, 9.70);
+
+/* and the number the narration asks you to produce */
+tl.to('#pctLbl', { opacity: 1, duration: .3, ease: R }, 10.80)
+  .to('#pct', { opacity: 1, duration: .4, ease: R }, 11.10);
+
+window.__timelines['main'] = tl;
+</script>
+</body>
+</html>

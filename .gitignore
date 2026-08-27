@@ -1,0 +1,19 @@
+# phụ thuộc
+node_modules/
+
+# cấu hình riêng của máy (đường dẫn browser, không hardcode vào tools/)
+.env.local
+
+# ARTIFACT SINH RA — dựng lại được từ nguồn trong repo.
+# 524 file, ~175 MB. Nguồn sinh ra chúng (generator, shot_plan, semantics) đều được commit;
+# sha256 của bản đã đóng băng nằm trong shot_plan.yaml và FULL_VIDEO_REVIEW.md, nên provenance
+# không mất đi cùng với bytes.
+*.mp4
+*.wav
+*.png
+*.jpg
+videos/*/voice/segments/
+
+# tạm
+/tmp/
+_*.mjs

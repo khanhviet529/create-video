@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=1920" />
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+/* @brand:start */
+:root {
+  --ground: #0C0D0F; --ground-lift: #14161A;
+  --ink: #EDEAE4; --ink-mid: #9AA0A6; --ink-dim: #8B9198; --ink-ghost: #3A3E42;
+  --rule: #23272A; --rule-bright: #3D4348; --hair: 1.5px;
+  --authoritative: #C9A227; --stale: #E0533D; --lost: #6A6F74;
+  --boundary: #4E8C7D; --pressure: #B4623A; --counterfactual: #7A8086;
+  --font-value: "IBM Plex Mono", ui-monospace, monospace;
+  --font-label: "IBM Plex Sans Condensed", "IBM Plex Sans", system-ui, sans-serif;
+  --t-hero: 200px; --t-value: 64px; --t-body: 36px; --t-label: 26px; --track-label: 0.18em;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { overflow: hidden; background: var(--ground); color: var(--ink); font-family: var(--font-label); }
+.label { font-family: var(--font-label); font-size: var(--t-label); letter-spacing: var(--track-label);
+         text-transform: uppercase; color: var(--ink-dim); font-weight: 500; }
+/* @brand:end */
+
+html, body { width: 1080px; height: 1920px; }
+#stage { position: absolute; inset: 0; }
+
+.cell { position: absolute; border-radius: 1px; }
+.live { background: var(--ink); }
+.dead { background: var(--lost); }
+.free { background: transparent; box-shadow: inset 0 0 0 4px var(--rule-bright); } /* Ô TRỐNG */
+/* a slot whose DEPICTION has been lifted out to be counted. The slot is still occupied —
+   nothing in the relation moved, and the ghost is what says so. */
+.ghost { background: transparent; box-shadow: inset 0 0 0 3px var(--lost); }
+
+.frame { position: absolute; left: 0; top: 0; }
+.fbar { position: absolute; background: var(--ink-dim); }   /* KHUNG CẤP PHÁT */
+.fbar.h { height: 3px; }
+.fbar.v { width: 3px; transform-origin: left top; }
+#need .fbar { background: var(--boundary); }
+
+.cap { position: absolute; font-family: var(--font-label); font-size: 26px;
+       letter-spacing: 0.14em; text-transform: uppercase; font-weight: 500; }
+.val { position: absolute; font-family: var(--font-value); font-size: 54px; }
+
+/* the analytical register — a different band of the frame, with its own rule */
+#analytic { position: absolute; left: 90px; top: 1362px; width: 900px; height: 1.5px;
+            background: var(--counterfactual); opacity: .5; }
+/* a sweep event travelling down the allocation */
+.sweep { position: absolute; background: var(--authoritative); opacity: .22; }
+/* the visibility horizon held by an old snapshot */
+.horizon { position: absolute; left: 76px; width: 928px;
+           height: 3px;
+           background: repeating-linear-gradient(90deg, var(--boundary) 0 16px, transparent 16px 28px); }
+
+/* the measurement register: bars on an axis. A quantity belongs on an axis, never as a
+   frame drawn around a subset of cells — that reads as a physical partition, which is false. */
+#axis { position: absolute; left: 90px; top: 300px; width: 900px; height: 1.5px; background: var(--rule); }
+.bar { position: absolute; left: 90px; height: 22px; transform-origin: left center; }
+#bNeed { top: 246px; background: var(--boundary); }
+#bAlloc { top: 316px; background: var(--stale); }
+#drop { position: absolute; top: 246px; width: 1.5px; height: 112px; background: var(--boundary); opacity: .55; }
+
+#fx, #fy { position: absolute; background: var(--rule); }
+#fx { left: 150px; top: 1360px; width: 800px; height: 1.5px; }
+#fy { left: 150px; top: 620px; width: 1.5px; height: 740px; }
+
+/* một đường node: nhiều đoạn tuyệt đối, KHÔNG tween left/top — chỉ transform và opacity */
+.seg { position: absolute; height: 3px; transform-origin: left center; border-radius: 2px; }
+.pline .seg { background: var(--ink); }
+.rline .seg { background: var(--ink-mid); }
+
+/* dấu quan sát — hai dấu CÙNG hình, cùng sức nặng: cả hai đều là câu trả lời đúng */
+.mk { position: absolute; width: 26px; height: 26px; margin: -13px 0 0 -13px;
+      background: var(--ground); box-shadow: inset 0 0 0 4px var(--ink); border-radius: 50%; }
+.mk.filled { background: var(--ink); }
+
+/* phép chiếu: một sợi từ dấu tới trục, và một vệt trên trục */
+.pj { position: absolute; transform-origin: left center; }
+.pj.v { width: 2px; transform-origin: center top; }
+.pj.h { height: 2px; }
+.clockfx { background: var(--authoritative); }
+.posfx   { background: var(--boundary); }
+.tick { position: absolute; border-radius: 2px; }
+.tick.clockfx { width: 4px; height: 26px; margin-left: -2px; }
+.tick.posfx   { height: 4px; width: 26px; margin-top: -2px; }
+
+.axlbl { position: absolute; font-family: var(--font-label); font-size: 26px;
+         letter-spacing: .14em; text-transform: uppercase; font-weight: 500; }
+.mklbl { position: absolute; font-family: var(--font-value); font-size: 34px; color: var(--ink); }
+
+
+/* ---------------------------------------------------------------------------
+   R1 — phép chiếu. Hai dấu KHÔNG di chuyển một pixel nào trong suốt shot. Thứ đổi là
+   trục nào đang chiếu. Với một node, hai phép chiếu cho cùng thứ tự; với hai node,
+   chúng buộc phải bất đồng, và sự bất đồng đó là hệ quả hình học của việc một dấu rời
+   khỏi đường primary — không phải một hiệu ứng được thêm vào.
+--------------------------------------------------------------------------- */
+#lx { left: 150px; top: 1400px; } #ly { left: 150px; top: 560px; }
+#lx { color: var(--authoritative); } #ly { color: var(--boundary); }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="26"
+     data-width="1080" data-height="1920">
+  <div id="stage" class="clip" data-start="0" data-duration="26" data-track-index="0">
+    <div id="fx"></div>
+    <div id="fy"></div>
+    <div id="lx" class="axlbl">đồng hồ</div>
+    <div id="ly" class="axlbl">vị trí trên lịch sử</div>
+  </div>
+</div>
+
+<script>
+window.__timelines = window.__timelines || {};
+const tl = gsap.timeline({ paused: true });
+const R = 'power3.out', T = 'power2.inOut';
+const stage = document.getElementById('stage');
+
+const F = {"x0":150,"x1":950,"yBot":1360,"yTop":620,"tMin":0,"tMax":10,"pMin":496.4,"pMax":501.6};
+const X = (t) => F.x0 + (t - F.tMin) / (F.tMax - F.tMin) * (F.x1 - F.x0);
+const Y = (p) => F.yBot - (p - F.pMin) / (F.pMax - F.pMin) * (F.yBot - F.yTop);
+
+/* Vẽ một đường bậc thang từ danh sách [t, p]. Trả về phần tử để tween opacity. */
+function polyline(pts, cls) {
+  const box = document.createElement('div');
+  box.className = cls;
+  box.style.cssText = 'position:absolute;left:0;top:0;width:1080px;height:1920px';
+  for (let i = 0; i + 1 < pts.length; i++) {
+    const [ax, ay] = [X(pts[i][0]), Y(pts[i][1])];
+    const [bx, by] = [X(pts[i + 1][0]), Y(pts[i + 1][1])];
+    const len = Math.hypot(bx - ax, by - ay);
+    const ang = Math.atan2(by - ay, bx - ax) * 180 / Math.PI;
+    const d = document.createElement('div');
+    d.className = 'seg';
+    d.style.cssText = 'left:' + ax + 'px;top:' + (ay - 1.5) + 'px;width:' + len +
+      'px;transform:rotate(' + ang + 'deg)';
+    box.appendChild(d);
+  }
+  stage.appendChild(box);
+  return box;
+}
+
+/* R8 — replica LÀ đường primary, dịch sang phải theo đồng hồ. Một phép tịnh tiến, không hơn. */
+const shift = (pts, dt) => pts.map(([t, p]) => [t + dt, p]);
+
+function mark(t, p, filled) {
+  const d = document.createElement('div');
+  d.className = 'mk' + (filled ? ' filled' : '');
+  d.style.cssText = 'left:' + X(t) + 'px;top:' + Y(p) + 'px';
+  stage.appendChild(d);
+  return d;
+}
+
+/* Một phép chiếu: sợi từ dấu tới trục + vệt trên trục. Sợi vẽ sẵn đủ dài, hiện bằng scale. */
+function projectClock(t, p) {
+  const g = document.createElement('div');
+  g.style.cssText = 'position:absolute;left:0;top:0;width:1080px;height:1920px';
+  const line = document.createElement('div');
+  line.className = 'pj v clockfx';
+  line.style.cssText = 'left:' + (X(t) - 1) + 'px;top:' + Y(p) + 'px;height:' + (F.yBot - Y(p)) + 'px';
+  const tk = document.createElement('div');
+  tk.className = 'tick clockfx';
+  tk.style.cssText = 'left:' + X(t) + 'px;top:' + (F.yBot - 13) + 'px';
+  g.appendChild(line); g.appendChild(tk); stage.appendChild(g);
+  return { g, line, tk };
+}
+function projectPos(t, p) {
+  const g = document.createElement('div');
+  g.style.cssText = 'position:absolute;left:0;top:0;width:1080px;height:1920px';
+  const line = document.createElement('div');
+  line.className = 'pj h posfx';
+  line.style.cssText = 'left:' + F.x0 + 'px;top:' + (Y(p) - 1) + 'px;width:' + (X(t) - F.x0) + 'px';
+  const tk = document.createElement('div');
+  tk.className = 'tick posfx';
+  tk.style.cssText = 'left:' + (F.x0 - 13) + 'px;top:' + Y(p) + 'px';
+  g.appendChild(line); g.appendChild(tk); stage.appendChild(g);
+  return { g, line, tk };
+}
+
+const PRI = [[0.4,499],[4.6,499],[5,500],[9.6,500]];
+/* R8: replica LÀ đường primary, dịch sang phải. Song song theo cấu tạo. */
+const REP = shift(PRI, 2.4);
+const pl = polyline(PRI, 'pline');
+const rl = polyline(REP, 'rline');
+/* hai dấu — cùng hình, cùng sức nặng. Cả hai đều là câu trả lời ĐÚNG ở vị trí của nó. */
+const W = mark(5, 500, true);
+const Rm = mark(6.6, 499, false);
+gsap.set([pl, rl, W, Rm], { opacity: 0 });
+gsap.set(['#lx','#ly'], { opacity: 0 });
+
+/* ── 1 · MỘT node. Hai quan sát, cả hai trên đường primary ─────────────────── */
+const a1 = mark(2.2, 499, true), b1 = mark(7.4, 500, true);
+gsap.set([a1, b1], { opacity: 0 });
+tl.to(pl, { opacity: 1, duration: .6, ease: R }, 0.3);
+tl.to('#lx', { opacity: 1, duration: .4 }, 0.5);
+tl.to([a1, b1], { opacity: 1, duration: .4, ease: R }, 1.2);
+
+/* chiếu xuống đồng hồ: A rồi B */
+const ca = projectClock(2.2, 499), cb = projectClock(7.4, 500);
+gsap.set([ca.g, cb.g], { opacity: 0 });
+gsap.set([ca.line, cb.line], { scaleY: 0, transformOrigin: "center top" });
+tl.to([ca.g, cb.g], { opacity: 1, duration: .2 }, 2.0);
+tl.to(ca.line, { scaleY: 1, duration: .5, ease: T }, 2.0);
+tl.to(cb.line, { scaleY: 1, duration: .5, ease: T }, 2.5);
+
+/* chiếu sang vị trí: A rồi B — CÙNG thứ tự. Đây là "một node thì hai cách đo là một". */
+const pa = projectPos(2.2, 499), pb = projectPos(7.4, 500);
+gsap.set([pa.g, pb.g], { opacity: 0 });
+gsap.set([pa.line, pb.line], { scaleX: 0, transformOrigin: "right center" });
+tl.to('#ly', { opacity: 1, duration: .4 }, 3.2);
+tl.to([pa.g, pb.g], { opacity: 1, duration: .2 }, 3.4);
+tl.to(pa.line, { scaleX: 1, duration: .5, ease: T }, 3.4);
+tl.to(pb.line, { scaleX: 1, duration: .5, ease: T }, 3.9);
+
+/* ── 2 · node thứ hai: CÙNG đường đó, dịch đi ──────────────────────────────── */
+tl.to([ca.g, cb.g, pa.g, pb.g, a1, b1], { opacity: 0, duration: .5, ease: T }, 6.6);
+tl.to(rl, { opacity: 1, duration: .7, ease: R }, 7.4);
+
+/* ── 3 · hai sự kiện được đặt vào chỗ của chúng, rồi KHÔNG BAO GIỜ động nữa ── */
+tl.to(W, { opacity: 1, duration: .4, ease: R }, 9.0);
+tl.to(Rm, { opacity: 1, duration: .4, ease: R }, 10.2);
+
+/* ── 4 · hệ quy chiếu ĐỒNG HỒ: W trước, R sau ─────────────────────────────── */
+const cw = projectClock(5, 500), cr = projectClock(6.6, 499);
+gsap.set([cw.g, cr.g], { opacity: 0 });
+gsap.set([cw.line, cr.line], { scaleY: 0, transformOrigin: "center top" });
+tl.to([cw.g, cr.g], { opacity: 1, duration: .2 }, 11.6);
+tl.to(cw.line, { scaleY: 1, duration: .55, ease: T }, 11.6);
+tl.to(cr.line, { scaleY: 1, duration: .55, ease: T }, 12.4);
+
+/* ── 5 · hệ quy chiếu VỊ TRÍ: R trước, W sau. Hai dấu vẫn ở nguyên chỗ cũ ─── */
+tl.to([cw.g, cr.g], { opacity: .18, duration: .5, ease: T }, 15.4);
+const pw = projectPos(5, 500), pr = projectPos(6.6, 499);
+gsap.set([pw.g, pr.g], { opacity: 0 });
+gsap.set([pw.line, pr.line], { scaleX: 0, transformOrigin: "right center" });
+tl.to([pw.g, pr.g], { opacity: 1, duration: .2 }, 16.0);
+tl.to(pr.line, { scaleX: 1, duration: .55, ease: T }, 16.0);
+tl.to(pw.line, { scaleX: 1, duration: .55, ease: T }, 16.8);
+
+/* ── 6 · cả hai hệ cùng bật. Mâu thuẫn đứng yên trên màn hình ─────────────── */
+tl.to([cw.g, cr.g], { opacity: 1, duration: .6, ease: R }, 19.6);
+window.__timelines['main'] = tl;
+</script>
+</body>
+</html>

@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=1920" />
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+/* @brand:start */
+:root {
+  --ground: #0C0D0F; --ground-lift: #14161A;
+  --ink: #EDEAE4; --ink-mid: #9AA0A6; --ink-dim: #8B9198; --ink-ghost: #3A3E42;
+  --rule: #23272A; --rule-bright: #3D4348; --hair: 1.5px;
+  --authoritative: #C9A227; --stale: #E0533D; --lost: #6A6F74;
+  --boundary: #4E8C7D; --pressure: #B4623A; --counterfactual: #7A8086;
+  --font-value: "IBM Plex Mono", ui-monospace, monospace;
+  --font-label: "IBM Plex Sans Condensed", "IBM Plex Sans", system-ui, sans-serif;
+  --t-hero: 200px; --t-value: 64px; --t-body: 36px; --t-label: 26px; --track-label: 0.18em;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { overflow: hidden; background: var(--ground); color: var(--ink); font-family: var(--font-label); }
+.label { font-family: var(--font-label); font-size: var(--t-label); letter-spacing: var(--track-label);
+         text-transform: uppercase; color: var(--ink-dim); font-weight: 500; }
+/* @brand:end */
+
+html, body { width: 1080px; height: 1920px; }
+#stage { position: absolute; inset: 0; }
+.mono { position: absolute; font-family: var(--font-value); line-height: 1; white-space: pre; }
+.sans { position: absolute; font-family: var(--font-label); letter-spacing: 0.01em; font-weight: 600; }
+
+/* ---------------------------------------------------------------------------
+   s08 — NOT THE ID. narrowing by A CLAIM CONTRACTING AROUND A FIXED OBJECT.
+
+   FIRST VERSION REJECTED, and the reason is worth keeping: it declared the contraction by
+   putting `width: 894px / 700px / 620px` on three divs whose text never filled them. The
+   comment said the claim narrowed; nothing on screen narrowed. Asserting a spatial
+   operation instead of performing it is the same defect as asserting a match cut instead
+   of measuring it, and it survived the gate because no checker reads intent.
+
+   Now the extent is a real measured span. The bar is what people believe a hard-to-guess id
+   buys them, divided into the three things it is believed to control. Two of those thirds
+   scale to zero — the bar literally becomes one third as wide — and their labels stay
+   behind, unlit, marking ground the claim no longer covers.
+
+   The UUID never moves and is never touched by a tween. It is shown at full length because
+   the whole point is that it is unguessable AND did not need guessing.
+
+   NOT a progress bar: no number, no percentage, no fill, no ticks. What it measures is the
+   reach of a claim, and it only ever gets smaller.
+--------------------------------------------------------------------------- */
+#lblTop { position: absolute; left: 93px; top: 300px; width: 894px; }
+.cell   { position: absolute; top: 372px; height: 8px; background: var(--ink-mid);
+          transform-origin: left center; }
+#c1 { left: 93px;  width: 290px; }
+#c2 { left: 395px; width: 290px; }
+#c3 { left: 697px; width: 290px; }
+.cl { position: absolute; top: 400px; }
+#L1 { left: 93px;  }
+#L2 { left: 395px; }
+#L3 { left: 697px; }
+
+#idLbl { position: absolute; left: 93px; top: 830px; }
+#id    { left: 93px; top: 876px; font-size: 34px; color: var(--ink); }
+#prov  { position: absolute; left: 93px; top: 946px; width: 894px; color: var(--ink-mid); }
+
+#out { left: 93px; top: 1150px; width: 894px; font-size: 48px; color: var(--ink); }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="11.5"
+     data-width="1080" data-height="1920">
+  <div id="stage" class="clip" data-start="0" data-duration="11.5" data-track-index="0">
+
+    <div id="lblTop" class="label">id khó đoán thì kiểm soát được gì</div>
+    <div class="cell" id="c1"></div><div class="cl label" id="L1">chi phí dò tìm</div>
+    <div class="cell" id="c2"></div><div class="cl label" id="L2">quyền được cấp</div>
+    <div class="cell" id="c3"></div><div class="cl label" id="L3">quyền bị thu</div>
+
+    <div id="idLbl" class="label">id ở đây là</div>
+    <div class="mono" id="id">d41f8c2e-7b19-4a63-9f02-1c8e5b7a3d90</div>
+    <div id="prov" class="label">lấy hợp lệ từ hồi còn là thành viên &middot; không phải đoán ra</div>
+
+    <div class="sans" id="out">nên cách sửa không nằm ở việc đổi id</div>
+
+  </div>
+</div>
+
+<script>
+window.__timelines = window.__timelines || {};
+const tl = gsap.timeline({ paused: true });
+const R = 'power3.out', T = 'power2.inOut';
+
+gsap.set(['#lblTop','#L1','#L2','#L3','#idLbl','#id','#prov','#out'], { opacity: 0 });
+gsap.set(['#c1','#c2','#c3'], { opacity: 0 });
+
+/* beat 1 (0.00-4.08) — the object, and where it came from. Neither moves again. */
+tl.to(['#idLbl','#id'], { opacity: 1, duration: .4, ease: R, stagger: .12 }, 0.30)
+  .to('#prov', { opacity: 1, duration: .4, ease: R }, 2.20);
+
+/* beat 2 (4.08-8.61) — the belief, at its full reach, then contracted to what is true */
+tl.to(['#lblTop'], { opacity: 1, duration: .35, ease: R }, 4.20)
+  .to(['#c1','#c2','#c3'], { opacity: 1, duration: .3, ease: R, stagger: .10 }, 4.50)
+  .to(['#L1','#L2','#L3'], { opacity: 1, duration: .3, ease: R, stagger: .10 }, 4.70);
+
+/* the one third that holds — verified, so it goes to full ink */
+tl.to('#c1', { backgroundColor: '#EDEAE4', duration: .4, ease: 'none' }, 5.70)
+  .to('#L1', { color: '#EDEAE4', duration: .4, ease: 'none' }, 5.70);
+
+/* the two thirds that do not — the bar really becomes a third as wide */
+tl.to('#c2', { scaleX: 0, duration: .5, ease: T }, 6.60)
+  .to('#L2', { color: '#6A6F74', duration: .5, ease: 'none' }, 6.60)
+  .to('#c3', { scaleX: 0, duration: .5, ease: T }, 7.60)
+  .to('#L3', { color: '#6A6F74', duration: .5, ease: 'none' }, 7.60);
+
+/* beat 3 (8.61-10.65) */
+tl.to('#out', { opacity: 1, duration: .45, ease: R }, 8.80);
+
+window.__timelines['main'] = tl;
+</script>
+</body>
+</html>

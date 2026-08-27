@@ -1,0 +1,172 @@
+id: E01-not-sargable
+title: "Index tồn tại nhưng planner không dùng"
+domain: database
+audience: "vietnamese software engineers, 2-5+ years"
+source_package: "Technical Content Engine · schema_version 1 · id 002"
+
+# Straight from the package. Not paraphrased — the mechanism is only true under these.
+assumptions:
+  - "Postgres, index B-tree mặc định trên cột email"
+  - "Query dạng WHERE lower(email) = $1 — hàm bọc quanh cột nằm ở vế trái phép so sánh"
+  - "Bảng đủ lớn để quét tuần tự là vấn đề thật — giả định 2 triệu dòng"
+  - "Chưa có expression index trên lower(email)"
+  - "Cột không dùng collation case-insensitive"
+
+# THE DISTINCTION THAT MUST SURVIVE INTO THE VISUAL.
+#
+# Narrowed wording, and the narrowing mattered. The claim is about EXPRESSIONS, not
+# values: the index is built on the expression  email , and the predicate asks about
+# the expression  lower(email) . Without an expression index on  lower(email) , there
+# is no indexed path that satisfies that predicate — a B-tree answers equality and
+# range on exactly the expression it was built on, and on nothing else.
+#
+# THIS PARAGRAPH USED TO SAY SOMETHING ELSE, and the shot built from it was wrong.
+# It read: "the rows that satisfy lower(email) = X are scattered through the email
+# order, there is no range to descend to, so the index cannot satisfy the predicate."
+# That is the banned causality — the third never_say below — stated as the mechanism,
+# two lines above the sentence saying ordering is never the cause. shot_04 was built
+# from the first version and drew a bracket labelled "khoảng phải đọc — 7/7" reaching
+# the whole list before showing the price. The words denying the argument were already
+# in the file; the paragraph making it was louder.
+#
+# The header also asserted that carol@corp.com IS one of the stored values. It no
+# longer is: facts.rows holds six values and none of them is the searched one, so the
+# frame can survive the narration line that says so. tools/verify-index-facts.mjs now
+# reads shot_04's own ROWS/WANT/HITS/DESCENT back out and fails if they drift from
+# facts — that check did not exist, which is why the drift shipped.
+#
+# Ordering is SUPPORTING EVIDENCE for the demo, never the cause.
+# A visual that leads with "lowercasing scrambles the sort" teaches that an
+# order-preserving function would be safe. date(created_at) preserves order and
+# Postgres still refuses the plain index.
+mechanism_priority:
+  # THE CAUSE. True regardless of what is in the table.
+  primary: >-
+    Index thường được xây trên biểu thức email. Predicate cần đánh giá lower(email).
+    Không có expression index khớp trên lower(email) thì planner không có đường
+    indexed lookup trực tiếp cho predicate đó. B-tree tra cứu equality và range trên
+    ĐÚNG indexed expression của nó; ở đây expression đó là email, không phải
+    lower(email).
+
+  # A CONCRETE CONSEQUENCE for this dataset and collation. Intuition, not proof.
+  demo_specific: >-
+    Với dữ liệu và collation trong ví dụ này, giá trị cần tìm không phải là một giá trị
+    được lưu, và một descent theo email sẽ hạ xuống cuối danh sách — trong khi các dòng
+    thoả lại nằm ở đầu. Đây là trực giác cho việc thứ tự của raw key không dẫn tới chỗ
+    cần tới. Nó KHÔNG phải bằng chứng tổng quát về non-sargability, và không được
+    trình bày như nguyên nhân.
+
+  never_say:
+    - >-
+      "index hỏng vì hạ chữ thường làm đảo thứ tự" — sai quy tắc: date() bảo toàn thứ
+      tự mà Postgres vẫn từ chối plain index.
+    - >-
+      "các dòng thoả nằm rải rác nên Postgres phải seq scan" — SAI CHIỀU NHÂN QUẢ.
+      Kể cả khi chúng tình cờ liền nhau (ví dụ mọi email vốn đã viết thường), plain
+      index vẫn không phục vụ predicate lower(email) = $1, vì biểu thức không khớp.
+      Scatter là hệ quả quan sát được, không phải điều kiện quyết định.
+
+# Declarative reference data for the visual layer. NOT simulated.
+# Verified by tools/verify-index-facts.mjs — orderings and match positions are
+# recomputed from the rows, never trusted as written.
+facts:
+  collation: "C (byte order) — as the story requires (theo mã ký tự)"
+  # the same address stored in three casings, which is the ordinary state of an email
+  # column that has no case-insensitive collation
+  # The all-lowercase row was REMOVED, and the reason is a narration contradiction:
+  # the script says "Trong danh sách đó không có giá trị nào như vậy" while the frame
+  # would have been showing carol@corp.com sitting at row 6. The eye wins over the ear,
+  # so the data had to stop contradicting the words.
+  rows: ["CAROL@corp.com", "Carol@corp.com", "Dan@corp.com", "Eve@corp.com",
+         "alice@corp.com", "bob@corp.com"]
+  looking_for: "carol@corp.com"
+  value_present_in_index: false   # the searched value is genuinely not a stored value
+
+  # sorted by the expression the plain index is built on
+  index_order: ["CAROL@corp.com", "Carol@corp.com", "Dan@corp.com", "Eve@corp.com",
+                "alice@corp.com", "bob@corp.com"]
+  matches_in_index_order: [0, 1]
+  # WHERE A B-TREE DESCENT ON `email` WOULD LAND when looking for the literal
+  # 'carol@corp.com': after every stored value, because c(99) sorts above C(67) and
+  # b(98). The index sends you to the BOTTOM; the rows that satisfy the predicate are
+  # at the TOP. That gap is the demo-specific intuition, and it is now the image.
+  descent_lands_at: 6
+
+  # sorted by the expression the predicate actually asks about
+  expression_index_order: ["alice@corp.com", "bob@corp.com", "carol@corp.com",
+                           "carol@corp.com", "dan@corp.com", "eve@corp.com"]
+  matches_in_expression_order: [2, 3]        # one range, one descent
+  detection_query: "SELECT relname, indexrelname, idx_scan FROM pg_stat_user_indexes WHERE idx_scan = 0"
+
+actors:
+  - { id: query,    label: "câu query",     kind: request }
+  - { id: planner,  label: "query planner", kind: service }
+  - { id: executor, label: "executor",      kind: service }
+  - { id: idx,      label: "index B-tree trên email", kind: store }
+  - { id: users,    label: "bảng users",    kind: store }
+
+state:
+  users.rows_examined: 0
+  users.path_is_index: 0     # 1 = index scan, 0 = seq scan
+  idx.idx_scan: 0            # pg_stat_user_indexes.idx_scan
+
+scenarios:
+  broken:
+    note: "predicate bọc hàm quanh cột — index vô hiệu, không lỗi, không cảnh báo"
+    events:
+      - { id: ask, t: 0.08, actor: query, op: access, subject: query, resource: planner,
+          note: "WHERE lower(email) = $1" }
+      - { id: probe, t: 0.24, actor: planner, op: check, subject: planner, resource: idx,
+          pass: false, reason: "index xây trên biểu thức email; predicate hỏi biểu thức lower(email) — hai biểu thức khác nhau" }
+      - { id: scatter, t: 0.40, actor: planner, op: check, subject: planner, resource: idx,
+          pass: false, demo_specific: true,
+          reason: "trong ví dụ này, thứ tự theo email không gom các dòng thoả thành khoảng hữu ích (hệ quả quan sát được, không phải nguyên nhân)" }
+      - { id: reject, t: 0.54, actor: planner, op: write, target: idx, field: idx_scan, value: 0,
+          note: "không có expression index khớp trên lower(email) — không có đường indexed lookup trực tiếp" }
+      - { id: seqscan, t: 0.68, actor: planner, op: write, target: users, field: path_is_index, value: 0,
+          note: "chọn quét tuần tự làm đường truy cập" }
+      - { id: scan, t: 0.88, actor: executor, op: write, target: users, field: rows_examined, value: 2000000,
+          note: "đọc từng dòng, tính lower cho từng dòng, rồi so sánh" }
+    invariants:
+      - { id: cost_independent_of_table_size, kind: bounded, field: users.rows_examined, max: 1000,
+          note: "chi phí của một tra cứu theo email không được tăng theo số dòng của bảng" }
+      - { id: created_index_gets_used, kind: final_state, field: idx.idx_scan, expected: 1,
+          note: "index đã tạo cho đúng cột này phải được dùng" }
+    expect:
+      violations: [cost_independent_of_table_size, created_index_gets_used]
+
+  after_analyze:
+    note: >-
+      Giả thuyết đầu tiên của người xem: thống kê cũ. Replay chứng minh nó sai —
+      thêm ANALYZE vào đúng chỗ đó và KHÔNG có invariant nào đổi trạng thái.
+      Đây là bằng chứng loại giả thuyết, không phải một cơ chế khác.
+    events:
+      - { id: ask, t: 0.06, actor: query, op: access, subject: query, resource: planner }
+      - { id: analyze, t: 0.16, actor: planner, op: check, subject: planner, resource: users,
+          pass: true, reason: "ANALYZE chạy xong, thống kê đã mới" }
+      - { id: probe, t: 0.30, actor: planner, op: check, subject: planner, resource: idx,
+          pass: false, reason: "thống kê mới không tạo ra một đường đi qua index để mà chọn" }
+      - { id: reject, t: 0.52, actor: planner, op: write, target: idx, field: idx_scan, value: 0 }
+      - { id: seqscan, t: 0.68, actor: planner, op: write, target: users, field: path_is_index, value: 0 }
+      - { id: scan, t: 0.88, actor: executor, op: write, target: users, field: rows_examined, value: 2000000 }
+    invariants:
+      - { id: cost_independent_of_table_size, kind: bounded, field: users.rows_examined, max: 1000 }
+      - { id: created_index_gets_used, kind: final_state, field: idx.idx_scan, expected: 1 }
+    expect:
+      violations: [cost_independent_of_table_size, created_index_gets_used]
+
+  expression_index:
+    note: "index xây trên chính biểu thức — giá trị đã tính sẵn và đã sắp xếp, predicate lại sargable"
+    events:
+      - { id: ask, t: 0.10, actor: query, op: access, subject: query, resource: planner }
+      - { id: probe, t: 0.32, actor: planner, op: check, subject: planner, resource: idx,
+          pass: true, reason: "index xây trên chính biểu thức lower(email) — predicate và indexed expression khớp nhau, nên có đường lookup trực tiếp" }
+      - { id: use, t: 0.52, actor: planner, op: write, target: idx, field: idx_scan, value: 1 }
+      - { id: idxscan, t: 0.68, actor: planner, op: write, target: users, field: path_is_index, value: 1 }
+      - { id: fetch, t: 0.88, actor: executor, op: write, target: users, field: rows_examined, value: 1,
+          note: "đi thẳng tới dòng cần tìm" }
+    invariants:
+      - { id: cost_independent_of_table_size, kind: bounded, field: users.rows_examined, max: 1000 }
+      - { id: created_index_gets_used, kind: final_state, field: idx.idx_scan, expected: 1 }
+    expect:
+      violations: []

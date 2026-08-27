@@ -1,0 +1,3 @@
+file 'D:/creative-video/videos/A01-lost-update/shots/shot_01/render.mp4'
+file 'D:/creative-video/videos/A01-lost-update/shots/shot_02_cam/render.mp4'
+file 'D:/creative-video/videos/A01-lost-update/shots/shot_04_cam/render.mp4'

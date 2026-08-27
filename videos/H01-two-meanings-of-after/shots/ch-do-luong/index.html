@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=1920" />
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+/* @brand:start */
+:root {
+  --ground: #0C0D0F; --ground-lift: #14161A;
+  --ink: #EDEAE4; --ink-mid: #9AA0A6; --ink-dim: #8B9198; --ink-ghost: #3A3E42;
+  --rule: #23272A; --rule-bright: #3D4348; --hair: 1.5px;
+  --authoritative: #C9A227; --stale: #E0533D; --lost: #6A6F74;
+  --boundary: #4E8C7D; --pressure: #B4623A; --counterfactual: #7A8086;
+  --font-value: "IBM Plex Mono", ui-monospace, monospace;
+  --font-label: "IBM Plex Sans Condensed", "IBM Plex Sans", system-ui, sans-serif;
+  --t-hero: 200px; --t-value: 64px; --t-body: 36px; --t-label: 26px; --track-label: 0.18em;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { overflow: hidden; background: var(--ground); color: var(--ink); font-family: var(--font-label); }
+.label { font-family: var(--font-label); font-size: var(--t-label); letter-spacing: var(--track-label);
+         text-transform: uppercase; color: var(--ink-dim); font-weight: 500; }
+/* @brand:end */
+
+html, body { width: 1080px; height: 1920px; }
+#stage { position: absolute; inset: 0; }
+
+.cell { position: absolute; border-radius: 1px; }
+.live { background: var(--ink); }
+.dead { background: var(--lost); }
+.free { background: transparent; box-shadow: inset 0 0 0 4px var(--rule-bright); } /* Ô TRỐNG */
+/* a slot whose DEPICTION has been lifted out to be counted. The slot is still occupied —
+   nothing in the relation moved, and the ghost is what says so. */
+.ghost { background: transparent; box-shadow: inset 0 0 0 3px var(--lost); }
+
+.frame { position: absolute; left: 0; top: 0; }
+.fbar { position: absolute; background: var(--ink-dim); }   /* KHUNG CẤP PHÁT */
+.fbar.h { height: 3px; }
+.fbar.v { width: 3px; transform-origin: left top; }
+#need .fbar { background: var(--boundary); }
+
+.cap { position: absolute; font-family: var(--font-label); font-size: 26px;
+       letter-spacing: 0.14em; text-transform: uppercase; font-weight: 500; }
+.val { position: absolute; font-family: var(--font-value); font-size: 54px; }
+
+/* the analytical register — a different band of the frame, with its own rule */
+#analytic { position: absolute; left: 90px; top: 1362px; width: 900px; height: 1.5px;
+            background: var(--counterfactual); opacity: .5; }
+/* a sweep event travelling down the allocation */
+.sweep { position: absolute; background: var(--authoritative); opacity: .22; }
+/* the visibility horizon held by an old snapshot */
+.horizon { position: absolute; left: 76px; width: 928px;
+           height: 3px;
+           background: repeating-linear-gradient(90deg, var(--boundary) 0 16px, transparent 16px 28px); }
+
+/* the measurement register: bars on an axis. A quantity belongs on an axis, never as a
+   frame drawn around a subset of cells — that reads as a physical partition, which is false. */
+#axis { position: absolute; left: 90px; top: 300px; width: 900px; height: 1.5px; background: var(--rule); }
+.bar { position: absolute; left: 90px; height: 22px; transform-origin: left center; }
+#bNeed { top: 246px; background: var(--boundary); }
+#bAlloc { top: 316px; background: var(--stale); }
+#drop { position: absolute; top: 246px; width: 1.5px; height: 112px; background: var(--boundary); opacity: .55; }
+
+#hist { position: absolute; left: 170px; top: 999px;
+        width: 740px; height: 2px; background: var(--rule-bright); }
+.pt { position: absolute; width: 2px; height: 20px; margin-left: -1px;
+      top: 990px; background: var(--rule-bright); }
+.pn { position: absolute; top: 1040px; width: 150px; margin-left: -168px;
+      text-align: right; font-family: var(--font-value); font-size: 30px; color: var(--ink-dim); }
+.br { position: absolute; height: 4px; background: var(--ink-mid); transform-origin: left center; }
+.cap2 { position: absolute; width: 4px; background: var(--ink-mid); }
+.brl { position: absolute; font-family: var(--font-label); font-size: 26px; letter-spacing: .14em;
+       text-transform: uppercase; font-weight: 500; color: var(--ink-dim); }
+.mk { position: absolute; width: 28px; height: 28px; margin: -14px 0 0 -14px; top: 1000px;
+      background: var(--ground); box-shadow: inset 0 0 0 4px var(--ink); border-radius: 50%; }
+.mk.filled { background: var(--ink); }
+.ring { position: absolute; width: 76px; height: 76px; margin: -38px 0 0 -38px; top: 1000px;
+        border-radius: 50%; box-shadow: inset 0 0 0 3px var(--ink); opacity: 0; }
+/* SỢI PHỤC VỤ: câu đọc này được tiền tố NÀO phục vụ. Đi lên = primary, đi xuống = replica. */
+.serve { position: absolute; width: 3px; background: var(--boundary); transform-origin: center top; }
+.serve.down { transform-origin: center top; }
+/* SỢI NEO của remote_apply: đầu mút commit neo vào ĐIỀU KIỆN, không vào thời điểm */
+.teth { position: absolute; width: 3px; background: var(--authoritative); transform-origin: center top; }
+/* MỐC trên MỘT hành trình — không phải ba thanh ngang nhau */
+.ms { position: absolute; width: 16px; height: 16px; margin: -8px 0 0 -8px; border-radius: 50%;
+      background: var(--ink-dim); }
+.msl { position: absolute; font-family: var(--font-value); font-size: 26px; color: var(--ink-dim);
+       margin-left: 26px; margin-top: -16px; }
+#gapb { position: absolute; top: 1020px; height: 3px; background: var(--ink-dim); opacity: 0; }
+
+
+/* ---------------------------------------------------------------------------
+   CH-C · phát hiện. Ba loại lag là BA MỐC trên một hành trình WAL đi từ primary xuống
+   replica — không phải ba thanh ngang nhau. Chỉ mốc thứ ba (applied) có sợi nối tới
+   ĐẦU MÚT tiền tố, vì chỉ nó dời được đầu mút đó; hai mốc kia nói về độ bền.
+   R12 — hai thế giới cho CÙNG một số đọc: (a) hai đầu mút cùng tiến, khe hở nhỏ;
+   (b) không đầu mút nào tiến, khe hở bằng không vì KHÔNG CÓ GÌ ĐỂ CHÉP.
+--------------------------------------------------------------------------- */
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="22"
+     data-width="1080" data-height="1920">
+  <div id="stage" class="clip" data-start="0" data-duration="22" data-track-index="0">
+    <div id="hist"></div>
+    <div class="pt" style="left:244px"></div>
+    <div class="pn" style="left:244px">497</div>
+    <div class="pt" style="left:429px"></div>
+    <div class="pn" style="left:429px">498</div>
+    <div class="pt" style="left:614px"></div>
+    <div class="pn" style="left:614px">499</div>
+    <div class="pt" style="left:799px"></div>
+    <div class="pn" style="left:799px">500</div>
+    <div id="gapb" style="left:614px;width:185px"></div>
+    <div class="br" id="bPri" style="left:170px;top:900px;width:629px"></div>
+    <div class="cap2" id="cPri" style="left:799px;top:900px;height:86px"></div>
+    <div class="br" id="bRep" style="left:170px;top:1188px;width:444px"></div>
+    <div class="cap2" id="cRep" style="left:614px;top:1084px;height:108px"></div>
+    <div class="brl" id="lPri" style="left:170px;top:856px">primary đã áp tới</div>
+    <div class="brl" id="lRep" style="left:170px;top:1212px">replica đã áp tới</div>
+    <div class="ms" id="m0" style="left:799px;top:1030px"></div>
+    <div class="msl" id="ml0" style="left:799px;top:1030px">write_lag</div>
+    <div class="ms" id="m1" style="left:799px;top:1082px"></div>
+    <div class="msl" id="ml1" style="left:799px;top:1082px">flush_lag</div>
+    <div class="ms" id="m2" style="left:799px;top:1134px"></div>
+    <div class="msl" id="ml2" style="left:799px;top:1134px">replay_lag</div>
+  </div>
+</div>
+
+<script>
+window.__timelines = window.__timelines || {};
+const tl = gsap.timeline({ paused: true });
+const R = 'power3.out', T = 'power2.inOut';
+const stage = document.getElementById('stage');
+const X = (p) => Math.round(170 + (p - 496.6) / 4 * 740);
+function mark(p, filled) {
+  const d = document.createElement('div');
+  d.className = 'mk' + (filled ? ' filled' : '');
+  d.style.left = X(p) + 'px'; stage.appendChild(d); return d;
+}
+/* sợi phục vụ: nối một câu đọc với tiền tố ĐANG phục vụ nó */
+function serve(p, dir) {
+  const d = document.createElement('div');
+  d.className = 'serve';
+  const up = dir === 'up';
+  const top = up ? 902 : 1014;
+  const h = up ? 84 : 176;
+  d.style.cssText = 'left:' + (X(p) - 1) + 'px;top:' + top + 'px;height:' + h + 'px';
+  stage.appendChild(d); return d;
+}
+gsap.set('.pt, .pn', { opacity: 1 });
+gsap.set(['#m0','#m1','#m2','#ml0','#ml1','#ml2','#gapb'], { opacity: 0 });
+const W = mark(500, true); gsap.set(W, { opacity: 0 });
+tl.to(W, { opacity: 1, duration: .4, ease: R }, 0.5);
+
+/* beat 35 — ba mốc, LẦN LƯỢT, trên MỘT hành trình đi xuống. Không song song, không cùng cỡ. */
+tl.to(['#m0','#ml0'], { opacity: 1, duration: .35, ease: R }, 2.0);
+tl.to(['#m1','#ml1'], { opacity: 1, duration: .35, ease: R }, 3.0);
+tl.to(['#m2','#ml2'], { opacity: 1, duration: .35, ease: R }, 4.0);
+
+/* beat 36 — chỉ mốc CUỐI có sợi nối tới đầu mút tiền tố. Hai mốc kia không nối vào đâu. */
+const ln = document.createElement("div"); ln.className = "teth";
+ln.style.cssText = "left:" + (X(500) - 1) + "px;top:" + 1134 + "px;height:" + 56 + "px";
+stage.appendChild(ln); gsap.set(ln, { opacity: 0, scaleY: 0 });
+tl.to(ln, { opacity: 1, scaleY: 1, duration: .6, ease: R }, 5.6);
+tl.to(['#m0','#ml0','#m1','#ml1'], { opacity: .28, duration: .5, ease: T }, 6.4);
+
+/* beat 37 — khe hở nhỏ vẫn là khe hở: một câu đọc rơi vào đó vẫn thấy giá trị cũ */
+tl.to('#gapb', { opacity: .85, duration: .4, ease: R }, 8.4);
+const Rd = mark(499, false); gsap.set(Rd, { opacity: 0 });
+const sd = serve(499, 'down'); gsap.set(sd, { opacity: 0, scaleY: 0 });
+tl.to(Rd, { opacity: 1, duration: .4, ease: R }, 9.2);
+tl.to(sd, { opacity: 1, scaleY: 1, duration: .45, ease: R }, 9.5);
+
+/* THẾ GIỚI (a) — hai đầu mút CÙNG TIẾN, khe hở giữ nguyên bề rộng */
+tl.to([Rd, sd], { opacity: 0, duration: .35, ease: T }, 11.6);
+tl.to('#bPri', { scaleX: 1.0954, duration: 1.4, ease: 'none' }, 12.4);
+tl.to('#cPri', { x: 60, duration: 1.4, ease: 'none' }, 12.4);
+tl.to('#bRep', { scaleX: 1.1351, duration: 1.4, ease: 'none' }, 12.4);
+tl.to('#cRep', { x: 60, duration: 1.4, ease: 'none' }, 12.4);
+tl.to('#gapb', { x: 60, duration: 1.4, ease: 'none' }, 12.4);
+
+/* THẾ GIỚI (b) — beat 38: primary RẢNH. KHÔNG đầu mút nào tiến nữa, và khe hở giữ
+   NGUYÊN bề rộng. Số đọc y hệt thế giới (a) — thứ khác là CHUYỂN ĐỘNG, không phải số.
+   Đó chính là signal ≠ diagnosis: cùng một con số nhỏ, hai tình huống khác hẳn. */
+/* (không tween nào ở đây — sự đứng yên CHÍNH LÀ thế giới (b)) */
+window.__timelines['main'] = tl;
+</script>
+</body>
+</html>

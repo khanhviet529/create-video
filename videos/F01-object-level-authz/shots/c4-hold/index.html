@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=1920" />
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+/* @brand:start */
+:root {
+  --ground: #0C0D0F; --ground-lift: #14161A;
+  --ink: #EDEAE4; --ink-mid: #9AA0A6; --ink-dim: #8B9198; --ink-ghost: #3A3E42;
+  --rule: #23272A; --rule-bright: #3D4348; --hair: 1.5px;
+  --authoritative: #C9A227; --stale: #E0533D; --lost: #6A6F74;
+  --boundary: #4E8C7D; --pressure: #B4623A; --counterfactual: #7A8086;
+  --font-value: "IBM Plex Mono", ui-monospace, monospace;
+  --font-label: "IBM Plex Sans Condensed", "IBM Plex Sans", system-ui, sans-serif;
+  --t-hero: 200px; --t-value: 64px; --t-body: 36px; --t-label: 26px; --track-label: 0.18em;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { overflow: hidden; background: var(--ground); color: var(--ink); font-family: var(--font-label); }
+.label { font-family: var(--font-label); font-size: var(--t-label); letter-spacing: var(--track-label);
+         text-transform: uppercase; color: var(--ink-dim); font-weight: 500; }
+/* @brand:end */
+
+html, body { width: 1080px; height: 1920px; }
+#stage { position: absolute; inset: 0; }
+.mono { position: absolute; font-family: var(--font-value); line-height: 1; white-space: pre; }
+.sans { position: absolute; font-family: var(--font-label); letter-spacing: 0.01em; font-weight: 600; }
+
+/* ---------------------------------------------------------------------------
+   c4 — HOLD. Composition prototype for s15.
+   Ink low, field above deliberately open. The only bottom-weighted shot in the video.
+--------------------------------------------------------------------------- */
+.q  { left: 93px; width: 894px; font-size: 54px; line-height: 1.22; }
+#q1 { top: 1150px; color: var(--ink); }
+#q2 { top: 1226px; color: var(--ink); }
+#q3 { top: 1302px; color: var(--stale); }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="7"
+     data-width="1080" data-height="1920">
+  <div id="stage" class="clip" data-start="0" data-duration="7" data-track-index="0">
+    <div class="sans q" id="q1">endpoint gần nhất bạn thêm vào</div>
+    <div class="sans q" id="q2">nó tự kiểm quyền trên object,</div>
+    <div class="sans q" id="q3">hay nó tin vào tầng phía trên?</div>
+  </div>
+</div>
+
+<script>
+window.__timelines = window.__timelines || {};
+const tl = gsap.timeline({ paused: true });
+const R = 'power3.out', T = 'power2.inOut';
+gsap.set(['#q1','#q2','#q3'], { opacity: 0 });
+tl.to('#q1', { opacity: 1, duration: .5, ease: R }, 0.30)
+  .to('#q2', { opacity: 1, duration: .5, ease: R }, 1.40)
+  .to('#q3', { opacity: 1, duration: .5, ease: R }, 2.60);
+window.__timelines['main'] = tl;
+</script>
+</body>
+</html>

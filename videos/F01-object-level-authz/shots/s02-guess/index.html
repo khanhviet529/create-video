@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=1920" />
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+/* @brand:start */
+:root {
+  --ground: #0C0D0F; --ground-lift: #14161A;
+  --ink: #EDEAE4; --ink-mid: #9AA0A6; --ink-dim: #8B9198; --ink-ghost: #3A3E42;
+  --rule: #23272A; --rule-bright: #3D4348; --hair: 1.5px;
+  --authoritative: #C9A227; --stale: #E0533D; --lost: #6A6F74;
+  --boundary: #4E8C7D; --pressure: #B4623A; --counterfactual: #7A8086;
+  --font-value: "IBM Plex Mono", ui-monospace, monospace;
+  --font-label: "IBM Plex Sans Condensed", "IBM Plex Sans", system-ui, sans-serif;
+  --t-hero: 200px; --t-value: 64px; --t-body: 36px; --t-label: 26px; --track-label: 0.18em;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { overflow: hidden; background: var(--ground); color: var(--ink); font-family: var(--font-label); }
+.label { font-family: var(--font-label); font-size: var(--t-label); letter-spacing: var(--track-label);
+         text-transform: uppercase; color: var(--ink-dim); font-weight: 500; }
+/* @brand:end */
+
+html, body { width: 1080px; height: 1920px; }
+#stage { position: absolute; inset: 0; }
+.mono { position: absolute; font-family: var(--font-value); line-height: 1; white-space: pre; }
+.sans { position: absolute; font-family: var(--font-label); letter-spacing: 0.01em; font-weight: 600; }
+
+/* ---------------------------------------------------------------------------
+   s02-guess — A BELIEF, AND THE FACTS THAT ARRIVE AGAINST IT. accumulation.
+   The known thing holds its position; the new group enters a region it never occupied. The
+   guess dims as the evidence accumulates, but is never struck — being contradicted is not
+   the same as being eliminated, and the elimination is a separate shot.
+--------------------------------------------------------------------------- */
+#guessLbl { position: absolute; left: 93px; top: 270px; }
+#guess { left: 93px; top: 318px; width: 700px; font-size: 46px; color: var(--ink); }
+.ev    { font-size: 36px; color: var(--ink-mid); }
+.ev em { font-style: normal; color: var(--boundary); font-weight: 600; }
+#expect{ position: absolute; left: 500px; top: 1134px; width: 420px; color: var(--boundary); }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="16.5"
+     data-width="1080" data-height="1920">
+  <div id="stage" class="clip" data-start="0" data-duration="16.5" data-track-index="0">
+    <div id="guessLbl" class="label">phản xạ đầu tiên</div>
+    <div class="sans" id="guess">chắc phiên đăng nhập cũ chưa hết hạn</div>
+
+    <div class="mono ev" id="e1a" style="left:300px;top:430px">token cũ hết hạn từ lâu</div>
+    <div class="mono ev" id="e1b" style="left:300px;top:482px">đăng nhập bằng tài khoản hiện tại</div>
+    <div class="mono ev" id="e2" style="left:180px;top:760px">membership đã bị xoá thật</div>
+    <div class="mono ev" id="e3" style="left:500px;top:1080px">GET /documents/d41 &rarr; <em id="ev-olddeny">403</em></div>
+    <div id="expect" class="label">đúng như mong đợi</div>
+  </div>
+</div>
+
+<script>
+window.__timelines = window.__timelines || {};
+const tl = gsap.timeline({ paused: true });
+const R = 'power3.out', T = 'power2.inOut';
+gsap.set(['#guessLbl','#guess','#e1a','#e1b','#e2','#e3','#expect'], { opacity: 0 });
+tl.to('#guessLbl', { opacity: 1, duration: .35, ease: R }, 0.30)
+  .to('#guess', { opacity: 1, duration: .5, ease: R }, 0.90);
+/* each fact lands in a region the belief does not hold, and the belief dims a step */
+tl.to('#e1a', { opacity: 1, duration: .4, ease: R }, 3.70)
+  .to('#e1b', { opacity: 1, duration: .4, ease: R }, 5.80)
+  .to('#guess', { color: '#9AA0A6', duration: .5, ease: 'none' }, 4.20)
+  .to('#e2', { opacity: 1, duration: .4, ease: R }, 8.60)
+  .to('#e3', { opacity: 1, duration: .4, ease: R }, 11.30)
+  .to('#guess', { color: '#6A6F74', duration: .6, ease: 'none' }, 11.60)
+  .to('#expect', { opacity: 1, duration: .4, ease: R }, 13.60);
+window.__timelines['main'] = tl;
+</script>
+</body>
+</html>

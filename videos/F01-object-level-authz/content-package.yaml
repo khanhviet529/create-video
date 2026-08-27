@@ -1,0 +1,468 @@
+schema_version: 1
+id: "004"
+topic: "IDOR / Broken Object Level Authorization"
+domain: security
+audience: "vietnamese software engineers, 2-5+ years"
+
+format:
+  kind: tiktok
+  recommended_duration_sec: 170
+  minimum_duration_sec: 145
+  reason_for_duration: >-
+    Bốn thứ trong topic này không nén được. Một, phải tách bạch authentication khỏi
+    object-level authorization bằng cách cho thấy nó xảy ra, không phải bằng cách phát biểu
+    nó - phát biểu thì dev 2-5 năm đã biết và sẽ tắt. Hai, mechanism là ngã ba nên phải đi
+    cả hai đường mới thấy được sự lệch, đi một đường thì không có gì để so. Ba, phải chặn
+    hiểu lầm "đổi sang UUID là xong" ngay trong mạch, mà chặn cho đúng thì tốn hai câu chứ
+    không phải một - câu thứ nhất công nhận id khó đoán có ích, câu thứ hai mới nói nó không
+    sinh ra quyền. Bốn, detection ở đây là một bài test, và một bài test không kèm ranh giới
+    nó-không-chứng-minh-gì sẽ tạo ra cảm giác an toàn sai. Dưới 145 giây là phải bỏ một trong
+    bốn. Trên 200 giây là bắt đầu nhắc lại.
+
+why_this_matters: >-
+  Đây là lớp lỗi mà gần như dev nào cũng đã nghe tên, đã đọc bug report, đã sửa ít nhất một
+  lần - và nó vẫn đứng số một trong OWASP API Security Top 10 2023. Khoảng cách giữa "biết"
+  và "không dính" chính là thứ video này nói. Nó không nằm ở kiến thức, nó nằm ở chỗ đặt
+  enforcement.
+
+core_claim: "Authentication được xác lập một lần cho mỗi request, còn authorization trên một object phải được xác lập lại ở mỗi đường đi tới object đó."
+
+viewer_should_understand: >-
+  Kiểm quyền là nghĩa vụ của từng đường đi tới object, nên nó phải nằm ở chỗ không thể bỏ qua
+  chứ không phải ở chỗ phải nhớ.
+
+assumptions:
+  - "API HTTP, middleware xác thực chạy trước mọi route"
+  - "Object được định danh bằng id lấy từ client, ở đây là path param"
+  - "Quyền trên object quyết định bằng QUAN HỆ giữa principal và object - thành viên workspace - chứ không phải bằng role toàn cục"
+  - "Kiểm quyền hiện được viết thủ công trong từng handler"
+  - "Không có tầng nào ép buộc kiểm quyền lúc nạp dữ liệu"
+  - "Kịch bản: người dùng từng là thành viên workspace, đã bị xoá, và vẫn giữ id của tài liệu từ hồi còn là thành viên"
+
+technical_truth:
+  mechanism_summary: >-
+    Có hai đường đi tới dữ liệu của cùng một tài liệu. Đường cũ kiểm membership và từ chối
+    đúng. Đường mới được thêm sau cho một tính năng khác, nạp comment theo document_id, và
+    không hỏi quyết định phân quyền nào trên tài liệu. Middleware xác thực chạy trên cả hai
+    đường và làm đúng việc của nó là xác định principal. Không phải ai đó bỏ qua bước kiểm -
+    bước kiểm chưa từng tồn tại trên đường mới.
+  invariant_broken: "Mọi đường đi tới dữ liệu của một object đều phải qua cùng một quyết định phân quyền trên object đó"
+  primary_fix: >-
+    Thực thi quyền sở hữu bản ghi ngay ở tầng nạp dữ liệu, mặc định từ chối. Một cách làm cụ
+    thể: không tồn tại đường nội bộ nào nạp được tài liệu mà không nói principal đang hỏi là
+    ai - repository nhận principal chứ không nhận mỗi id.
+  fix_unchanged: >-
+    Authentication không đổi. URL không đổi. Id không phải đổi sang dạng khó đoán hơn. Handler
+    cũ đang đúng thì không phải viết lại. Và quan trọng nhất: KHÔNG phải đi thêm một dòng
+    check vào từng handler - chính nghĩa vụ nhớ-thêm-một-dòng là thứ đang hỏng.
+  fix_enables: >-
+    Nghĩa vụ chuyển từ "nhớ kiểm quyền ở mỗi đường" sang "không thể nạp object mà bỏ qua kiểm
+    quyền". Endpoint, resolver hay consumer thêm sau đều thừa hưởng mà không ai phải nhớ, nên
+    độ phủ thôi phụ thuộc trí nhớ và thôi suy giảm theo thời gian.
+  fix_tradeoff: >-
+    Job nền, công cụ admin, migration và báo cáo thường không chạy dưới danh nghĩa một người
+    dùng nào, nên phải mở một lối đặc quyền cho chúng - lối đó trở thành bề mặt rủi ro mới,
+    bù lại nó nằm một chỗ nên canh được. Cách này cũng chỉ phủ quan hệ sở hữu hoặc thành viên:
+    chia sẻ có điều kiện, quyền uỷ quyền, vai trò lồng nhau vẫn cần một tầng policy thật. Và
+    nó không phủ đường không đi qua tầng đó - raw SQL, ORM gọi thẳng, hay một service khác đọc
+    chung database.
+  detection:
+    signal: >-
+      Với mỗi route nhận object id từ client, một test tự động gọi lại route đó bằng principal
+      thứ hai không có quyền và khẳng định không nhận 200. Chỉ số theo dõi là ĐỘ PHỦ: bao nhiêu
+      phần trăm route như vậy đã có test đó.
+    interpretation: >-
+      Độ phủ thấp nghĩa là còn đường chưa ai kiểm. Xu hướng của con số này theo thời gian là
+      chỉ báo tốt hơn số lỗi mà pentest tìm ra, vì pentest lấy mẫu còn độ phủ thì đếm.
+    false_positives:
+      - "Route cố tình công khai - link chia sẻ, hồ sơ công khai"
+      - "Fixture cho principal thứ hai vô tình thật sự có quyền"
+      - "Path param không phải object reference - slug tĩnh, enum"
+      - "Endpoint trả 200 với body đã lọc rỗng"
+    does_not_prove: >-
+      Test xanh chỉ chứng minh principal TRONG FIXTURE ĐÓ bị chặn. Nó không phủ cựu thành viên,
+      quyền vừa thu hồi, hay vai trò lồng nhau. Nó không chạm tới đường nào không đi qua route
+      HTTP - GraphQL resolver, consumer hàng đợi, webhook, job nền. Và độ phủ 100 phần trăm
+      cũng chỉ chứng minh CÓ một quyết định ở mỗi đường, không chứng minh quyết định đó đúng.
+  alternatives:
+    - name: "decorator hoặc guard kiểm quyền theo route"
+      solves: "biểu đạt gọn, đọc code là thấy ngay chỗ kiểm"
+      cost: "rẻ, gần như không thêm hạ tầng"
+      not_equivalent_because: "vẫn là opt-in - quên gắn thì im lặng, và quên gắn chính là thứ đang xảy ra"
+    - name: "policy engine tập trung như OPA, Cedar, casbin"
+      solves: "policy phức tạp, nhiều vai trò, audit được quyết định"
+      cost: "thêm hạ tầng, thêm độ trễ, thêm một thứ phải vận hành"
+      not_equivalent_because: "không tự giải quyết độ phủ nếu vẫn phải gọi thủ công ở từng chỗ"
+    - name: "id không đoán được - UUID, GUID"
+      solves: "nâng chi phí dò tìm id lên mức thực tế không khả thi"
+      cost: "gần như miễn phí, nên vẫn nên làm"
+      not_equivalent_because: "không tạo ra quyền và không xoá đi quyền - là lớp bổ sung, không phải cách sửa"
+    - name: "trả 404 thay vì 403"
+      solves: "giảm rò rỉ sự tồn tại của object"
+      cost: "làm khó debug và khó phân biệt lỗi thật"
+      not_equivalent_because: "không ngăn được truy cập, chỉ che bớt thông tin về việc object có tồn tại hay không"
+  edge_cases:
+    - "Nếu quyền là role toàn cục thay vì quan hệ: middleware role-based bắt được. Nhưng đó là vertical. IDOR sống ở horizontal, nơi cả hai người đều có đúng role."
+    - "Nếu id không lấy từ client mà server suy từ session: bề mặt này biến mất cho object đó, nhưng endpoint dạng danh sách vẫn phải lọc theo principal."
+    - "Id là UUID: ở kịch bản này id được lấy hợp pháp từ hồi còn là thành viên, nên tính khó đoán không liên quan."
+    - "GraphQL, gRPC, consumer hàng đợi: tệ hơn, vì nhiều đường hơn và middleware HTTP không chạm tới chúng."
+    - "Trả 404 thay vì 403: đó là quyết định về rò rỉ thông tin, không phải cách sửa."
+    - "Handler nạp object rồi mới kiểm quyền: vẫn an toàn, chỉ dễ quên hơn."
+    - "Response đã lọc bớt field: lộ ít hơn vẫn là lộ."
+
+story:
+  incident: "Một người đã bị xoá khỏi workspace ba tháng trước. Họ vẫn đọc được comment trong tài liệu nội bộ."
+  likely_wrong_guess: "Chắc phiên đăng nhập cũ chưa hết hạn."
+  evidence: >-
+    Token đó hết hạn từ lâu và người này đang đăng nhập bằng tài khoản hiện tại. Membership
+    trong database đã bị xoá thật. Và gọi thẳng vào endpoint tài liệu thì server trả 403,
+    đúng như mong đợi. Một dữ kiện loại được ba giả thuyết cùng lúc: xác thực hỏng, dữ liệu
+    membership sai, hoặc quyền chưa được thu hồi.
+  mechanism:
+    - "Quan hệ thành viên giữa người dùng và tài liệu đã bị xoá từ ba tháng trước"
+    - "Endpoint đọc tài liệu có hai bước: xác thực, rồi kiểm xem người này còn là thành viên workspace không - cả hai đều đúng, đến hôm nay vẫn đúng"
+    - "Sau đó đội thêm một tính năng xem comment: đường dẫn mới, handler mới"
+    - "Handler mới nhận id của tài liệu rồi nạp comment theo id"
+    - "Middleware xác thực vẫn chạy trên đường mới và làm đúng việc của nó là xác định principal"
+    - "Nhưng trên đường mới không có dòng nào hỏi: người này có quyền trên tài liệu đó không - đây là nguyên nhân, và bước kiểm chưa từng tồn tại ở đây chứ không phải bị bỏ qua"
+    - "Gọi thử đường cũ vẫn nhận 403 - đây là bằng chứng phụ, nó chỉ ra rằng khác biệt nằm ở đường đi chứ không ở người dùng hay dữ liệu"
+    - "Server trả 200 kèm dữ liệu của tài liệu"
+  aha:
+    viewer_thinks: "Phân quyền là một bước trong request. Qua được bước đó là xong."
+    actually: >-
+      Hai câu hỏi không cùng nhịp. Câu "anh là ai" được hỏi một lần cho mỗi request. Câu "anh
+      được chạm vào object này không" phải được hỏi lại ở mỗi đường đi tới object đó. Số đường
+      tăng theo thời gian, còn số lần nhớ hỏi lại thì không.
+  concept_name: "IDOR ở phía web - trong OWASP API Security Top 10 2023 nó là API1, broken object level authorization"
+  fix: >-
+    Thực thi quyền sở hữu bản ghi ngay ở tầng nạp dữ liệu, mặc định từ chối. Một cách làm:
+    không tồn tại đường nào nạp được tài liệu mà không nói ai đang hỏi. Endpoint thêm sau
+    thừa hưởng, không ai phải nhớ.
+  tradeoff: >-
+    Job nền và công cụ admin thường không chạy dưới danh nghĩa một người dùng nào, nên phải mở
+    một lối riêng, và lối đó thành bề mặt rủi ro mới. Cách này cũng chỉ phủ quan hệ sở hữu:
+    chia sẻ có điều kiện, quyền uỷ quyền, vai trò lồng nhau vẫn cần một tầng policy thật.
+  detection: >-
+    Với mỗi route nhận id từ client, viết một test gọi lại route đó bằng tài khoản thứ hai
+    không có quyền và khẳng định không nhận 200. Rồi đếm xem bao nhiêu phần trăm route đã có
+    test đó. Con số ấy nói còn đường nào chưa ai kiểm, nó không nói phân quyền của bạn đúng.
+  ending_question: "Endpoint gần nhất bạn thêm vào - nó tự kiểm quyền trên object, hay nó tin vào tầng phía trên?"
+
+semantic_model:
+  entities:
+    - id: requester
+      type: client
+      label: "Người dùng đã bị xoá khỏi workspace, vẫn đăng nhập hợp lệ"
+    - id: auth_middleware
+      type: component
+      label: "Middleware xác thực, chạy trước mọi route"
+    - id: doc_endpoint
+      type: component
+      label: "Đường cũ - endpoint đọc tài liệu, có kiểm membership"
+    - id: comments_endpoint
+      type: component
+      label: "Đường mới - endpoint đọc comment của tài liệu, thêm sau"
+    - id: document
+      type: record
+      label: "Tài liệu nội bộ thuộc workspace"
+    - id: membership
+      type: record
+      label: "Quan hệ thành viên giữa người dùng và workspace"
+    - id: comments_store
+      type: datastore
+      label: "Nơi lưu comment, khoá theo document_id"
+
+  states:
+    - entity: requester
+      field: authenticated
+      initial: false
+      timeline: [false, false, false, true, true, true, true]
+    - entity: requester
+      field: has_right_on_document
+      initial: false
+      timeline: [false, false, false, false, false, false, false]
+      invalid_when: "false trong khi dữ liệu của document vẫn được trả về"
+    - entity: doc_endpoint
+      field: authorization_decisions_on_document
+      initial: 0
+      timeline: [0, 0, 0, 0, 1, 1, 1]
+    - entity: comments_endpoint
+      field: authorization_decisions_on_document
+      initial: 0
+      timeline: [0, 0, 0, 0, 0, 0, 0]
+      invalid_when: "bằng 0 trong khi vẫn trả dữ liệu của document"
+
+  events:
+    - id: e1
+      t: 0
+      role: precondition
+      actor: membership
+      action: revoked
+      target: document
+      detail: "quan hệ thành viên giữa người dùng và workspace đã bị xoá ba tháng trước"
+      causes: []
+    - id: e2
+      t: 0
+      role: precondition
+      actor: comments_endpoint
+      action: added_later
+      target: document
+      detail: "đường đi thứ hai tới dữ liệu của tài liệu, được thêm sau cho một tính năng khác"
+      causes: []
+    - id: e3
+      t: 1
+      role: trigger
+      actor: requester
+      action: request
+      target: comments_endpoint
+      detail: "gửi request kèm id của tài liệu, id có được từ hồi còn là thành viên nên không cần đoán"
+      causes: [e4]
+    - id: e4
+      t: 2
+      role: consequence
+      actor: auth_middleware
+      action: establish_principal
+      target: requester
+      detail: "token hợp lệ, principal được xác định - middleware làm đúng việc của nó"
+      causes: [e6]
+    - id: e5
+      t: 2
+      role: supporting_evidence
+      actor: doc_endpoint
+      action: deny
+      target: requester
+      detail: >-
+        gọi thử đường cũ cùng lúc: nó vẫn kiểm membership và vẫn từ chối. Dữ kiện này loại ba
+        giả thuyết - xác thực hỏng, membership sai, quyền chưa thu hồi. Nó thu hẹp chẩn đoán
+        về đúng đường đi, nhưng nó không phải nguyên nhân.
+      causes: []
+    - id: e6
+      t: 3
+      role: primary_cause
+      actor: comments_endpoint
+      action: load_without_authorization_decision
+      target: comments_store
+      detail: >-
+        nạp comment theo document_id mà không hỏi bất kỳ quyết định phân quyền nào trên tài
+        liệu. Bước kiểm không bị bỏ qua - nó chưa từng tồn tại trên đường này.
+      causes: [e7]
+    - id: e7
+      t: 4
+      role: invariant_violation
+      actor: comments_endpoint
+      action: respond_with_data
+      target: requester
+      detail: "trả 200 kèm dữ liệu của tài liệu cho một principal không còn quyền trên tài liệu đó"
+      causes: []
+
+  relationships:
+    - from: requester
+      to: auth_middleware
+      kind: calls
+    - from: requester
+      to: comments_endpoint
+      kind: calls
+    - from: requester
+      to: doc_endpoint
+      kind: calls
+    - from: doc_endpoint
+      to: membership
+      kind: reads
+    - from: doc_endpoint
+      to: document
+      kind: reads
+    - from: comments_endpoint
+      to: comments_store
+      kind: reads
+    - from: comments_store
+      to: document
+      kind: depends_on
+
+  invariants:
+    - id: one_decision_on_every_path
+      statement: "Mọi đường đi tới dữ liệu của một object đều phải qua cùng một quyết định phân quyền trên object đó"
+      holds_in_expected: true
+      violated_by: e6
+    - id: revoked_means_no_read
+      statement: "Principal không còn quyền trên object thì không đọc được bất kỳ phần nào của object đó"
+      holds_in_expected: true
+      violated_by: e7
+
+  expected:
+    authorization_decisions_on_document: 1
+    comments_path_status: 403
+    document_data_disclosed: false
+  actual:
+    authorization_decisions_on_document: 0
+    comments_path_status: 200
+    document_data_disclosed: true
+
+narration:
+  language: vi
+  syllable_count: 699
+  estimated_duration_sec: 166
+  text: |
+    Một người đã bị xoá khỏi workspace ba tháng trước. Họ vẫn đọc được comment trong tài liệu nội bộ của bạn.
+
+    Nghi ngờ rơi ngay vào token. Chắc phiên đăng nhập cũ chưa hết hạn.
+
+    Nhưng token đó hết hạn từ lâu. Người này đang đăng nhập bằng tài khoản hiện tại, ở công ty mới.
+
+    Trong database, membership của họ đã bị xoá thật.
+
+    Và gọi thẳng vào endpoint tài liệu, server trả về bốn không ba. Đúng như mong đợi.
+
+    Một dữ kiện, ba giả thuyết bị loại. Xác thực không hỏng. Dữ liệu membership không sai. Quyền đã được thu hồi.
+
+    Chỉ có một đường khác không trả về bốn không ba.
+
+    Xem lại lúc hệ thống được viết ra. Endpoint đọc tài liệu có hai bước. Xác thực, rồi kiểm xem người này còn là thành viên workspace không.
+
+    Cả hai bước đều đúng. Đến hôm nay vẫn đúng.
+
+    Ba tháng sau, đội thêm một tính năng. Xem comment trong tài liệu. Đường dẫn mới, handler mới.
+
+    Handler đó nhận id của tài liệu, rồi nạp comment theo id.
+
+    Middleware xác thực vẫn chạy. Nó xác nhận đúng người này là ai.
+
+    Nhưng không có dòng nào hỏi: người này có quyền trên tài liệu đó không.
+
+    Không phải ai đó bỏ qua bước kiểm. Bước kiểm chưa từng tồn tại trên đường này. Nó nằm ở handler kia.
+
+    Server trả về hai trăm, kèm dữ liệu.
+
+    Hai câu hỏi ở đây không cùng nhịp.
+
+    Câu "anh là ai" được hỏi một lần cho mỗi request. Middleware trả lời xong là xong cả request.
+
+    Câu "anh được chạm vào object này không" thì khác. Nó phải được hỏi lại ở mỗi đường đi tới object đó.
+
+    Số đường thì tăng theo thời gian. Thêm endpoint, thêm resolver, thêm consumer, thêm báo cáo. Số lần bạn nhớ hỏi lại thì không tăng theo.
+
+    Lỗi này có tên. Phía web gọi là IDOR. Trong danh sách OWASP dành cho API, nó đứng số một, tên là broken object level authorization.
+
+    Ở đây id là UUID. Người kia không đoán ra nó. Họ có nó từ hồi còn là thành viên.
+
+    Id khó đoán làm việc dò tìm đắt hơn. Nó không sinh ra quyền, và cũng không xoá đi quyền.
+
+    Nên cách sửa không nằm ở việc đổi id.
+
+    Cũng không nằm ở việc thêm một dòng check vào handler mới. Nhớ thêm một dòng chính là thứ vừa hỏng.
+
+    OWASP viết thẳng hai vế. Trừ tài nguyên công khai, mặc định là từ chối. Và phân quyền phải được thực thi theo quyền sở hữu bản ghi.
+
+    Dịch sang code thì một cách làm là thế này. Không tồn tại đường nào nạp được tài liệu mà không nói ai đang hỏi. Repository nhận principal, không nhận mỗi id.
+
+    Endpoint thêm sau thừa hưởng chuyện đó. Không ai phải nhớ.
+
+    Authentication giữ nguyên. URL giữ nguyên. Handler cũ đang đúng thì không phải viết lại.
+
+    Cách này không miễn phí. Job nền và công cụ admin thường không chạy dưới danh nghĩa một người dùng nào. Nên bạn phải mở một lối riêng cho chúng. Lối đó thành bề mặt rủi ro mới. Bù lại nó nằm một chỗ, nên canh được.
+
+    Và nó chỉ phủ quan hệ sở hữu. Chia sẻ có điều kiện, quyền uỷ quyền, vai trò lồng nhau vẫn cần một tầng policy thật.
+
+    Cách kiểm thì đơn giản. Với mỗi route nhận id từ client, viết một test gọi lại route đó bằng tài khoản thứ hai. Tài khoản không có quyền. Khẳng định nó không nhận được hai trăm. Rồi đếm xem bao nhiêu phần trăm route đã có test đó.
+
+    Con số đó nói cho bạn biết còn đường nào chưa ai kiểm. Nó không nói phân quyền của bạn đúng.
+
+    Test xanh chỉ chứng minh tài khoản trong fixture bị chặn. Cựu thành viên, quyền vừa thu hồi, vai trò lồng nhau đều là chuyện khác.
+
+    Và nó không chạm tới đường nào không đi qua route HTTP.
+
+    Endpoint gần nhất bạn thêm vào. Nó tự kiểm quyền trên object, hay nó tin vào tầng phía trên?
+
+technical_notes:
+  - >-
+    Horizontal so với vertical. Vertical là leo lên cấp quyền cao hơn - user thường vào được
+    trang admin. Horizontal là cùng cấp quyền nhưng khác chủ sở hữu - user A đọc dữ liệu của
+    user B. IDOR sống ở horizontal, và đó là lý do middleware kiểm role không bắt được: cả hai
+    người đều có đúng role. Đã cắt khỏi narration vì là thuật ngữ thứ ba.
+  - >-
+    Video KHÔNG nói id khó đoán là vô dụng. OWASP API1:2023 có khuyến nghị dùng GUID, và IDOR
+    cheat sheet nói GUID có thể làm việc đoán id thành bất khả thi trên thực tế. Phát biểu
+    đúng phạm vi: tính khó đoán ảnh hưởng chi phí phát hiện id, không ảnh hưởng quyết định
+    phân quyền. Nó là lớp bổ sung, không phải cách sửa.
+  - >-
+    403 so với 404. Trả 404 để không rò rỉ sự tồn tại của object là quyết định riêng về rò rỉ
+    thông tin, không phải cách sửa lỗ hổng. Trong video, 403 xuất hiện như hành vi quan sát
+    được của hệ thống hiện tại ở beat evidence, không phải như khuyến nghị.
+  - >-
+    Phân loại chuẩn: CWE-639 Authorization Bypass Through User-Controlled Key, cha là CWE-863
+    Incorrect Authorization, pillar là CWE-284 Improper Access Control. Không đưa mã CWE vào
+    narration vì không ai cần mã đó để sửa code.
+  - >-
+    "Không tồn tại đường nào nạp được tài liệu mà không nói ai đang hỏi" là phát biểu về tầng
+    truy cập dữ liệu của ứng dụng, không phải về database. Raw SQL, ORM gọi thẳng, hay một
+    service khác đọc chung database đều lách được. Narration đã scope bằng cụm "một cách làm".
+  - >-
+    Fix ở đây là fix cấu trúc chứ không phải fix một dòng. Với team nhỏ, decorator hoặc guard
+    theo route rẻ hơn nhiều và không sai - nó chỉ vẫn là opt-in, nên vẫn để hở đúng chỗ đang
+    hở. Xem alternatives.
+
+rejected_explanations:
+  - explanation: "IDOR là do ID đoán được"
+    reason: >-
+      Đảo nhân quả. Tính đoán được ảnh hưởng chi phí khai thác, nó không tạo ra quyền và cũng
+      không xoá đi quyền. Ở kịch bản này id được lấy hợp pháp từ hồi còn là thành viên nên
+      hoàn toàn không cần đoán. Dựng lại theo nghĩa đen thì fix thành "đổi sang UUID", và fix
+      đó không sửa gì. Cách nói đúng: thiếu hoặc sai phân quyền trên object mới là lỗ hổng.
+  - explanation: "Thiếu authentication"
+    reason: >-
+      Sai chẩn đoán, và nó gửi người xem đi tìm lỗi ở tầng sai. Authentication chạy và thành
+      công - principal được xác định đúng. Gộp authentication với authorization chính là hiểu
+      lầm mà video đang sửa, nên không được để nó xuất hiện dưới dạng một cách giải thích.
+  - explanation: "Lập trình viên quên kiểm tra quyền"
+    reason: >-
+      Đúng về sự việc, sai về nguyên nhân, và đó là loại sai nguy hiểm nhất vì nó nghe rất hợp
+      lý. Nó biến một thuộc tính cấu trúc - nghĩa vụ thủ công lặp lại ở mỗi đường đi - thành
+      một lỗi cá nhân, rồi dẫn thẳng tới fix sai: nhắc nhau cẩn thận hơn thay vì đổi chỗ đặt
+      enforcement. Cách nói đúng: bước kiểm chưa từng tồn tại trên đường đó, không phải bị bỏ qua.
+
+sources:
+  - title: "OWASP API Security Top 10 2023 - API1:2023 Broken Object Level Authorization"
+    url: "https://owasp.org/API-Security/editions/2023/en/0xa1-broken-object-level-authorization/"
+    supports: >-
+      BOLA là hạng mục số 1. Phòng ngừa yêu cầu dùng cơ chế phân quyền để kiểm trong MỌI
+      function dùng input từ client để truy cập bản ghi, và yêu cầu viết test cho cơ chế phân
+      quyền. GUID được liệt kê như một biện pháp trong danh sách, không phải như cách sửa.
+    kind: primary
+  - title: "OWASP Top 10 2021 - A01 Broken Access Control"
+    url: "https://owasp.org/Top10/2021/A01_2021-Broken_Access_Control/index.html"
+    supports: >-
+      Nguyên văn "Except for public resources, deny by default" và yêu cầu access control
+      enforce record ownership thay vì chấp nhận rằng người dùng có thể tạo, đọc, sửa, xoá bất
+      kỳ bản ghi nào. Đây là nguồn cho cả hai vế của primary fix.
+    kind: primary
+  - title: "OWASP - Insecure Direct Object Reference Prevention Cheat Sheet"
+    url: "https://cheatsheetseries.owasp.org/cheatsheets/Insecure_Direct_Object_Reference_Prevention_Cheat_Sheet.html"
+    supports: >-
+      Định nghĩa IDOR. Nguyên văn "even with complex identifiers, access control checks are
+      essential" và "Verify the user's permission every time an access attempt is made".
+    kind: primary
+  - title: "CWE-639 - Authorization Bypass Through User-Controlled Key"
+    url: "https://cwe.mitre.org/data/definitions/639.html"
+    supports: >-
+      Phân loại chuẩn, cha là CWE-863 và pillar CWE-284. Mitigation yêu cầu verify quyền của
+      người dùng cho mọi thao tác truy cập dữ liệu - nguồn thứ ba độc lập cho claim trung tâm.
+    kind: primary
+
+confidence: high
+
+open_questions:
+  - >-
+    Chưa khảo sát framework phổ biến ở Việt Nam - NestJS Guards, Spring Security PreAuthorize,
+    Laravel Policies, Rails Pundit - cái nào ép được enforcement ở tầng nạp dữ liệu và cái nào
+    chỉ là opt-in ở tầng route. Nếu làm video tiếp về chủ đề này thì cần verify từng cái.
+  - >-
+    Chưa có cơ sở để nói ngưỡng độ phủ test nào là hợp lý trong thực tế. Video chỉ nói đo và
+    theo dõi xu hướng, cố ý không nêu con số mục tiêu.
+
+fingerprint:
+  hook_type: false_safety
+  incident_type: revoked_access_still_reads
+  wrong_guess: stale_session_token
+  mechanism_shape: unguarded_parallel_path
+  aha_type: authz_per_object_not_per_request
+  fix_type: ownership_enforced_at_data_layer
+  ending_type: newest_path_audit

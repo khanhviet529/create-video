@@ -1,0 +1,11 @@
+Shot shot_05 — required event markers (5)
+
+Each row needs ONE element in the composition carrying that id, which becomes
+visible (opacity >= 0.5) at the given time. The element can be any visual you
+like — the moving object, a tick, a label, a ring. Layout is your call.
+
+  #ev-a_read    @ 1.125s   req_a read
+  #ev-b_read    @  3.25s   req_b read
+  #ev-a_write   @   6.5s   req_a write  — A commits 90 at version 1
+  #ev-b_reread  @  8.75s   req_b read  — B's write was rejected — B re-reads 90
+  #ev-b_write   @ 11.25s   req_b write  — B commits 70 on the current value

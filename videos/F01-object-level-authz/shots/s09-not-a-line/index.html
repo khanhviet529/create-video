@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=1920" />
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+/* @brand:start */
+:root {
+  --ground: #0C0D0F; --ground-lift: #14161A;
+  --ink: #EDEAE4; --ink-mid: #9AA0A6; --ink-dim: #8B9198; --ink-ghost: #3A3E42;
+  --rule: #23272A; --rule-bright: #3D4348; --hair: 1.5px;
+  --authoritative: #C9A227; --stale: #E0533D; --lost: #6A6F74;
+  --boundary: #4E8C7D; --pressure: #B4623A; --counterfactual: #7A8086;
+  --font-value: "IBM Plex Mono", ui-monospace, monospace;
+  --font-label: "IBM Plex Sans Condensed", "IBM Plex Sans", system-ui, sans-serif;
+  --t-hero: 200px; --t-value: 64px; --t-body: 36px; --t-label: 26px; --track-label: 0.18em;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { overflow: hidden; background: var(--ground); color: var(--ink); font-family: var(--font-label); }
+.label { font-family: var(--font-label); font-size: var(--t-label); letter-spacing: var(--track-label);
+         text-transform: uppercase; color: var(--ink-dim); font-weight: 500; }
+/* @brand:end */
+
+html, body { width: 1080px; height: 1920px; }
+#stage { position: absolute; inset: 0; }
+.mono { position: absolute; font-family: var(--font-value); line-height: 1; white-space: pre; }
+.sans { position: absolute; font-family: var(--font-label); letter-spacing: 0.01em; font-weight: 600; }
+.kill { position: absolute; height: 3px; background: var(--lost); width: 0; }
+
+/* ---------------------------------------------------------------------------
+   s09 — NOT ONE MORE LINE. narrowing by EXCISION.
+   The struck line is a PROPOSAL, never a step in an execution path. Cancelling something
+   inside a handler body would teach "the check was skipped", which the semantic locks
+   forbid. Here it is an idea being refused, and after it goes the space stays empty while
+   the reason appears at a different position — so the eye registers absence rather than
+   substitution.
+--------------------------------------------------------------------------- */
+#q    { left: 300px; top: 380px; width: 700px; font-size: 40px; color: var(--ink-dim); }
+#code { left: 300px; top: 470px; font-size: 36px; color: var(--ink-mid); }
+#why  { left: 93px; top: 900px; width: 894px; font-size: 46px; color: var(--stale); }
+#why2 { position: absolute; left: 93px; top: 1010px; width: 894px; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="6"
+     data-width="1080" data-height="1920">
+  <div id="stage" class="clip" data-start="0" data-duration="6" data-track-index="0">
+    <div class="sans" id="q">thêm một dòng check vào handler mới?</div>
+    <div class="mono" id="code" data-layout-allow-occlusion>  assertMember(req.principal, doc)</div>
+    <div class="kill" id="k" style="left:295px;top:486px"></div>
+    <div class="sans" id="why">nhớ thêm một dòng chính là thứ vừa hỏng</div>
+    <div id="why2" class="label">nghĩa vụ không thể đặt lên trí nhớ</div>
+  </div>
+</div>
+
+<script>
+window.__timelines = window.__timelines || {};
+const tl = gsap.timeline({ paused: true });
+const R = 'power3.out', T = 'power2.inOut';
+gsap.set(['#q','#code','#why','#why2'], { opacity: 0 });
+tl.to('#q', { opacity: 1, duration: .35, ease: R }, 0.25)
+  .to('#code', { opacity: 1, duration: .35, ease: R }, 0.90)
+  .to('#k', { width: 700, duration: .45, ease: T }, 2.10)
+/* excised — and nothing moves into the gap */
+  .to(['#q','#code','#k'], { opacity: 0, duration: .5, ease: 'power2.in' }, 3.00)
+/* the reason arrives somewhere else */
+  .to('#why', { opacity: 1, duration: .45, ease: R }, 3.60)
+  .to('#why2', { opacity: 1, duration: .4, ease: R }, 4.60);
+window.__timelines['main'] = tl;
+</script>
+</body>
+</html>

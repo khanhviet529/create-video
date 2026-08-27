@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=1920" />
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+/* @brand:start */
+:root {
+  --ground: #0C0D0F; --ground-lift: #14161A;
+  --ink: #EDEAE4; --ink-mid: #9AA0A6; --ink-dim: #8B9198; --ink-ghost: #3A3E42;
+  --rule: #23272A; --rule-bright: #3D4348; --hair: 1.5px;
+  --authoritative: #C9A227; --stale: #E0533D; --lost: #6A6F74;
+  --boundary: #4E8C7D; --pressure: #B4623A; --counterfactual: #7A8086;
+  --font-value: "IBM Plex Mono", ui-monospace, monospace;
+  --font-label: "IBM Plex Sans Condensed", "IBM Plex Sans", system-ui, sans-serif;
+  --t-hero: 200px; --t-value: 64px; --t-body: 36px; --t-label: 26px; --track-label: 0.18em;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { overflow: hidden; background: var(--ground); color: var(--ink); font-family: var(--font-label); }
+.label { font-family: var(--font-label); font-size: var(--t-label); letter-spacing: var(--track-label);
+         text-transform: uppercase; color: var(--ink-dim); font-weight: 500; }
+/* @brand:end */
+
+html, body { width: 1080px; height: 1920px; }
+#stage { position: absolute; inset: 0; }
+
+/* ---------------------------------------------------------------------------
+   SHOT 02 — THE OBVIOUS HYPOTHESIS, ELIMINATED
+
+   The replay of scenario after_analyze proves that inserting ANALYZE changes no
+   invariant. The only honest way to show that is to show NOTHING CHANGING, and the
+   only way a viewer can be certain nothing changed is if there is a single
+   persistent object to watch — not two copies side by side to compare.
+
+   So there is exactly ONE plan row. ANALYZE runs BELOW it. A recompute sweep passes
+   OVER it. The row does not move, does not recolour, does not restate itself. The
+   argument is carried by an absence, which is why the camera must not move either.
+
+   Deliberately NOT a before/after column pair: that layout would let the viewer
+   believe the two rows are two different measurements that happen to agree. They
+   are not two measurements. They are one unchanged fact.
+--------------------------------------------------------------------------- */
+#hypoLbl  { position: absolute; left: 93px; top: 296px; }
+#hypo     { position: absolute; left: 93px; top: 344px; width: 894px;
+            font-family: var(--font-label); font-size: 44px; line-height: 1.16;
+            letter-spacing: 0.02em; color: var(--ink); font-weight: 500; }
+#hypoKill { position: absolute; left: 88px; top: 372px; width: 0; height: 3px;
+            background: var(--lost); transform-origin: left center; }
+
+#planLbl  { position: absolute; left: 93px; top: 656px; }
+#planRow  { position: absolute; left: 93px; top: 700px; width: 800px; height: 92px; }
+#planRow span { position: absolute; left: 0; top: 0; font-family: var(--font-value);
+                font-weight: 600; font-size: 76px; line-height: 1; color: var(--stale);
+                white-space: nowrap; }
+/* the recompute pass: something moves ACROSS the fact and leaves it as it was */
+#sweep    { position: absolute; left: 93px; top: 686px; width: 4px; height: 120px;
+            background: var(--boundary); opacity: 0; }
+
+#anaLbl   { position: absolute; left: 93px; top: 900px; }
+#ev-analyze { position: absolute; left: 93px; top: 944px; font-family: var(--font-value);
+              font-size: 44px; color: var(--ink-mid); white-space: nowrap; }
+#rail     { position: absolute; left: 93px; top: 1032px; width: 894px; height: 4px;
+            background: var(--rule); }
+#railFill { position: absolute; left: 93px; top: 1032px; width: 894px; height: 4px;
+            background: var(--boundary); transform-origin: left center; }
+#done     { position: absolute; left: 93px; top: 1064px; color: var(--boundary); }
+
+#ev-probe { position: absolute; left: 93px; top: 1160px; }
+#delta    { position: absolute; left: 93px; top: 1204px; width: 894px;
+            font-family: var(--font-label); font-size: 36px; letter-spacing: var(--track-label);
+            text-transform: uppercase; color: var(--lost); font-weight: 600; }
+
+#ev-seqscan { position: absolute; left: 93px; top: 1320px; }
+#ev-seqscan b { font-family: var(--font-label); font-size: 34px; letter-spacing: var(--track-label);
+                text-transform: uppercase; color: var(--stale); font-weight: 600; }
+#next     { position: absolute; left: 93px; top: 1424px; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="10"
+     data-width="1080" data-height="1920">
+  <div id="stage" class="clip" data-start="0" data-duration="10" data-track-index="0">
+
+    <div id="hypoLbl" class="label">phản xạ đầu tiên</div>
+    <div id="hypo">thống kê cũ &mdash; planner tưởng bảng còn nhỏ</div>
+    <div id="hypoKill"></div>
+
+    <div id="planLbl" class="label">explain nói</div>
+    <div id="planRow"><span>Seq Scan on users</span></div>
+    <div id="sweep"></div>
+
+    <div id="anaLbl" class="label">thử đúng giả thuyết đó</div>
+    <div id="ev-analyze">ANALYZE users;</div>
+    <div id="rail"></div>
+    <div id="railFill"></div>
+    <div id="done" class="label">thống kê đã mới</div>
+
+    <div id="ev-probe" class="label">explain lại</div>
+    <div id="delta">cùng một dòng &middot; không có gì đổi</div>
+
+    <div id="ev-seqscan"><b>giả thuyết bị loại</b></div>
+    <div id="next" class="label">nguyên nhân nằm ở chỗ khác</div>
+
+  </div>
+</div>
+
+<script>
+window.__timelines = window.__timelines || {};
+const tl = gsap.timeline({ paused: true });
+const R = 'power3.out', T = 'power2.inOut';
+
+gsap.set(['#ev-analyze', '#anaLbl', '#done', '#ev-probe', '#delta', '#ev-seqscan', '#next'], { opacity: 0 });
+gsap.set('#railFill', { scaleX: 0 });
+gsap.set('#rail', { opacity: 0 });
+
+/* ---- 0.2  the hypothesis, in the viewer's own words ------------------- */
+tl.fromTo('#hypoLbl', { opacity: 0 }, { opacity: 1, duration: .4, ease: R }, 0.20)
+  .fromTo('#hypo', { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: .55, ease: R }, 0.32);
+
+/* ---- 0.75  the fact that will have to change if the hypothesis is right.
+   It arrives once and is never restated. */
+tl.fromTo('#planLbl', { opacity: 0 }, { opacity: 1, duration: .4, ease: R }, 0.75)
+  .fromTo('#planRow span', { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: .5, ease: R }, 0.86);
+
+/* ---- 1.30  run the experiment. Marker: analyze ------------------------ */
+tl.to(['#anaLbl', '#ev-analyze'], { opacity: 1, duration: .4, ease: R, stagger: .10 }, 1.30)
+  .to('#rail', { opacity: 1, duration: .3 }, 1.62)
+  .to('#railFill', { scaleX: 1, duration: 1.05, ease: T }, 1.68)
+  .to('#done', { opacity: 1, duration: .4, ease: R }, 2.78);
+
+/* ---- 3.00  the plan is recomputed. Marker: probe ----------------------
+   The sweep is the recompute: it crosses the plan row and exits. The row it
+   crossed is the row that was there before it. Nothing to compare, because
+   nothing was replaced. */
+tl.to('#ev-probe', { opacity: 1, duration: .38, ease: R }, 3.00)
+  .fromTo('#sweep', { opacity: 0, x: 0 }, { opacity: .85, duration: .22 }, 3.20)
+  .to('#sweep', { x: 800, duration: 1.05, ease: 'none' }, 3.30)
+  .to('#sweep', { opacity: 0, duration: .25 }, 4.20);
+
+/* ---- 4.55  name the absence --------------------------------------------
+   Said only after the viewer has watched it not happen. */
+tl.fromTo('#delta', { opacity: 0 }, { opacity: 1, duration: .45, ease: R }, 4.55);
+
+/* ---- 6.60  the hypothesis is struck out, not the mechanism ------------
+   The line crosses the HYPOTHESIS, never the plan row: what was eliminated is a
+   belief, and the observation it failed to explain is still standing. */
+tl.to('#hypo', { color: '#6A6F74', duration: .5, ease: 'none' }, 6.60)
+  .to('#hypoKill', { width: 806, duration: .6, ease: T }, 6.62)
+  .to('#ev-seqscan', { opacity: 1, duration: .45, ease: R }, 6.90);
+
+/* ---- 8.15  hand the question to the next shot ------------------------- */
+tl.to('#next', { opacity: 1, duration: .45, ease: R }, 8.15);
+
+window.__timelines['main'] = tl;
+</script>
+</body>
+</html>

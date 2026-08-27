@@ -1,0 +1,44 @@
+video_id: B01-tenant-boundary
+title: Authenticated is not authorised
+domain: security
+shots: 1
+engines:
+  - hyperframes
+representation_layers:
+  - system
+  - implementation
+camera:
+  - shot: shot_02
+    motion: static
+    semantic_function: whole_route_must_stay_visible
+dominant_compositions:
+  - vertical_channel_with_stations
+  - left_label_column
+dominant_geometry:
+  - channel_rails
+  - gate_bars
+  - stubs_and_a_gap
+visual_devices:
+  - absence_as_subject
+  - tenant_tag
+  - unchallenged_return
+  - carried_payload
+motion_devices:
+  - descend
+  - gate_split
+  - pass_through
+  - collect
+  - ascend
+typography_usage:
+  - request_line_as_object
+  - paired_tags
+  - small_caps_stations
+color_distribution:
+  dominant: neutral
+  boundary: teal
+  alert: vermilion
+reference_influences:
+  - technical_schematics
+  - blueprint_systems
+distinctive_device:
+  - the_gate_that_is_not_there

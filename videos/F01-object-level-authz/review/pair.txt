@@ -1,0 +1,2 @@
+file 'D:/creative-video/videos/F01-object-level-authz/shots/s03-authored-a/render.mp4'
+file 'D:/creative-video/videos/F01-object-level-authz/shots/s04-authored-b/render.mp4'

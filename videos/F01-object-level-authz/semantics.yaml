@@ -1,0 +1,96 @@
+title: "IDOR / Broken Object Level Authorization"
+domain: security
+
+# Chuyển thẳng từ semantic_model của content-package.yaml. Không có quyết định thị giác nào
+# ở đây. Ranh giới chịu lực: middleware check trên resource `identity`, KHÔNG phải `document`.
+# Nếu ghi sai thành `document` thì invariant authorized_access sẽ PASS và anti-fabrication
+# gate bắt ngay — engine ép đúng ranh giới authentication / object-level authorization.
+
+mechanism_priority:
+  primary: >-
+    Một code path mới được thêm vào mà object-level authorization đang tồn tại không được đưa
+    theo. Middleware xác thực chạy trên cả hai đường và làm đúng việc của nó là xác định
+    principal. Bước kiểm quyền trên tài liệu không bị bỏ qua — nó chưa từng tồn tại trên
+    đường mới.
+  scenario_specific: >-
+    Trong codebase của kịch bản này, kiểm quyền đang được viết THỦ CÔNG trong từng handler
+    (assumptions của package), nên đếm được 1 trên 2. Đó là tình trạng của codebase, KHÔNG
+    phải yêu cầu của cơ chế — invariant nói mọi đường phải qua CÙNG MỘT quyết định, nên
+    enforcement hoàn toàn có thể tập trung.
+  never_say:
+    - >-
+      "IDOR là do id đoán được" — đảo nhân quả. Ở đây id là UUID và được lấy hợp pháp từ hồi
+      còn là thành viên, không cần đoán. Fix theo cách nói này là "đổi sang UUID", và nó không
+      sửa gì.
+    - >-
+      "Thiếu authentication" — sai tầng. Authentication chạy và thành công.
+    - >-
+      "Lập trình viên quên kiểm quyền" — đúng sự việc, SAI NGUYÊN NHÂN. Nó biến một thuộc tính
+      cấu trúc thành lỗi cá nhân, rồi dẫn tới fix sai: nhắc nhau cẩn thận hơn.
+    - >-
+      "Ba tháng sau nên mới hỏng" — thời gian chỉ là thứ tự và bối cảnh. Đường mới thêm cùng
+      ngày thì lỗi y nguyên.
+    - >-
+      "Object authorization phải được nhân bản thủ công ở mỗi handler" — đó là tình trạng của
+      kịch bản, không phải luật chung.
+
+# simulate.mjs yêu cầu khai field trước khi ghi — một field chưa khai là MODEL ERROR, không
+# phải một field mặc định 0. Đúng như vậy: nó chặn việc bịa ra state giữa đường.
+state:
+  membership.active: 1
+  comments_endpoint.exists: 0
+  doc_endpoint.authorization_decisions_on_document: 0
+  comments_endpoint.authorization_decisions_on_document: 0
+  response.document_data_disclosed: 0
+
+scenarios:
+  broken:
+    note: >-
+      Hai đường tới dữ liệu của cùng một object. Đường cũ có một quyết định phân quyền trên
+      tài liệu và từ chối đúng. Đường mới không có quyết định nào và trả dữ liệu.
+    events:
+      - { id: revoke, t: 0.04, actor: admin, op: write, target: membership, field: active, value: 0,
+          reason: "quan hệ thành viên bị xoá" }
+      - { id: newpath, t: 0.10, actor: team, op: write, target: comments_endpoint, field: exists, value: 1,
+          reason: "đường thứ hai tới dữ liệu của tài liệu được thêm vào, enforcement không đi cùng" }
+      - { id: ask, t: 0.24, actor: requester, op: access, subject: requester, resource: comments_endpoint }
+      - { id: authn, t: 0.32, actor: auth_middleware, op: check, subject: requester, resource: identity,
+          pass: true, reason: "token hợp lệ, principal được xác định — middleware làm đúng việc của nó" }
+      - { id: olddeny, t: 0.44, actor: doc_endpoint, op: check, subject: requester, resource: document,
+          pass: false, reason: "đường cũ kiểm membership và từ chối — bằng chứng phụ, không phải nguyên nhân" }
+      - { id: olddecision, t: 0.46, actor: doc_endpoint, op: write, target: doc_endpoint,
+          field: authorization_decisions_on_document, value: 1 }
+      - { id: load, t: 0.62, actor: comments_endpoint, op: access, subject: requester, resource: document,
+          reason: "nạp comment theo document_id, không có quyết định phân quyền nào trên tài liệu" }
+      - { id: disclose, t: 0.78, actor: comments_endpoint, op: write, target: response,
+          field: document_data_disclosed, value: 1 }
+    invariants:
+      - { id: revoked_means_no_read, kind: authorized_access, resource: document }
+      - { id: every_path_has_a_decision, kind: final_state,
+          field: comments_endpoint.authorization_decisions_on_document, expected: 1 }
+    expect:
+      violations: [revoked_means_no_read, every_path_has_a_decision]
+
+  fixed:
+    note: >-
+      Cùng chuỗi, nhưng quyết định phân quyền trên tài liệu được thực thi ở chỗ mọi truy cập
+      đi qua, mặc định từ chối. Đường mới THỪA HƯỞNG nó mà không ai thêm gì vào handler.
+      Cơ chế của fix là thừa hưởng, không phải bất khả thi lúc compile.
+    events:
+      - { id: revoke, t: 0.04, actor: admin, op: write, target: membership, field: active, value: 0 }
+      - { id: newpath, t: 0.10, actor: team, op: write, target: comments_endpoint, field: exists, value: 1 }
+      - { id: ask, t: 0.24, actor: requester, op: access, subject: requester, resource: comments_endpoint }
+      - { id: authn, t: 0.32, actor: auth_middleware, op: check, subject: requester, resource: identity,
+          pass: true }
+      - { id: inherited, t: 0.58, actor: data_layer, op: check, subject: requester, resource: document,
+          pass: false, reason: "quyết định phân quyền được thực thi ở chỗ mọi truy cập đi qua — mặc định từ chối" }
+      - { id: newdecision, t: 0.60, actor: comments_endpoint, op: write, target: comments_endpoint,
+          field: authorization_decisions_on_document, value: 1 }
+      - { id: refuse, t: 0.74, actor: comments_endpoint, op: write, target: response,
+          field: document_data_disclosed, value: 0 }
+    invariants:
+      - { id: revoked_means_no_read, kind: authorized_access, resource: document }
+      - { id: every_path_has_a_decision, kind: final_state,
+          field: comments_endpoint.authorization_decisions_on_document, expected: 1 }
+    expect:
+      violations: []

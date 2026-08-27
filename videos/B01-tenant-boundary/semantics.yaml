@@ -1,0 +1,53 @@
+id: B01-tenant-boundary
+title: "Authenticated is not authorised"
+domain: security
+audience: "backend engineers, 2-5 years"
+
+assumptions:
+  - "The bearer token is valid and correctly identifies the caller. Nothing is spoofed."
+  - "The handler looks the record up by primary key taken straight from the URL path."
+  - "No tenant predicate in the query and no row-level security policy on the table."
+  - "The caller is an ordinary user of tenant acme, not an admin."
+
+# Declarative reference data for the visual layer. NOT simulated — the simulator
+# reasons about whether a check happened, not about who owns what.
+facts:
+  ownership:
+    invoice_7301: acme
+    invoice_8842: globex
+  caller_tenant: acme
+
+actors:
+  - { id: caller, label: "acme user",       kind: request }
+  - { id: api,    label: "invoice handler", kind: service }
+  - { id: store,  label: "invoices",        kind: store }
+
+scenarios:
+  broken:
+    note: "identity is checked; ownership is never asked about"
+    events:
+      - { id: authn,   t: 0.10, actor: api, op: check,  subject: caller, resource: session,
+          pass: true, note: "token verified — this really is an acme user" }
+      - { id: lookup,  t: 0.52, actor: api, op: access, subject: caller, resource: invoice_8842,
+          note: "SELECT by primary key, no tenant predicate" }
+      - { id: respond, t: 0.90, actor: api, op: access, subject: caller, resource: invoice_8842,
+          note: "another tenant's record returned to the caller" }
+    invariants:
+      - { id: tenant_isolation, kind: authorized_access,
+          note: "every access must be preceded by a passing check naming that same subject AND that same resource" }
+    expect:
+      violations: [tenant_isolation]
+
+  fixed:
+    note: "ownership is asked about per record — one answer is yes, the other no"
+    events:
+      - { id: authn,     t: 0.10, actor: api, op: check,  subject: caller, resource: session, pass: true }
+      - { id: own_mine,  t: 0.36, actor: api, op: check,  subject: caller, resource: invoice_7301,
+          pass: true,  reason: "invoice_7301.tenant = acme" }
+      - { id: get_mine,  t: 0.54, actor: api, op: access, subject: caller, resource: invoice_7301 }
+      - { id: own_other, t: 0.78, actor: api, op: check,  subject: caller, resource: invoice_8842,
+          pass: false, reason: "invoice_8842.tenant = globex" }
+    invariants:
+      - { id: tenant_isolation, kind: authorized_access }
+    expect:
+      violations: []

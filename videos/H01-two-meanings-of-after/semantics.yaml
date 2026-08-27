@@ -1,0 +1,81 @@
+# H01 — read-your-writes qua read replica: hai nghĩa của chữ "sau".
+#
+# Cơ chế: câu ghi và câu đọc kế tiếp của CÙNG một người dùng được phục vụ ở hai vị trí khác
+# nhau trên cùng một replication log. Đo bằng đồng hồ thì câu đọc xảy ra SAU; đo bằng vị trí
+# log thì nó xảy ra TRƯỚC. Với một node hai cách đo là một; với hai node thì không.
+#
+# Không node nào hỏng. Không dữ liệu nào mất. Không có bug — có một cái giá đã trả.
+#
+# TRẠNG THÁI REPLAY: **NON-AUTHORITATIVE cho package này.** Mô hình replay hiện tại không
+# diễn đạt được bảo đảm bị phá — xem SEMANTIC_ANALYSIS.md §14. Khối `scenarios` dưới đây tồn
+# tại để `cv gate` chạy được và để GIỮ LẠI bằng chứng rằng dụng cụ không với tới, chứ KHÔNG
+# phải để tuyên bố cơ chế đã được kiểm. Không trích "mọi invariant đạt" làm bằng chứng an toàn.
+
+topic: "Read-your-writes qua read replica — hai nghĩa của chữ sau"
+package: "007"
+
+semantics:
+  never_say:
+    - >-
+      "Replica chậm" / "replica chạy chậm hơn primary" — package loại cách nói này khỏi toàn
+      bộ nội dung một cách có chủ ý. Dựng theo nghĩa đen thì nó thành vấn đề HIỆU NĂNG và fix
+      thành "mua máy to hơn", vốn không sửa gì. Đây là vấn đề VỊ TRÍ. Replica nhanh gấp mười
+      lần vẫn có một khoảng trễ khác không, và cửa sổ chỉ cần dài bằng một round trip.
+    - >-
+      Hình học cũng phải tuân luật trên: nếu đường replica có ĐỘ DỐC thấp hơn thì hình đang
+      nói "chạy chậm hơn" mà không cần một chữ nào. Chỉ ĐỘ LỆCH (thiếu hụt vị trí) là hợp lệ.
+      Hai đường phải song song theo cấu tạo — kiểm bằng hồi quy độ dốc trên artifact.
+    - >-
+      "Mất dữ liệu" — không mất. Giá trị mới nằm nguyên trên primary. Đây là từ vựng của người
+      báo lỗi; tin theo nó đẩy chẩn đoán sang tầng ghi, tức sai hướng. Narration CÓ dùng chữ
+      này ở beat 4 nhưng gán cho người báo lỗi rồi bác ngay ở beat 5 — dùng có kiểm soát.
+      Về hình: dấu commit KHÔNG BAO GIỜ được xoá khỏi trường.
+    - >-
+      "Eventual consistency bị phá" — không. EC vẫn đang được giữ đúng; cái mất là
+      read-your-writes. Không được gộp các bảo đảm thành một trạng thái nhị phân
+      "nhất quán / không nhất quán". Beat 21 chốt HAI bảo đảm, không phải ba.
+    - >-
+      "synchronous_commit = on nghĩa là replication đã đồng bộ" — bẫy tên gọi thật trong sản
+      phẩm. `on` là mặc định và chỉ có hiệu lực với standby đồng bộ; không đặt
+      synchronous_standby_names thì không có standby đồng bộ nào để chờ. Narration cố ý KHÔNG
+      nhắc `on`, chỉ nhắc `remote_apply`. Không được ngụ ý điều ngược lại bằng hình.
+    - >-
+      "Có một cách sửa đúng" — không. Có BỐN vị trí ngang hàng trên một đường đánh đổi.
+      Không được dựng thành "cách tốt nhất + ba phương án dự phòng", và không được xếp hạng.
+    - >-
+      Vị trí log 500 / 499 là số VÍ DỤ cho khoảng cách một nhịp, không phải phép đo LSN. Không
+      được dựng thành đua, thanh nhanh/chậm, hay đồng hồ tốc độ. 499 không ĐUỔI THEO 500.
+    - >-
+      "replay_lag thấp nghĩa là an toàn" — không. Nó cho biết ĐỘ RỘNG cửa sổ, không cho biết
+      có ai rơi vào đó. Và replay_lag ≈ 0 cũng xảy ra khi primary rảnh, tức không có WAL mới
+      để chép. Signal ≠ diagnosis.
+    - >-
+      Người KHÁC đọc thì bảo đảm bị phá có TÊN KHÁC (monotonic reads, hoặc chỉ là dữ liệu cũ).
+      Mọi hình phải giữ CÙNG MỘT quan sát viên đi qua cả ghi lẫn đọc.
+    - >-
+      Không được vẽ đường biên timeout / thất bại cho remote_apply. Package nói đúng một câu —
+      "replica chết thì đường ghi ĐỨNG theo" — và không có chữ nào về timeout. Một câu ghi
+      đứng và một câu ghi thất bại có hậu quả khác nhau với bên gọi.
+
+  scenarios:
+    # Giữ lại nguyên trạng bằng chứng: trace này TÁI HIỆN đúng sự cố, và mọi invariant hiện
+    # có vẫn ĐẠT. Đó là bằng chứng chống lại dụng cụ, không phải chứng chỉ cho nội dung.
+    tooling_gap_witness:
+      state:
+        primary.pos: 499
+        replica.pos: 499
+        primary.value: 0
+        replica.value: 0
+        user.seen: 0
+      events:
+        - { id: e4a, actor: user, op: write, target: primary, field: value, value: 1 }
+        - { id: e4b, actor: primary, op: write, target: primary, field: pos, value: 500 }
+        - { id: e6, actor: user, op: read, target: replica, field: value, into: v }
+        - { id: e7, actor: user, op: write, target: user, field: seen, value: { expr: v } }
+        - { id: e9a, actor: replica, op: write, target: replica, field: value, value: 1 }
+        - { id: e9b, actor: replica, op: write, target: replica, field: pos, value: 500 }
+      invariants:
+        - { id: primary_ends_correct, kind: final_state, field: primary.value, expected: 1 }
+        - { id: replica_catches_up, kind: final_state, field: replica.value, expected: 1 }
+        - { id: primary_pos_rises, kind: monotonic, field: primary.pos, direction: never_decreases }
+        - { id: replica_pos_rises, kind: monotonic, field: replica.pos, direction: never_decreases }

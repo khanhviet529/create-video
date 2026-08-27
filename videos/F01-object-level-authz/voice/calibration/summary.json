@@ -1,0 +1,38 @@
+[
+  {
+    "speed": 1,
+    "dur": 30.39,
+    "sil": 6.15,
+    "pauseFrac": 0.202,
+    "overall": 4.11,
+    "artic": 5.16,
+    "full": 170.1
+  },
+  {
+    "speed": 1.05,
+    "dur": 28.39,
+    "sil": 5.05,
+    "pauseFrac": 0.178,
+    "overall": 4.4,
+    "artic": 5.36,
+    "full": 158.9
+  },
+  {
+    "speed": 1.1,
+    "dur": 27.69,
+    "sil": 4.93,
+    "pauseFrac": 0.178,
+    "overall": 4.51,
+    "artic": 5.49,
+    "full": 155
+  },
+  {
+    "speed": 1.15,
+    "dur": 26.76,
+    "sil": 4.11,
+    "pauseFrac": 0.154,
+    "overall": 4.67,
+    "artic": 5.52,
+    "full": 149.7
+  }
+]

@@ -1,0 +1,135 @@
+# PHƯƠNG PHÁP — L2: phép đo phải khớp với khẳng định, không khớp với một đại lượng gần đúng
+
+Ghi ở **mức phương pháp kiểm**. Bằng chứng: `H01/STEP3_R1_FINDINGS.md` và
+`H01/STEP3_LUI1_FINDINGS.md`.
+
+---
+
+## Luật
+
+> Một phép kiểm phải đo **đúng điều đang được khẳng định**. Đo một đại lượng thay thế cho ra
+> một con số **trông như một kết quả** và không mang thông tin nào về khẳng định.
+
+Ba lần trong hai lượt, phép đo **đầu tiên** của tôi đo một đại lượng thay thế:
+
+| khẳng định | phép đo sai lần đầu | vì sao vô nghĩa | phép đo đúng |
+|---|---|---|---|
+| *"hai đường song song"* | độ dốc **toàn cục** | đường bậc thang phần lớn phẳng nên cả hai đều ≈ 0 và **"đạt" một cách vô nghĩa** | độ dốc **chỉ trên đoạn dốc**, và mạnh hơn: **residual sau tịnh tiến** |
+| *"hai đoạn bao không che nhau"* | giao tập **chỉ số cột** | hai thanh ở hai mức khác nhau đương nhiên dùng chung các cột x — **giao nhau ≠ che nhau**. Báo "448 cột giao nhau" cho hai thanh cách nhau 288px | **đầu mút riêng** của mỗi tiền tố — đúng thứ biến mất khi chúng chồng mức |
+| *"dấu ở 500 nằm trong tiền tố"* | **mép phải** của dấu vs đầu mút thanh | dấu là đĩa **đặt giữa** vị trí, nên luôn tràn qua một bán kính. So hai điểm không cùng loại | **tâm** dấu vs đầu mút |
+
+## Hai hệ quả phải nhớ
+
+**1. Viết được luật không có nghĩa là đã áp được luật.**
+Lỗi thứ hai và thứ ba xảy ra **bên trong dụng cụ viết ra để tôn trọng L2**, ngay sau khi L2 vừa
+được ghi thành bài học. Một luật chỉ có tác dụng khi nó thành một bước kiểm cụ thể, không phải
+khi nó thành một câu trong tài liệu.
+
+**2. Negative control là thứ duy nhất phân biệt được "artifact hỏng" với "dụng cụ hỏng".**
+Cả ba lần, kết quả sai **trông y hệt một artifact hỏng**. Thứ nói cho tôi biết phải nghi ngờ
+phép đo là: negative control **nổ đúng** trong khi shot chính cũng nổ — tức dụng cụ có hoạt
+động, nên con số kỳ lạ ở shot chính đáng được chẩn đoán chứ không đáng tin ngay.
+
+> **Mọi phép kiểm mới phải kèm một negative control được dựng CỐ Ý để trượt.**
+> Một chặn chưa từng nổ thì chưa phải chặn — và một chặn đã nổ đúng chỗ là thứ cho phép ta tin
+> hoặc nghi ngờ mọi số còn lại.
+
+## Cùng họ với
+
+- G01 — *false witness*: một hình đúng về kỹ thuật vẫn có thể là nhân chứng sai cho khẳng định
+  đặt cạnh nó.
+- G01 — *bộ kiểm quét source không kiểm được một khẳng định về artifact* (`check-beat-sync` báo
+  16/38 sai; `check-vacuum-invariant` bản đầu cấm cả những lời gọi hợp lệ).
+- G01 — *hai tiến trình đo dùng chung tên file tạm*: bảng số điền đủ, thẳng cột, và **sai**.
+
+Mẫu chung của cả nhóm: **không gate nào tự soi được quan hệ của chính nó với thứ nó định đo.**
+
+---
+
+## CỔNG THỦ TỤC — bắt buộc, trước mọi phép đo
+
+Ghi nhớ ở mức phương pháp **không chặn được** lỗi này: nó xảy ra **trước lúc người ta nghĩ tới
+ghi nhớ**. Bằng chứng: lỗi tái diễn **hai lượt liên tiếp**, lần thứ hai xảy ra **bên trong dụng
+cụ viết ra để tôn trọng chính bài học này**. Nên nó phải thành một **bước**, không phải một câu.
+
+> **Trước khi chạy BẤT KỲ phép đo nào, khai ba dòng:**
+>
+> 1. **khẳng định** là gì;
+> 2. **đại lượng thực sự đo** là gì;
+> 3. **vì sao đại lượng đó KHÔNG phải một thay thế** của khẳng định.
+>
+> **Không khai được dòng 3 → chưa được chạy phép đo đó.**
+
+Khai trong báo cáo, cho **từng** phép đo. Dòng 3 là dòng làm việc: dòng 1 và 2 ai cũng viết
+được, còn dòng 3 buộc phải nêu ra chính cái khoảng cách giữa "thứ tôi đo" và "thứ tôi khẳng
+định" — và khi khoảng đó không lấp được thì phép đo sai, phát hiện **trước** khi có số.
+
+### Dấu hiệu chẩn đoán, đã cứu ba lần
+
+> **Negative control nổ đúng TRONG KHI shot chính cũng nổ ⇒ nghi DỤNG CỤ trước, nghi shot sau.**
+
+Cả ba lần, kết quả sai **trông y hệt một artifact hỏng**. Thứ duy nhất phân biệt được là
+negative control: nó chứng minh dụng cụ **có hoạt động**, nên một con số kỳ lạ ở shot chính
+đáng được **chẩn đoán** chứ không đáng tin ngay. Không có negative control thì cả ba lần đều sẽ
+kết thúc bằng việc dựng lại một artifact vốn không hỏng.
+
+### Áp dụng thật — H01 prototype cuối
+
+Cổng được khai trước ở `STEP3_SWEEP_PREDECLARATION.md` cho cả năm phép đo, **trước khi sinh shot
+đầu tiên**. Không phép đo nào phải viết lại. Đây là lượt đầu tiên trong bốn lượt không có lỗi
+đo-đại-lượng-thay-thế.
+
+---
+
+## CỔNG RGB — bắt buộc khi viết bộ kiểm mới
+
+Cùng một va chạm đã cắn **ba lần**, lần thứ ba xảy ra sau khi bài học đã được ghi rõ trong
+header của một bộ kiểm khác. Ghi nhớ không tự áp vào công cụ mới, nên nó thành cổng.
+
+> **Mọi bộ kiểm mới phải KHAI: nó phân loại pixel BẰNG GÌ.**
+> Dùng **RGB + biên độ kênh**, không dùng luma, khi hai token màu có luma gần nhau.
+
+**Danh sách va chạm luma đã biết** — thêm vào khi phát hiện cái mới:
+
+| token | hex | luma xấp xỉ |
+|---|---|---|
+| `--authoritative` | `#C9A227` | **≈168** |
+| `--ink-mid` | `#9AA0A6` | **≈160** |
+
+Trên ảnh xám hai token này **không phân biệt được**. Ba lần bị cắn:
+
+1. **R1** — phát hiện lần đầu, ghi vào header `check-parallel-lines.mjs`.
+2. **CH-C** — sợi neo gold bị đếm là đoạn bao, khe hở đọc ra 62px thay vì 185px.
+3. **`check-prefix-containment.mjs`** — cùng lỗi, **chưa nổ** chỉ vì mọi mốc lấy mẫu nằm trước
+   lúc gold xuất hiện. May, không phải đúng. Đã sửa, và cửa sổ kiểm đã mở rộng qua lúc có gold
+   để chứng minh bản sửa có tác dụng.
+
+Bộ kiểm **không phân loại** (chỉ tính chênh lệch khung, như `check-sweep-tempo.mjs`, hoặc dùng
+`signalstats`, như `check-continuity.mjs`) thì khai rõ điều đó — cổng vẫn phải trả lời.
+
+*(Ghi chú: `check-vacuum-invariant.mjs` của G01 cũng phân loại bằng luma. G01 đã **FROZEN** và
+kết quả xác minh của nó gắn với dụng cụ lúc đó, nên **không sửa**. Rủi ro là tiềm ẩn chứ không
+hiện thực ở G01 — dải `--ink-dim` 130–158 nằm dưới cả hai token trên. Ghi lại để nếu dụng cụ đó
+được dùng cho video mới thì phải áp cổng RGB trước.)*
+
+---
+
+## LUẬT NC — generalizable ngay, không chờ instance thứ hai
+
+> **Một negative control nổ VÌ LÝ DO SAI vẫn là một chặn hỏng.**
+>
+> NC phải kiểm được rằng nó nổ vì **đúng nguyên nhân đã thiết kế**, không chỉ kiểm rằng nó nổ.
+
+Đây là lỗ hổng trong **chính phương pháp làm bằng chứng**, nên không áp chuẩn "chờ ca thứ hai".
+
+**Hình dạng lỗi đã gặp** (H01, CH-C): một bản vá dùng `String.replace` **không guard** đã âm
+thầm không khớp, nên NC ra **không có tween nào**. Nó vẫn "trượt" — nhưng vì *chuyển động 0 ở
+cả hai mốc*, chứ không vì *hai số đọc khác nhau* như thiết kế. Bảng kết quả trông đạt. Chỉ đọc
+kỹ **con số** mới thấy.
+
+**Cách làm:** in ra đại lượng mà NC được thiết kế để bẻ, và đọc nó — không chỉ đọc dấu ✓/✗.
+Ở ví dụ trên, dòng cần đọc là `khe hở (a) 266px · (b) 185px |Δ| 81px`, và nó phải khác dòng
+tương ứng của shot chính. Nếu NC nổ mà đại lượng thiết kế **không** khác, thì NC hỏng.
+
+**Hệ quả cho mọi bản vá:** `String.replace` không guard là một lỗi âm thầm. Mọi phép thay thế
+trong script vá phải **ném lỗi khi không khớp**.

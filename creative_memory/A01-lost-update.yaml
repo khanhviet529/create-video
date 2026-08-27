@@ -1,0 +1,64 @@
+video_id: A01-lost-update
+title: "Lost update: two writers, one stale read"
+domain: concurrency
+shots: 3
+engines:
+  - ffmpeg
+  - hyperframes
+representation_layers:
+  - user_reality
+  - state
+camera:
+  - shot: shot_01
+    motion: static
+    semantic_function: sequential_arithmetic_reveal
+  - shot: shot_02_cam
+    motion: widen
+    semantic_function: single_actor_to_concurrency
+  - shot: shot_04_cam
+    motion: widen
+    semantic_function: camera_as_shared_reference_frame
+dominant_compositions:
+  - three_zone_ledger
+  - stacked_label_figure_pairs
+dominant_geometry:
+  - hairlines
+  - bare_numerals
+  - no_boxes
+visual_devices:
+  - value_duplication
+  - version_stamp_disagreement
+  - digit_morph
+  - provenance_rail
+  - supersede_and_demote
+  - boundary_as_storage_edge
+motion_devices:
+  - rail_draw
+  - descend
+  - digit_roll
+  - press_against_boundary
+  - displace_and_shrink
+  - stall_at_barrier
+typography_usage:
+  - hero_numeral
+  - small_caps_labels
+  - tabular_values_with_version_stamps
+color_distribution:
+  dominant: neutral
+  authoritative: ochre
+  alert: vermilion
+  discarded: grey
+reference_influences:
+  - engineered_information_design
+  - ledger_typography
+distinctive_device:
+  - read_is_a_duplication
+  - a_hairline_that_is_the_storage_boundary
+intentional_repetition:
+  - shots:
+      - shot_02
+      - shot_04
+    reason: "Same geometry twice on purpose (shot_05 planned, not authored this
+      cycle). The comparison IS the content: identical frame, changed mechanism.
+      Expect the silhouette diagnostic to flag these; the flag is answered here,
+      not designed away."

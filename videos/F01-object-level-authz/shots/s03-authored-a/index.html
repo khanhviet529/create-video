@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=1920" />
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+/* @brand:start */
+:root {
+  --ground: #0C0D0F; --ground-lift: #14161A;
+  --ink: #EDEAE4; --ink-mid: #9AA0A6; --ink-dim: #8B9198; --ink-ghost: #3A3E42;
+  --rule: #23272A; --rule-bright: #3D4348; --hair: 1.5px;
+  --authoritative: #C9A227; --stale: #E0533D; --lost: #6A6F74;
+  --boundary: #4E8C7D; --pressure: #B4623A; --counterfactual: #7A8086;
+  --font-value: "IBM Plex Mono", ui-monospace, monospace;
+  --font-label: "IBM Plex Sans Condensed", "IBM Plex Sans", system-ui, sans-serif;
+  --t-hero: 200px; --t-value: 64px; --t-body: 36px; --t-label: 26px; --track-label: 0.18em;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { overflow: hidden; background: var(--ground); color: var(--ink); font-family: var(--font-label); }
+.label { font-family: var(--font-label); font-size: var(--t-label); letter-spacing: var(--track-label);
+         text-transform: uppercase; color: var(--ink-dim); font-weight: 500; }
+/* @brand:end */
+
+html, body { width: 1080px; height: 1920px; }
+#stage { position: absolute; inset: 0; }
+
+/* ---------------------------------------------------------------------------
+   SHOT 03 — HANDLER A, AUTHORED. 15s. Register: author. Operation: accumulation.
+
+   The register change from runtime to authoring happens on the cut into this shot,
+   and the frame empties to make it: shot 02 ended on responses, this one starts on
+   nothing and a body gets written. That is a change of WHEN, not of where, which is
+   why no camera move is involved.
+
+   Every geometry constant is shared with shot 04 — lblWhen at 244, #hA at 340, 38px
+   over 58px lines — because shot 04 opens on this shot's closing frame and the match
+   cut must not move a pixel. What that cut carries is "A did not change", so A has to
+   be pixel-identical across it.
+
+   TOKENS STAY PLAIN HERE. No ochre, no teal. Colour names which body reaches what,
+   and that question does not exist until there are two bodies, so the naming belongs
+   to shot 04. A coloured token here would have to un-colour or stay, and either
+   choice would make the match cut carry a second meaning.
+
+   The payload of this shot is a CLAIM, not a description: this code is correct, and it
+   is still correct at the end of the video. Nothing in the video ever comes back and
+   invalidates it. The viewer has to believe that before the comparison can mean
+   anything — if A looks suspect, the whole mechanism collapses into "somebody wrote
+   bad code".
+--------------------------------------------------------------------------- */
+#lblWhen { position: absolute; left: 93px; top: 244px; }
+
+.h    { position: absolute; left: 93px; }
+.ln   { font-family: var(--font-value); font-size: 38px; line-height: 58px;
+        color: var(--ink-mid); white-space: pre; }
+.rt   { color: var(--ink-dim); }
+#hA { top: 340px; }
+
+.reach, .pri, .dec { color: var(--ink-mid); }
+.dec { font-weight: 600; }
+
+#steps { position: absolute; left: 93px; top: 660px; width: 894px; }
+
+.claim { position: absolute; left: 93px; width: 894px; font-family: var(--font-label);
+         font-size: 42px; letter-spacing: 0.01em; font-weight: 600; }
+#k1 { top: 760px; color: var(--ink); }
+#k2 { top: 818px; color: var(--boundary); }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="11"
+     data-width="1080" data-height="1920">
+  <div id="stage" class="clip" data-start="0" data-duration="11" data-track-index="0">
+
+    <div id="lblWhen" class="label">endpoint tài liệu, như nó được viết ra</div>
+
+    <div class="h" id="hA">
+      <div class="ln rt">GET  /documents/:id</div>
+      <div class="ln">  const doc = docs.byId(<span class="reach">req.params.id</span>)</div>
+      <div class="ln">  <span class="dec">assertMember</span>(<span class="pri">req.principal</span>, doc)</div>
+      <div class="ln">  return doc</div>
+    </div>
+
+    <div id="steps" class="label">hai bước &mdash; lấy object, rồi một quyết định trên nó</div>
+
+    <div class="claim" id="k1">cả hai đều đúng</div>
+    <div class="claim" id="k2">và đến hôm nay vẫn đúng</div>
+
+  </div>
+</div>
+
+<script>
+window.__timelines = window.__timelines || {};
+const tl = gsap.timeline({ paused: true });
+const R = 'power3.out';
+
+const linesA = gsap.utils.toArray('#hA .ln');
+
+gsap.set([...linesA, '#lblWhen', '#steps', '#k1', '#k2'], { opacity: 0 });
+
+/* ---- 0.30–6.0  the body is written, one line at a time ----------------
+   Lines appear; nothing types and nothing travels across anything. Authorship is
+   accumulation, and the pacing is reading pace, not typing pace. */
+// beat 1 (0.00-7.16): the body is written while the narration describes its two steps
+tl.to('#lblWhen', { opacity: 1, duration: .4, ease: R }, 0.25)
+  .to(linesA[0], { opacity: 1, duration: .32, ease: R }, 0.90)
+  .to(linesA[1], { opacity: 1, duration: .32, ease: R }, 2.10)
+  .to(linesA[2], { opacity: 1, duration: .32, ease: R }, 3.50)
+  .to(linesA[3], { opacity: 1, duration: .32, ease: R }, 4.80);
+
+/* ---- 7.0  the structure, named from what is on screen ----------------- */
+tl.to('#steps', { opacity: 1, duration: .4, ease: R }, 5.90);
+
+/* ---- 9.4  the claim this shot exists to plant -------------------------
+   Held to the end on purpose: the viewer must carry "A is correct" into shot 04, and
+   into the rest of the video. Nothing later invalidates it. */
+// beat 2 (7.16-9.48): "cả hai đều đúng. đến hôm nay vẫn đúng." — then 1.52s to settle,
+// because this claim is carried across the match cut into s04.
+tl.to('#k1', { opacity: 1, duration: .45, ease: R }, 7.30)
+  .to('#k2', { opacity: 1, duration: .45, ease: R }, 8.40);
+
+window.__timelines['main'] = tl;
+</script>
+</body>
+</html>

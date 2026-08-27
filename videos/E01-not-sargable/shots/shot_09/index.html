@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=1920" />
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+/* @brand:start */
+:root {
+  --ground: #0C0D0F; --ground-lift: #14161A;
+  --ink: #EDEAE4; --ink-mid: #9AA0A6; --ink-dim: #8B9198; --ink-ghost: #3A3E42;
+  --rule: #23272A; --rule-bright: #3D4348; --hair: 1.5px;
+  --authoritative: #C9A227; --stale: #E0533D; --lost: #6A6F74;
+  --boundary: #4E8C7D; --pressure: #B4623A; --counterfactual: #7A8086;
+  --font-value: "IBM Plex Mono", ui-monospace, monospace;
+  --font-label: "IBM Plex Sans Condensed", "IBM Plex Sans", system-ui, sans-serif;
+  --t-hero: 200px; --t-value: 64px; --t-body: 36px; --t-label: 26px; --track-label: 0.18em;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { overflow: hidden; background: var(--ground); color: var(--ink); font-family: var(--font-label); }
+.label { font-family: var(--font-label); font-size: var(--t-label); letter-spacing: var(--track-label);
+         text-transform: uppercase; color: var(--ink-dim); font-weight: 500; }
+/* @brand:end */
+
+html, body { width: 1080px; height: 1920px; }
+#stage { position: absolute; inset: 0; }
+
+/* ---------------------------------------------------------------------------
+   SHOT 09 — A THING TO RUN, AND A QUESTION TO KEEP
+
+   The last shot of an explainer is the one the viewer screenshots, so it is built
+   to be read rather than watched: the camera is static and the motion does one
+   job — walk the eye down the idx_scan column until it is obvious that the column
+   is zeros all the way down.
+
+   The honesty constraint from the shot plan is load-bearing and is why #caveat
+   exists: idx_scan = 0 means the index has never been chosen. That is a NECESSARY
+   condition for the bug in this video, not evidence of it — the index might simply
+   be redundant. The shot is not allowed to claim more than the signal supports,
+   and the caveat is given the same type size as the finding, not smaller.
+--------------------------------------------------------------------------- */
+#lbl      { position: absolute; left: 93px; top: 296px; }
+
+.qline    { position: absolute; left: 93px; font-family: var(--font-value); font-size: 34px;
+            line-height: 1; color: var(--ink); white-space: pre; }
+#q1 { top: 356px; } #q2 { top: 404px; } #q3 { top: 452px; } #q4 { top: 500px; }
+.kw       { color: var(--ink-mid); }
+
+/* the column the eye is being sent to */
+#zeroRail { position: absolute; left: 742px; top: 628px; width: var(--hair); height: 196px;
+            background: var(--stale); transform-origin: top center; }
+
+#hdr      { position: absolute; left: 0; top: 630px; height: 34px; }
+#hdr span { position: absolute; top: 0; font-family: var(--font-label); font-size: 24px;
+            letter-spacing: var(--track-label); text-transform: uppercase; color: var(--ink-dim); }
+#hdr .c1 { left: 93px; } #hdr .c2 { left: 300px; } #hdr .c3 { left: 776px; }
+
+#rows     { position: absolute; left: 0; top: 690px; width: 1080px; height: 130px; }
+.r        { position: absolute; font-family: var(--font-value); font-size: 36px; line-height: 1;
+            color: var(--ink-mid); white-space: nowrap; }
+.r.c1 { left: 93px; } .r.c2 { left: 300px; } .r.c3 { left: 776px; color: var(--stale); font-weight: 600; }
+
+#zeroLbl  { position: absolute; left: 776px; top: 850px; color: var(--stale); }
+#caveat   { position: absolute; left: 93px; top: 934px; width: 894px;
+            font-family: var(--font-label); font-size: 30px; line-height: 1.24;
+            letter-spacing: var(--track-label); text-transform: uppercase; color: var(--ink-dim);
+            font-weight: 500; }
+
+#split    { position: absolute; left: 93px; top: 1058px; width: 894px; height: var(--hair);
+            background: var(--rule-bright); transform-origin: left center; }
+
+#ask      { position: absolute; left: 93px; top: 1118px; width: 894px;
+            font-family: var(--font-label); font-size: 46px; line-height: 1.2;
+            letter-spacing: 0.01em; color: var(--ink); font-weight: 600; }
+#ask em   { font-style: normal; color: var(--stale); }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="9"
+     data-width="1080" data-height="1920">
+  <div id="stage" class="clip" data-start="0" data-duration="9" data-track-index="0">
+
+    <div id="lbl" class="label">soát nhanh trên hệ thống của bạn</div>
+
+    <div class="qline" id="q1"><span class="kw">SELECT</span> relname, indexrelname, idx_scan</div>
+    <div class="qline" id="q2"><span class="kw">FROM</span>   pg_stat_user_indexes</div>
+    <div class="qline" id="q3"><span class="kw">WHERE</span>  idx_scan = 0</div>
+    <div class="qline" id="q4"><span class="kw">ORDER BY</span> relname;</div>
+
+    <div id="zeroRail"></div>
+
+    <div id="hdr">
+      <span class="c1">bảng</span><span class="c2">index</span><span class="c3">idx_scan</span>
+    </div>
+
+    <div id="rows">
+      <div class="r c1" style="top:0px">users</div>
+      <div class="r c2" style="top:0px">users_email_idx</div>
+      <div class="r c3" style="top:0px">0</div>
+      <div class="r c1" style="top:70px">orders</div>
+      <div class="r c2" style="top:70px">orders_ref_idx</div>
+      <div class="r c3" style="top:70px">0</div>
+    </div>
+
+    <div id="zeroLbl" class="label">chưa bao giờ được chọn</div>
+    <div id="caveat">đây là điều kiện cần để soát &mdash;<br />không phải bằng chứng non-sargable</div>
+
+    <div id="split"></div>
+    <div id="ask">trong các mệnh đề where của bạn,<br />có bao nhiêu chỗ cột đang bị <em>bọc trong một hàm</em>?</div>
+
+  </div>
+</div>
+
+<script>
+window.__timelines = window.__timelines || {};
+const tl = gsap.timeline({ paused: true });
+const R = 'power3.out', T = 'power2.inOut';
+
+const c1 = gsap.utils.toArray('.r.c1');
+const c2 = gsap.utils.toArray('.r.c2');
+const c3 = gsap.utils.toArray('.r.c3');
+
+gsap.set(['#q1', '#q2', '#q3', '#q4'], { opacity: 0 });
+gsap.set('#hdr span', { opacity: 0 });
+gsap.set([...c1, ...c2, ...c3], { opacity: 0 });
+gsap.set(['#zeroLbl', '#caveat', '#ask'], { opacity: 0 });
+gsap.set('#zeroRail', { scaleY: 0 });
+gsap.set('#split', { scaleX: 0 });
+
+/* ---- 0.15  the query, one line at a time, at reading speed ------------ */
+tl.fromTo('#lbl', { opacity: 0 }, { opacity: 1, duration: .4, ease: R }, 0.15)
+  .to(['#q1', '#q2', '#q3', '#q4'], { opacity: 1, duration: .34, ease: R, stagger: .19 }, 0.42);
+
+/* ---- 1.55  what it returns ------------------------------------------- */
+tl.to('#hdr span', { opacity: 1, duration: .32, ease: R, stagger: .07 }, 1.55)
+  .to(c1, { opacity: 1, duration: .3, ease: R, stagger: .16 }, 1.85)
+  .to(c2, { opacity: 1, duration: .3, ease: R, stagger: .16 }, 1.97);
+
+/* ---- 2.60  THE COLUMN RESOLVES ---------------------------------------
+   The rail is drawn downward first and the zeros land into it, so the movement is
+   "read down this column" rather than "two unrelated numbers appeared". Everything
+   else in the table has already settled by now and does not move again. */
+tl.to('#zeroRail', { scaleY: 1, duration: .5, ease: T }, 2.60)
+  .to(c3, { opacity: 1, duration: .3, ease: R, stagger: .26 }, 2.80)
+  .to('#zeroLbl', { opacity: 1, duration: .4, ease: R }, 3.55);
+
+/* ---- 4.20  the limit of the signal, stated at full size --------------- */
+tl.to('#caveat', { opacity: 1, duration: .45, ease: R }, 4.20);
+
+/* ---- 5.60  hand it back to the viewer -------------------------------- */
+tl.to('#split', { scaleX: 1, duration: .7, ease: T }, 5.60)
+  .fromTo('#ask', { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: .7, ease: R }, 5.85);
+
+window.__timelines['main'] = tl;
+</script>
+</body>
+</html>

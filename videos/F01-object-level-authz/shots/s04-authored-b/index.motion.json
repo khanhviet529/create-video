@@ -1,0 +1,9 @@
+{
+  "duration": 21.5,
+  "assertions": [
+    {
+      "kind": "staysInFrame",
+      "selector": "#hA"
+    }
+  ]
+}

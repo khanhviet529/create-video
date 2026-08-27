@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=1920" />
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+/* @brand:start */
+:root {
+  --ground: #0C0D0F; --ground-lift: #14161A;
+  --ink: #EDEAE4; --ink-mid: #9AA0A6; --ink-dim: #8B9198; --ink-ghost: #3A3E42;
+  --rule: #23272A; --rule-bright: #3D4348; --hair: 1.5px;
+  --authoritative: #C9A227; --stale: #E0533D; --lost: #6A6F74;
+  --boundary: #4E8C7D; --pressure: #B4623A; --counterfactual: #7A8086;
+  --font-value: "IBM Plex Mono", ui-monospace, monospace;
+  --font-label: "IBM Plex Sans Condensed", "IBM Plex Sans", system-ui, sans-serif;
+  --t-hero: 200px; --t-value: 64px; --t-body: 36px; --t-label: 26px; --track-label: 0.18em;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { overflow: hidden; background: var(--ground); color: var(--ink); font-family: var(--font-label); }
+.label { font-family: var(--font-label); font-size: var(--t-label); letter-spacing: var(--track-label);
+         text-transform: uppercase; color: var(--ink-dim); font-weight: 500; }
+/* @brand:end */
+
+html, body { width: 1080px; height: 1920px; }
+#stage { position: absolute; inset: 0; }
+.mono { position: absolute; font-family: var(--font-value); line-height: 1; white-space: pre; }
+.sans { position: absolute; font-family: var(--font-label); letter-spacing: 0.01em; font-weight: 600; }
+
+/* ---------------------------------------------------------------------------
+   c5 — COUNTING, disjoint universes. Composition prototype for s14.
+   Left field: routes and tests. Right field: what the test cannot reach. No shared baseline.
+--------------------------------------------------------------------------- */
+#sigLbl { position: absolute; left: 93px; top: 250px; }
+.sig  { left: 93px; font-size: 26px; color: var(--ink); }
+#g1Lbl{ position: absolute; left: 93px; top: 470px; color: var(--boundary); }
+#g2Lbl{ position: absolute; left: 93px; top: 640px; width: 460px; color: var(--stale); }
+.r    { left: 93px; font-size: 30px; }
+.r1   { color: var(--ink-mid); }
+.r2   { color: var(--ink); }
+#todo { position: absolute; left: 93px; top: 900px; width: 470px; font-family: var(--font-label);
+        font-size: 36px; color: var(--stale); font-weight: 600; }
+#todo b { font-family: var(--font-value); }
+
+#limLbl { position: absolute; left: 600px; top: 940px; width: 420px; color: var(--lost); }
+.lim    { left: 600px; font-size: 26px; color: var(--lost); }
+#notProve { position: absolute; left: 600px; top: 1220px; width: 430px; font-family: var(--font-label);
+            font-size: 27px; line-height: 1.3; letter-spacing: var(--track-label);
+            text-transform: uppercase; color: var(--stale); font-weight: 500; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="13"
+     data-width="1080" data-height="1920">
+  <div id="stage" class="clip" data-start="0" data-duration="13" data-track-index="0">
+    <div id="sigLbl" class="label">tín hiệu</div>
+    <div class="mono sig" id="s1" style="top:300px">route nhận object id từ client</div>
+    <div class="mono sig" id="s2" style="top:342px">&rarr; gọi lại bằng principal thứ hai</div>
+    <div class="mono sig" id="s3" style="top:384px">&rarr; khẳng định không nhận 200</div>
+
+    <div id="g1Lbl" class="label">đã có test đó</div>
+    <div class="mono r r1" id="a1" style="top:514px">/docs/:id</div>
+    <div class="mono r r1" id="a2" style="top:558px">/docs/:id/comments</div>
+
+    <div id="g2Lbl" class="label">chưa có &middot; chỗ cần soát</div>
+    <div class="mono r r2" id="b1" style="top:692px">/docs/:id/history</div>
+    <div class="mono r r2" id="b2" style="top:740px">/docs/:id/exports</div>
+    <div class="mono r r2" id="b3" style="top:788px">/docs/:id/print</div>
+    <div id="todo"><b>3</b> route cần mở ra xem</div>
+
+    <div id="limLbl" class="label">test xanh không phủ</div>
+    <div class="mono lim" id="m1" style="top:994px">cựu thành viên</div>
+    <div class="mono lim" id="m2" style="top:1038px">quyền vừa thu hồi</div>
+    <div class="mono lim" id="m3" style="top:1082px">vai trò lồng nhau</div>
+    <div class="mono lim" id="m4" style="top:1126px">đường không qua http</div>
+    <div id="notProve">phủ hết mọi route cũng chỉ chứng minh CÓ một quyết định ở mỗi đường &mdash; không chứng minh quyết định đó đúng</div>
+  </div>
+</div>
+
+<script>
+window.__timelines = window.__timelines || {};
+const tl = gsap.timeline({ paused: true });
+const R = 'power3.out', T = 'power2.inOut';
+gsap.set(['#sigLbl','#s1','#s2','#s3','#g1Lbl','#a1','#a2','#g2Lbl','#b1','#b2','#b3','#todo',
+          '#limLbl','#m1','#m2','#m3','#m4','#notProve'], { opacity: 0 });
+tl.to('#sigLbl', { opacity: 1, duration: .3, ease: R }, 0.25)
+  .to(['#s1','#s2','#s3'], { opacity: 1, duration: .28, ease: R, stagger: .28 }, 0.50);
+tl.to('#g1Lbl', { opacity: 1, duration: .3, ease: R }, 1.90)
+  .to(['#a1','#a2'], { opacity: 1, duration: .25, ease: R, stagger: .14 }, 2.10);
+tl.to('#g2Lbl', { opacity: 1, duration: .35, ease: R }, 3.10)
+  .to(['#b1','#b2','#b3'], { opacity: 1, duration: .28, ease: R, stagger: .28 }, 3.40)
+  .to('#todo', { opacity: 1, duration: .4, ease: R }, 4.80);
+/* the second universe, offset baselines, no divider between them */
+tl.to('#limLbl', { opacity: 1, duration: .35, ease: R }, 6.40)
+  .to(['#m1','#m2','#m3','#m4'], { opacity: 1, duration: .26, ease: R, stagger: .22 }, 6.70)
+  .to('#notProve', { opacity: 1, duration: .5, ease: R }, 9.40);
+window.__timelines['main'] = tl;
+</script>
+</body>
+</html>

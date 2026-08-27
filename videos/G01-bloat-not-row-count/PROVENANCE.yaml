@@ -1,0 +1,25 @@
+package_id: "006"
+package_slug: rows-flat-size-growing
+schema_version: 1
+package_revision: null
+source_path: D:/Project/technical-content-engine/packages/006-rows-flat-size-growing/content-package.yaml
+source_sha256: d80b59562e603c0fdf703d01c365c1a7c5dbd4489f7f75cb8f68bb538670740b
+source_git_commit: null
+imported_at: 2026-08-25T10:25:00.119Z
+validation_result:
+  validator: tools/validate-package.mjs
+  exit_code: 0
+  verdict: 0 lỗi · 0 cảnh báo
+consumed_as: G01-bloat-not-row-count
+snapshot: videos/G01-bloat-not-row-count/content-package.yaml
+snapshot_sha256: d80b59562e603c0fdf703d01c365c1a7c5dbd4489f7f75cb8f68bb538670740b
+consumed_sha256: d80b59562e603c0fdf703d01c365c1a7c5dbd4489f7f75cb8f68bb538670740b
+retroactive: false
+topic: PostgreSQL MVCC bloat - dead tuple, thu hồi bị trì hoãn, và mốc nước cao nhất
+domain: database
+source_modified_at: 2026-08-25T10:15:13.941Z
+notes:
+  - package carries no `revision` field, so revision is not expressible in this
+    contract — only content identity is. source_sha256 is what identifies these
+    bytes.
+  - "source_git_commit: source is not in a git working tree"

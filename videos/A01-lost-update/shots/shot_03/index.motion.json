@@ -1,0 +1,32 @@
+{
+  "duration": 13,
+  "assertions": [
+    {
+      "kind": "appearsBy",
+      "selector": "#ev-a_read",
+      "bySec": 2.594
+    },
+    {
+      "kind": "appearsBy",
+      "selector": "#ev-a_write",
+      "bySec": 10.241
+    },
+    {
+      "kind": "before",
+      "a": "#ev-a_read",
+      "b": "#ev-a_write"
+    },
+    {
+      "kind": "staysInFrame",
+      "selector": "#sql-select"
+    },
+    {
+      "kind": "staysInFrame",
+      "selector": "#sql-update"
+    },
+    {
+      "kind": "keepsMoving",
+      "withinSelector": "#stage"
+    }
+  ]
+}

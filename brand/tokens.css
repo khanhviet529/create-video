@@ -1,0 +1,66 @@
+/* @brand:start  ——  canonical source: brand/tokens.css · sync with `node tools/brand.mjs`
+   Brand is typography, colour SEMANTICS, stroke language and motion timing.
+   Brand is NOT geometry. Nothing here positions anything. */
+:root {
+  /* ground — near-black with a trace of warm ink, so off-white reads as printed */
+  --ground:      #0C0D0F;
+  --ground-lift: #14161A;   /* the only permitted "panel" value, used sparingly */
+
+  /* ink */
+  --ink:      #EDEAE4;      /* primary. warm off-white, never #FFF */
+  --ink-mid:  #9AA0A6;
+  --ink-dim:  #8B9198;   /* raised from #6E7378: 3.8:1 failed AA on this ground */
+  --ink-ghost:#3A3E42;
+
+  /* structure — hairlines and rules carry the layout, not boxes */
+  --rule:       #23272A;
+  --rule-bright:#3D4348;
+  --hair: 1.5px;
+
+  /* COLOUR IS SEMANTIC. Each of these means one thing for the whole channel. */
+  --authoritative: #C9A227;  /* the value of record — the committed truth */
+  --stale:         #E0533D;  /* derived from a value that has since changed */
+  --lost:          #6A6F74;  /* work that was discarded — 3.6:1, recessive but legible */
+  --boundary:      #4E8C7D;  /* a trust / ownership / tenancy edge */
+  --pressure:      #B4623A;  /* accumulation, backlog, amplification */
+  --counterfactual:#7A8086;  /* the value that SHOULD have existed — expected vs actual */
+
+  /* type — two families, one voice. Values are monospace because they are data. */
+  --font-value: "IBM Plex Mono", ui-monospace, monospace;
+  --font-label: "IBM Plex Sans Condensed", "IBM Plex Sans", system-ui, sans-serif;
+
+  --t-hero:  200px;  /* a number that is the subject of the frame */
+  --t-value:  64px;
+  --t-body:   36px;
+  --t-label:  26px;  /* floor for a phone. nothing smaller ships. */
+  --track-label: 0.18em;
+
+  /* motion personality: fast attack, long settle. nothing bounces, nothing glows. */
+  --e-reveal: power3.out;
+  --e-travel: power2.inOut;
+  --d-reveal: 0.45;
+  --d-travel: 0.9;
+  --d-hold:   0.8;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  overflow: hidden;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--font-label);
+  /* no border-radius anywhere by default; no box-shadow; no filter: blur/glow */
+}
+
+.label {
+  font-family: var(--font-label);
+  font-size: var(--t-label);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  font-weight: 500;
+}
+.value { font-family: var(--font-value); font-variant-numeric: tabular-nums; font-weight: 600; }
+.rule  { background: var(--rule); }
+/* @brand:end */

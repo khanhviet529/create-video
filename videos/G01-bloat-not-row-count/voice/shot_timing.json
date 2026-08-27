@@ -1,0 +1,323 @@
+{
+  "built_from_audio_sha256": "162f70eb6401e6c63941bca90342247ebc0abbf5d1d17b15c4056094f2c80cf7",
+  "built_from_profile_id": "a666ed5a",
+  "speech_total": 156.69,
+  "shots": {
+    "ch01-quan-sat": {
+      "shot_start": 0,
+      "duration": 10,
+      "speech": 8.19,
+      "hold_at_end": 1.81,
+      "beats": [
+        {
+          "seg": 1,
+          "start": 0,
+          "duration": 3.61,
+          "text": "Bảng đơn hàng của bạn có một triệu dòng. Sáu thá"
+        },
+        {
+          "seg": 2,
+          "start": 3.61,
+          "duration": 2.36,
+          "text": "Dung lượng thì tăng đều suốt sáu tháng đó."
+        },
+        {
+          "seg": 3,
+          "start": 5.97,
+          "duration": 2.22,
+          "text": "Số dòng đứng yên. Chỗ nó chiếm thì không."
+        }
+      ]
+    },
+    "ch02-co-che-ghi": {
+      "shot_start": 10,
+      "duration": 29,
+      "speech": 27.65,
+      "hold_at_end": 1.35,
+      "beats": [
+        {
+          "seg": 4,
+          "start": 0,
+          "duration": 5.74,
+          "text": "Tua lại sáu tháng vừa rồi. Mỗi đơn hàng bị UPDAT"
+        },
+        {
+          "seg": 5,
+          "start": 5.74,
+          "duration": 2.69,
+          "text": "Và UPDATE trong Postgres không sửa dòng tại chỗ."
+        },
+        {
+          "seg": 6,
+          "start": 8.43,
+          "duration": 3.8,
+          "text": "Nó ghi một phiên bản mới của dòng đó, rồi đánh d"
+        },
+        {
+          "seg": 7,
+          "start": 12.23,
+          "duration": 5.93,
+          "text": "Doc Postgres nói rõ vì sao. Phiên bản cũ không đ"
+        },
+        {
+          "seg": 8,
+          "start": 18.16,
+          "duration": 6.16,
+          "text": "Đó không phải Postgres lười. Đó là điều kiện để "
+        },
+        {
+          "seg": 9,
+          "start": 24.32,
+          "duration": 3.33,
+          "text": "Nên sau mỗi lần UPDATE, bảng có thêm một phiên b"
+        }
+      ]
+    },
+    "ch03-nguong": {
+      "shot_start": 39,
+      "duration": 15,
+      "speech": 13.49,
+      "hold_at_end": 1.51,
+      "beats": [
+        {
+          "seg": 10,
+          "start": 0,
+          "duration": 3.42,
+          "text": "Postgres có autovacuum để dọn chúng. Nhưng nó kh"
+        },
+        {
+          "seg": 11,
+          "start": 3.42,
+          "duration": 4.25,
+          "text": "Mặc định, autovacuum đợi tới khi số dòng chết đạ"
+        },
+        {
+          "seg": 12,
+          "start": 7.67,
+          "duration": 5.82,
+          "text": "Bảng một triệu dòng thì đó là khoảng hai trăm ng"
+        }
+      ]
+    },
+    "ch04-cu-lat": {
+      "shot_start": 54,
+      "duration": 16,
+      "speech": 14.69,
+      "hold_at_end": 1.31,
+      "beats": [
+        {
+          "seg": 13,
+          "start": 0,
+          "duration": 4.11,
+          "text": "Rồi autovacuum tới lượt, và chạy VACUUM trên bản"
+        },
+        {
+          "seg": 14,
+          "start": 4.11,
+          "duration": 3.24,
+          "text": "VACUUM có dọn phiên bản chết thật. Số dòng chết "
+        },
+        {
+          "seg": 15,
+          "start": 7.35,
+          "duration": 5.38,
+          "text": "Nhưng nó không trả chỗ đó về cho hệ điều hành. N"
+        },
+        {
+          "seg": 16,
+          "start": 12.73,
+          "duration": 1.96,
+          "text": "File không nhỏ đi một byte."
+        }
+      ]
+    },
+    "ch05-doc-lai-con-so": {
+      "shot_start": 70,
+      "duration": 16,
+      "speech": 13.17,
+      "hold_at_end": 2.83,
+      "beats": [
+        {
+          "seg": 17,
+          "start": 0,
+          "duration": 3.27,
+          "text": "Kích thước file không đo lượng dữ liệu đang sống"
+        },
+        {
+          "seg": 18,
+          "start": 3.27,
+          "duration": 4.35,
+          "text": "Nó là mốc nước cao nhất. Là lượng dữ liệu đồng t"
+        },
+        {
+          "seg": 19,
+          "start": 7.62,
+          "duration": 1.85,
+          "text": "Mốc nước thì chỉ đi lên."
+        },
+        {
+          "seg": 20,
+          "start": 9.47,
+          "duration": 3.7,
+          "text": "Chênh lệch giữa chỗ file chiếm và chỗ dữ liệu số"
+        }
+      ]
+    },
+    "ch06-on-dinh": {
+      "shot_start": 86,
+      "duration": 8,
+      "speech": 6.71,
+      "hold_at_end": 1.29,
+      "beats": [
+        {
+          "seg": 21,
+          "start": 0,
+          "duration": 3.55,
+          "text": "Có một tin tốt ở đây. Chỗ trống bên trong được t"
+        },
+        {
+          "seg": 22,
+          "start": 3.55,
+          "duration": 3.16,
+          "text": "Nên bảng ở trạng thái ổn định thì ngừng lớn. Nó "
+        }
+      ]
+    },
+    "ch07-cach-sua": {
+      "shot_start": 94,
+      "duration": 26,
+      "speech": 24.73,
+      "hold_at_end": 1.27,
+      "beats": [
+        {
+          "seg": 23,
+          "start": 0,
+          "duration": 2.82,
+          "text": "Cách sửa không phải chạy VACUUM tay cho thường x"
+        },
+        {
+          "seg": 24,
+          "start": 2.82,
+          "duration": 4.97,
+          "text": "Là hạ ngưỡng thu hồi cho riêng bảng nóng. Ví dụ "
+        },
+        {
+          "seg": 25,
+          "start": 7.79,
+          "duration": 6.23,
+          "text": "Số phiên bản chết sinh ra không giảm đi. File vẫ"
+        },
+        {
+          "seg": 26,
+          "start": 14.02,
+          "duration": 4.92,
+          "text": "Cái được là mốc nước bị giữ thấp. Chỗ chết được "
+        },
+        {
+          "seg": 27,
+          "start": 18.94,
+          "duration": 5.79,
+          "text": "Đổi lấy chuyện đó, autovacuum chạy thường hơn và"
+        }
+      ]
+    },
+    "ch08-vacuum-vo-ich": {
+      "shot_start": 120,
+      "duration": 13,
+      "speech": 10.84,
+      "hold_at_end": 2.16,
+      "beats": [
+        {
+          "seg": 28,
+          "start": 0,
+          "duration": 1.48,
+          "text": "Còn một trường hợp riêng phải biết."
+        },
+        {
+          "seg": 29,
+          "start": 1.48,
+          "duration": 5.02,
+          "text": "Nếu có một transaction mở rất lâu, autovacuum vẫ"
+        },
+        {
+          "seg": 30,
+          "start": 6.5,
+          "duration": 4.34,
+          "text": "Vì những phiên bản chết sinh ra sau khi nó bắt đ"
+        }
+      ]
+    },
+    "ch09-viet-lai": {
+      "shot_start": 133,
+      "duration": 14,
+      "speech": 12.87,
+      "hold_at_end": 1.13,
+      "beats": [
+        {
+          "seg": 31,
+          "start": 0,
+          "duration": 4.06,
+          "text": "Muốn file thật sự nhỏ lại thì phải viết lại cả b"
+        },
+        {
+          "seg": 32,
+          "start": 4.06,
+          "duration": 6.4,
+          "text": "Nhưng nó khoá bảng ở mức cao nhất suốt thời gian"
+        },
+        {
+          "seg": 33,
+          "start": 10.46,
+          "duration": 2.41,
+          "text": "Lúc đĩa gần đầy chính là lúc khó chạy nó nhất."
+        }
+      ]
+    },
+    "ch10-cong-cu-do": {
+      "shot_start": 147,
+      "duration": 22,
+      "speech": 20.73,
+      "hold_at_end": 1.27,
+      "beats": [
+        {
+          "seg": 34,
+          "start": 0,
+          "duration": 5.9,
+          "text": "Muốn biết mình đang ở đâu thì nhìn hai cột trong"
+        },
+        {
+          "seg": 35,
+          "start": 5.9,
+          "duration": 4.74,
+          "text": "Dòng chết cao kèm lần dọn gần nhất đã cũ, nghĩa "
+        },
+        {
+          "seg": 36,
+          "start": 10.64,
+          "duration": 5.92,
+          "text": "Nhưng dòng chết bằng không thì không chứng minh "
+        },
+        {
+          "seg": 37,
+          "start": 16.56,
+          "duration": 4.17,
+          "text": "Và bảng lớn cũng không chứng minh bloat. Bloat l"
+        }
+      ]
+    },
+    "ch11-cau-hoi": {
+      "shot_start": 169,
+      "duration": 6.5,
+      "speech": 3.62,
+      "hold_at_end": 2.88,
+      "beats": [
+        {
+          "seg": 38,
+          "start": 0,
+          "duration": 3.62,
+          "text": "Trong database của bạn, bảng nào có số dòng đứng"
+        }
+      ]
+    }
+  }
+}

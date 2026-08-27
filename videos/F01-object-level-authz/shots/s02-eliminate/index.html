@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=1920" />
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+/* @brand:start */
+:root {
+  --ground: #0C0D0F; --ground-lift: #14161A;
+  --ink: #EDEAE4; --ink-mid: #9AA0A6; --ink-dim: #8B9198; --ink-ghost: #3A3E42;
+  --rule: #23272A; --rule-bright: #3D4348; --hair: 1.5px;
+  --authoritative: #C9A227; --stale: #E0533D; --lost: #6A6F74;
+  --boundary: #4E8C7D; --pressure: #B4623A; --counterfactual: #7A8086;
+  --font-value: "IBM Plex Mono", ui-monospace, monospace;
+  --font-label: "IBM Plex Sans Condensed", "IBM Plex Sans", system-ui, sans-serif;
+  --t-hero: 200px; --t-value: 64px; --t-body: 36px; --t-label: 26px; --track-label: 0.18em;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { overflow: hidden; background: var(--ground); color: var(--ink); font-family: var(--font-label); }
+.label { font-family: var(--font-label); font-size: var(--t-label); letter-spacing: var(--track-label);
+         text-transform: uppercase; color: var(--ink-dim); font-weight: 500; }
+/* @brand:end */
+
+html, body { width: 1080px; height: 1920px; }
+#stage { position: absolute; inset: 0; }
+.mono { position: absolute; font-family: var(--font-value); line-height: 1; white-space: pre; }
+.sans { position: absolute; font-family: var(--font-label); letter-spacing: 0.01em; font-weight: 600; }
+.kill { position: absolute; height: 3px; background: var(--lost); width: 0; }
+
+/* ---------------------------------------------------------------------------
+   s02-eliminate — THREE EXPLANATIONS DIE ON ONE FACT. narrowing by CONVERGENCE.
+   The set being narrowed is a set of competing explanations, so the operation is
+   convergence: candidates spread across a wide field, then the survivor occupies what they
+   vacated. Distinct from the other four narrowing shots — see narrowing_object in the plan.
+   Each hypothesis arrives struck. It is not eliminated after standing; the fact was already
+   there.
+--------------------------------------------------------------------------- */
+.ev   { font-size: 36px; color: var(--ink-mid); }
+.ev em { font-style: normal; color: var(--boundary); font-weight: 600; }
+.hyp  { font-size: 32px; color: var(--lost); }
+#lbl  { position: absolute; left: 93px; top: 250px; }
+#surv { left: 93px; top: 1250px; width: 894px; font-size: 48px; color: var(--stale); }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="9.5"
+     data-width="1080" data-height="1920">
+  <div id="stage" class="clip" data-start="0" data-duration="9.5" data-track-index="0">
+    <div id="lbl" class="label">ba giả thuyết bị loại</div>
+
+    <div class="mono hyp" id="h1" data-layout-allow-occlusion style="left:300px;top:368px">xác thực hỏng</div>
+    <div class="kill" id="k1" style="left:295px;top:384px"></div>
+    <div class="mono ev"  id="e1a" style="left:300px;top:430px">token cũ hết hạn từ lâu</div>
+    <div class="mono ev"  id="e1b" style="left:300px;top:482px">đăng nhập bằng tài khoản hiện tại</div>
+
+    <div class="mono hyp" id="h2" data-layout-allow-occlusion style="left:180px;top:698px">dữ liệu membership sai</div>
+    <div class="kill" id="k2" style="left:175px;top:714px"></div>
+    <div class="mono ev"  id="e2" style="left:180px;top:760px">membership đã bị xoá thật</div>
+
+    <div class="mono hyp" id="h3" data-layout-allow-occlusion style="left:500px;top:1018px">quyền chưa thu hồi</div>
+    <div class="kill" id="k3" style="left:495px;top:1034px"></div>
+    <div class="mono ev"  id="e3" style="left:500px;top:1080px">GET /documents/d41 &rarr; <em>403</em></div>
+
+    <div class="sans" id="surv">chỉ có một đường khác không trả 403</div>
+  </div>
+</div>
+
+<script>
+window.__timelines = window.__timelines || {};
+const tl = gsap.timeline({ paused: true });
+const R = 'power3.out', T = 'power2.inOut';
+/* evidence is carried in from s02-guess at identical coordinates and is visible at t=0 */
+gsap.set(['#lbl','#h1','#h2','#h3','#surv'], { opacity: 0 });
+tl.to('#lbl', { opacity: 1, duration: .35, ease: R }, 0.30);
+/* each hypothesis appears already struck — the fact preceded it */
+/* strike widths are the rendered widths: mono advance is exactly 0.6em, so at 27px a
+   13-character line is 211px. Measured, not eyeballed. */
+[['#h1','#k1',258],['#h2','#k2',430],['#h3','#k3',352]].forEach(([h,k,w],i) => {
+  const t = 1.90 + i * 1.25;
+  tl.to(h, { opacity: 1, duration: .25, ease: R }, t)
+    .to(k, { width: w, duration: .32, ease: T }, t + .10);
+});
+/* 5.20 — everything clears; the footprint collapses */
+tl.to(['#e1a','#e1b','#e2','#e3','#h1','#h2','#h3','#k1','#k2','#k3','#lbl'],
+      { opacity: 0, duration: .55, ease: 'power2.in' }, 5.20);
+/* beat 2 — the survivor takes the vacated field, low */
+tl.to('#surv', { opacity: 1, duration: .5, ease: R }, 5.95);
+window.__timelines['main'] = tl;
+</script>
+</body>
+</html>

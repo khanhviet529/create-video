@@ -1,0 +1,8 @@
+file 'D:/creative-video/videos/E01-not-sargable/shots/shot_01/render.mp4'
+file 'D:/creative-video/videos/E01-not-sargable/shots/shot_02/render.mp4'
+file 'D:/creative-video/videos/E01-not-sargable/shots/shot_03/render.mp4'
+file 'D:/creative-video/videos/E01-not-sargable/shots/shot_04/render.mp4'
+file 'D:/creative-video/videos/E01-not-sargable/shots/shot_06/render.mp4'
+file 'D:/creative-video/videos/E01-not-sargable/shots/shot_07/render.mp4'
+file 'D:/creative-video/videos/E01-not-sargable/shots/shot_08/render.mp4'
+file 'D:/creative-video/videos/E01-not-sargable/shots/shot_09/render.mp4'

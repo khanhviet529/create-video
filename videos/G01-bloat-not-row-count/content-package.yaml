@@ -1,0 +1,510 @@
+schema_version: 1
+id: "006"
+topic: "PostgreSQL MVCC bloat - dead tuple, thu hồi bị trì hoãn, và mốc nước cao nhất"
+domain: database
+audience: "vietnamese software engineers, 2-5+ years"
+
+format:
+  kind: tiktok
+  recommended_duration_sec: 157
+  minimum_duration_sec: 130
+  reason_for_duration: >-
+    Topic này không có sự cố nên không có cú hích nào kéo người xem đi giúp - mọi thứ phải
+    do chuỗi nhân quả tự kéo. Bốn thứ không nén được. Một, phải tách bạch "chưa được thu hồi"
+    với "đã thu hồi nhưng không trả về hệ điều hành"; gộp hai cái là dạy sai cả bài. Hai,
+    điều kiện thu hồi cần một beat riêng - ngưỡng hai mươi phần trăm và quy nó ra hai trăm
+    nghìn dòng - vì thiếu nó thì việc bảng phải mang chỗ dư trở thành vô lý. Ba, khoảnh khắc
+    lật cần ba beat liền: dọn thật, không trả về OS, file không đổi; bỏ beat giữa là dạy
+    ngược hoàn toàn. Bốn, VACUUM FULL không được nhắc mà không kèm giá của nó, nếu không
+    video vừa dạy người ta khoá bảng production. Dưới 130 giây là mất một trong bốn. Bản
+    cuối ra 157 giây và không có beat nào được kéo dài cho đủ.
+
+why_this_matters: >-
+  Đây là loại vấn đề không bao giờ có một khoảnh khắc hỏng để cảnh báo. Không exception,
+  không alert, không ai trực đêm bị gọi dậy. Chỉ có một con số lớn dần trong nhiều tháng, và
+  bốn cách giải thích sai phổ biến tới mức chúng thường được dùng để trấn an nhau.
+
+core_claim: "Kích thước file của một bảng Postgres là mốc nước cao nhất nó từng cần, không phải phép đo dữ liệu đang sống trong đó."
+
+viewer_should_understand: >-
+  VACUUM làm chỗ chết thành chỗ dùng lại được bên trong bảng, chứ không trả chỗ về hệ điều
+  hành - nên bảng ngừng lớn chứ không nhỏ lại.
+
+assumptions:
+  - "PostgreSQL với cấu hình autovacuum mặc định"
+  - "Một bảng bị UPDATE nhiều lần trên cùng những dòng - bảng trạng thái, bảng đếm, bảng session"
+  - "Số dòng sống gần như đứng yên: mỗi UPDATE không thêm dòng mới về mặt nghiệp vụ"
+  - "Kịch bản dùng cỡ một triệu dòng và khoảng thời gian sáu tháng - hai con số này là tham số kịch bản, không phải số đo"
+  - "Không chạy VACUUM FULL trong khoảng thời gian đó"
+  - "Không có transaction mở rất lâu - trường hợp có được nói riêng ở một beat trong narration"
+
+technical_truth:
+  mechanism_summary: >-
+    Mỗi UPDATE ghi một phiên bản mới của dòng và đánh dấu phiên bản cũ là đã chết. Phiên bản
+    chết không được xoá chừng nào nó còn có thể nhìn thấy được với một transaction khác - đó
+    là điều kiện để MVCC hoạt động. Autovacuum chỉ dọn khi số dòng chết đạt ngưỡng, mặc định
+    là hai mươi phần trăm số dòng của bảng. Khi dọn, nó đánh dấu chỗ đó dùng lại được BÊN
+    TRONG bảng chứ không trả về hệ điều hành. Kết quả: file lớn lên theo lượng dữ liệu đồng
+    thời lớn nhất bảng từng phải chứa, rồi đứng yên ở đó.
+  invariant_broken: "Kích thước file tỉ lệ với lượng dữ liệu đang sống, và dọn dữ liệu chết thì dung lượng giảm"
+  primary_fix: >-
+    Hạ ngưỡng thu hồi cho riêng bảng nóng bằng storage parameter per-table - ví dụ đặt
+    autovacuum_vacuum_scale_factor xuống 0.02 thay vì mặc định 0.2. Thu hồi xảy ra sớm hơn,
+    nên chỗ chết được tái dùng trước khi bảng phải xin thêm chỗ mới từ hệ điều hành.
+  fix_unchanged: >-
+    Số phiên bản chết sinh ra không giảm đi chút nào - mỗi UPDATE vẫn tạo một phiên bản mới.
+    File vẫn không bao giờ tự nhỏ lại. Câu query, lược đồ, code ứng dụng, và mọi thứ ở tầng
+    nghiệp vụ đều giữ nguyên. Đây KHÔNG phải cách lấy lại chỗ đã mất.
+  fix_enables: >-
+    Mốc nước cao nhất bị giữ thấp ngay từ đầu. Đó là điều duy nhất thật sự kiểm soát được,
+    vì mốc nước một khi đã lên thì chỉ có viết lại cả bảng mới hạ được.
+  fix_tradeoff: >-
+    Autovacuum chạy thường xuyên hơn nên tốn I/O và CPU đều hơn, và trên bảng gần như chỉ
+    INSERT thì đó là công quét vô ích. Với bảng rất lớn, hai phần trăm vẫn là rất nhiều dòng
+    nhưng tần suất quét tăng đáng kể - con số phải chỉnh theo từng bảng chứ không có giá trị
+    đúng cho mọi nơi.
+  detection:
+    signal: >-
+      Trong pg_stat_user_tables, đọc n_dead_tup cùng với last_autovacuum. Dòng chết cao KÈM
+      lần autovacuum gần nhất đã cũ nghĩa là thu hồi không theo kịp, hoặc đang bị chặn.
+    interpretation: >-
+      Cặp tín hiệu đó thu hẹp về hai khả năng: autovacuum không đủ tần suất cho nhịp ghi của
+      bảng, hoặc có một transaction mở lâu đang giữ chân toàn bộ. Phân biệt hai cái bằng cách
+      kiểm age(backend_xmin) trong pg_stat_activity.
+    false_positives:
+      - "Autovacuum vừa bị hoãn vì đang bận bảng khác"
+      - "Bảng vừa qua một đợt ghi lớn và ngưỡng hai mươi phần trăm chưa tới"
+      - "Bảng đơn giản là lớn thật, không có bloat nào"
+      - "Một transaction mở lâu đang chặn, và đó là vấn đề khác với autovacuum yếu"
+    does_not_prove: >-
+      n_dead_tup cao KHÔNG chứng minh bảng đang bloat - có thể autovacuum sắp chạy và chỗ đó
+      sắp được tái dùng. Quan trọng hơn và hay bị nhầm nhất: n_dead_tup bằng 0 KHÔNG chứng
+      minh không bloat, nó chỉ nói vừa dọn xong, còn file vẫn giữ nguyên mốc nước cao nhất từ
+      trước. Bảng lớn KHÔNG chứng minh bloat, vì bloat là chênh lệch chứ không phải kích
+      thước. Và last_autovacuum mới KHÔNG chứng minh vacuum đã thu hồi được gì - nếu có
+      transaction cũ chặn thì nó chạy xong mà không dọn được.
+  alternatives:
+    - name: "Giảm tốc độ sinh phiên bản chết"
+      solves: "chạm vào chính nguồn của sự tích tụ - ít thứ phải thu hồi thì autovacuum mặc định đủ dùng"
+      cost: "đổi lược đồ hoặc đổi cách ứng dụng ghi - đắt nhất trong bốn cách"
+      not_equivalent_because: >-
+        Đây là cách duy nhất làm giảm TỔNG lượng việc. Ba cách kia chỉ đổi thời điểm hoặc
+        điều kiện thu hồi. Không hợp khi nhịp cập nhật là bản chất của nghiệp vụ.
+    - name: "Kết thúc transaction mở lâu"
+      solves: >-
+        chạm vào điều kiện còn-nhìn-thấy-được. Đây là cách DUY NHẤT xử lý được trường hợp
+        autovacuum vẫn chạy, vẫn báo xong, mà số dòng chết không giảm.
+      cost: "ứng dụng phải không giữ transaction mở; tìm bằng age(backend_xmin) trong pg_stat_activity"
+      not_equivalent_because: >-
+        Nó đổi cái mà vacuum ĐƯỢC PHÉP thu hồi, không đổi lịch chạy. Hạ ngưỡng không cứu được
+        trường hợp này - vacuum sẽ chỉ chạy thường xuyên hơn mà vẫn không dọn được gì. Không
+        hợp khi có workload cần snapshot lâu chính đáng như báo cáo dài hay logical replication.
+    - name: "VACUUM FULL để trả chỗ về hệ điều hành"
+      solves: "chạm vào chính mốc nước - đây là cách duy nhất làm file thật sự nhỏ lại"
+      cost: >-
+        Cần ACCESS EXCLUSIVE lock trên bảng suốt thời gian chạy. Và cần THÊM đĩa, vì nó viết
+        một bản sao mới và không thả bản cũ cho tới khi xong.
+      not_equivalent_because: >-
+        Nó không đụng gì tới nguyên nhân - bảng sẽ lớn lại đúng như cũ. Đây là thao tác cho
+        cửa sổ bảo trì. Trớ trêu: lúc đĩa gần đầy chính là lúc khó chạy nó nhất, vì nó cần
+        thêm đĩa.
+  edge_cases:
+    - "Bảng gần như chỉ INSERT: hầu như không sinh phiên bản chết, hiện tượng không xảy ra."
+    - "Ngoại lệ trong doc: nếu một hoặc vài trang ở CUỐI bảng trống hẳn VÀ lấy được exclusive lock dễ dàng, thì VACUUM thường CÓ trả chỗ về hệ điều hành. Trên bảng đang chịu ghi liên tục thì cả hai điều kiện đều không thoả."
+    - "Index phình theo cùng cơ chế, và một index phình có thể nặng hơn cả bảng. Video giới hạn ở bảng."
+    - "DELETE hàng loạt rồi không ghi lại: chỗ trống được đánh dấu tái dùng nhưng không có gì ghi vào, nên file cứ to mãi."
+    - "Bảng nhỏ: ngưỡng 50 dòng chi phối chứ không phải 20%, nên bảng nhỏ được dọn rất thường xuyên."
+    - "Bảng cực lớn: trần autovacuum_vacuum_max_threshold mặc định 100 triệu dòng chi phối, nên tỉ lệ dòng chết cần thiết thấp hơn 20%."
+    - "Wraparound: doc nêu đây là lý do thứ hai VACUUM tồn tại. Cơ chế riêng, hệ quả riêng, không nằm trong video này."
+
+story:
+  incident: >-
+    Bảng đơn hàng có một triệu dòng. Sáu tháng trước cũng khoảng một triệu. Dung lượng thì
+    tăng đều suốt sáu tháng đó. Số dòng đứng yên, chỗ nó chiếm thì không.
+  evidence: >-
+    Autovacuum vẫn chạy bình thường và số dòng chết vẫn về gần không sau mỗi lần. Kích thước
+    file thì không giảm một byte nào sau bất kỳ lần dọn nào.
+  mechanism:
+    - "Trạng thái ban đầu: bảng có một triệu dòng sống, file chiếm đúng chỗ chừng ấy dòng cần"
+    - "Trong sáu tháng, mỗi đơn hàng bị UPDATE vài lần - đổi trạng thái, gắn mã vận đơn, cập nhật thời gian giao"
+    - "UPDATE không sửa dòng tại chỗ: nó ghi một phiên bản mới rồi đánh dấu phiên bản cũ là đã chết - đây là nguyên nhân"
+    - "Phiên bản chết không được xoá chừng nào nó còn có thể nhìn thấy được với một transaction khác, vì đó là điều kiện để MVCC hoạt động - đây là điều kiện thường trực, không phải nguyên nhân"
+    - "Số dòng sống không đổi, nhưng số phiên bản tồn tại vật lý trong file thì tăng"
+    - "Autovacuum có dọn, nhưng chỉ khi số dòng chết đạt ngưỡng - mặc định là hai mươi phần trăm số dòng của bảng, tức khoảng hai trăm nghìn phiên bản chết với bảng này"
+    - "Autovacuum tới lượt và chạy VACUUM: nó dọn phiên bản chết thật, số dòng chết về gần không"
+    - "Nhưng VACUUM đánh dấu chỗ đó là dùng lại được BÊN TRONG bảng, không trả về hệ điều hành - nên file không nhỏ đi một byte"
+    - "Chỗ trống bên trong được tái dùng cho lần ghi sau, nên bảng đạt trạng thái ổn định: ngừng lớn, nhưng không nhỏ lại"
+  aha:
+    viewer_thinks: "Kích thước file đo lượng dữ liệu đang sống trong bảng."
+    actually: >-
+      Nó là mốc nước cao nhất - lượng dữ liệu đồng thời lớn nhất mà bảng từng phải chứa. Mốc
+      nước thì chỉ đi lên.
+  concept_name: "bloat - chênh lệch giữa chỗ file chiếm và chỗ dữ liệu sống cần"
+  fix: >-
+    Hạ ngưỡng thu hồi cho riêng bảng nóng, ví dụ đặt scale factor xuống hai phần trăm thay vì
+    hai mươi. Thu hồi sớm hơn thì mốc nước bị giữ thấp.
+  tradeoff: >-
+    Autovacuum chạy thường hơn và tốn I/O đều hơn. Với bảng gần như chỉ INSERT thì đó là công
+    cốc. Và nó không lấy lại được chỗ đã mất - muốn thế phải viết lại cả bảng bằng VACUUM
+    FULL, thứ khoá bảng ở mức cao nhất và còn cần thêm đĩa.
+  detection: >-
+    Nhìn n_dead_tup cùng last_autovacuum trong pg_stat_user_tables. Dòng chết cao kèm lần dọn
+    gần nhất đã cũ nghĩa là thu hồi không theo kịp hoặc đang bị chặn. Nhưng dòng chết bằng
+    không không chứng minh bảng không bloat - nó chỉ nói vừa dọn xong.
+  ending_question: "Trong database của bạn, bảng nào có số dòng đứng yên mà dung lượng vẫn tăng?"
+
+semantic_model:
+  entities:
+    - id: app
+      type: client
+      label: "Ứng dụng cập nhật trạng thái đơn hàng"
+    - id: orders_table
+      type: datastore
+      label: "Bảng đơn hàng, một triệu dòng sống"
+    - id: table_file
+      type: component
+      label: "File trên đĩa mà bảng đang chiếm"
+    - id: autovacuum
+      type: process
+      label: "Tiến trình autovacuum của Postgres"
+    - id: open_txn
+      type: process
+      label: "Transaction mở lâu - nhánh riêng, không thuộc kịch bản chính"
+
+  states:
+    - entity: orders_table
+      field: live_rows
+      initial: 1000000
+      timeline: [1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000]
+    - entity: orders_table
+      field: dead_versions
+      initial: "0"
+      timeline: ["0", "0", "0", "tăng dần", "tăng dần", "bị giữ lại vì còn nhìn thấy được", "gần 0", "gần 0", "dao động dưới ngưỡng"]
+    - entity: table_file
+      field: size_relative_to_live_data
+      initial: "vừa đủ"
+      timeline: ["vừa đủ", "vừa đủ", "vừa đủ", "đang tăng", "đang tăng", "đang tăng", "đang tăng", "không đổi sau khi dọn", "đứng yên ở mốc cao nhất"]
+
+  events:
+    - id: e1
+      t: 0
+      role: precondition
+      actor: orders_table
+      action: retain_versions_while_visible
+      detail: >-
+        MVCC: một phiên bản dòng không được xoá chừng nào nó còn có thể nhìn thấy được với
+        một transaction khác. Luôn đúng, kể cả khi không có bloat. Bỏ nó thì cơ chế không tồn
+        tại, nhưng bản thân nó không gây ra bloat.
+      causes: []
+    - id: e2
+      t: 0
+      role: precondition
+      actor: autovacuum
+      action: wait_for_threshold
+      target: orders_table
+      detail: >-
+        Ngưỡng mặc định là 50 dòng cộng 20 phần trăm số dòng của bảng. Với một triệu dòng thì
+        là khoảng hai trăm nghìn. Đây là một hằng số cấu hình - nó ĐỊNH CỠ sự tích tụ chứ
+        không tạo ra nó.
+      causes: []
+    - id: e3
+      t: 1
+      role: primary_cause
+      actor: app
+      action: update_rows_repeatedly
+      target: orders_table
+      detail: >-
+        Mỗi UPDATE ghi một phiên bản mới của dòng và đánh dấu phiên bản cũ là đã chết. Bỏ
+        hành động này ra thì không có gì tích tụ.
+      causes: [e4]
+    - id: e4
+      t: 2
+      role: consequence
+      actor: orders_table
+      action: accumulate_dead_versions
+      detail: "Số dòng sống không đổi. Số phiên bản tồn tại vật lý trong file thì tăng."
+      causes: [e5]
+    - id: e5
+      t: 3
+      role: consequence
+      actor: table_file
+      action: grow_to_hold_live_and_dead
+      detail: "File xin thêm chỗ từ hệ điều hành để chứa cả phiên bản sống lẫn phiên bản chết."
+      causes: [e8]
+    - id: e6
+      t: 4
+      role: supporting_evidence
+      actor: open_txn
+      action: hold_visibility_horizon
+      target: orders_table
+      detail: >-
+        Nhánh riêng: một transaction mở lâu giữ các phiên bản chết ở trạng thái còn nhìn thấy
+        được với nó. Autovacuum vẫn chạy, vẫn báo xong, và vẫn không thu hồi được gì. Đây
+        giải thích trường hợp "vacuum chạy mà vô ích", không phải cơ chế chính.
+      causes: []
+    - id: e7
+      t: 5
+      role: mitigation
+      actor: autovacuum
+      action: remove_dead_versions_mark_reusable
+      target: orders_table
+      detail: >-
+        Dọn phiên bản chết thật, và đánh dấu chỗ đó là dùng lại được BÊN TRONG bảng. Không
+        trả chỗ về hệ điều hành.
+      causes: [e8]
+    - id: e8
+      t: 6
+      role: invariant_violation
+      actor: table_file
+      action: retain_size_after_reclaim
+      detail: >-
+        Số dòng chết về gần không, kích thước file không đổi. Kỳ vọng bị phá là "dọn dữ liệu
+        chết thì dung lượng trên đĩa giảm".
+      causes: []
+    - id: e9
+      t: 7
+      role: consequence
+      actor: orders_table
+      action: reach_steady_state
+      detail: >-
+        Chỗ trống bên trong được tái dùng cho lần ghi sau, nên bảng ngừng lớn. Nó chỉ không
+        nhỏ lại.
+      causes: []
+
+  relationships:
+    - from: app
+      to: orders_table
+      kind: writes
+    - from: orders_table
+      to: table_file
+      kind: contains
+    - from: autovacuum
+      to: orders_table
+      kind: reads_writes
+    - from: open_txn
+      to: orders_table
+      kind: reads
+
+  invariants:
+    - id: size_tracks_live_data
+      statement: "Kích thước file tỉ lệ với lượng dữ liệu đang sống trong bảng"
+      holds_in_expected: true
+      violated_by: e5
+    - id: reclaim_returns_space
+      statement: "Dọn dữ liệu chết thì dung lượng trên đĩa giảm"
+      holds_in_expected: true
+      violated_by: e8
+
+  expected:
+    file_size_after_reclaim: "giảm về đúng chỗ dữ liệu sống cần"
+    dead_versions_after_reclaim: "gần 0"
+    size_trend_over_six_months: "đi ngang, vì số dòng sống đi ngang"
+  actual:
+    file_size_after_reclaim: "không đổi, giữ nguyên mốc nước cao nhất"
+    dead_versions_after_reclaim: "gần 0"
+    size_trend_over_six_months: "tăng rồi đứng yên, không bao giờ giảm"
+
+narration:
+  language: vi
+  syllable_count: 658
+  assumed_syllables_per_second: 4.2
+  estimated_duration_sec: 157
+  beat_count: 38
+  text: |
+    Bảng đơn hàng của bạn có một triệu dòng. Sáu tháng trước cũng khoảng một triệu.
+
+    Dung lượng thì tăng đều suốt sáu tháng đó.
+
+    Số dòng đứng yên. Chỗ nó chiếm thì không.
+
+    Tua lại sáu tháng vừa rồi. Mỗi đơn hàng bị UPDATE vài lần. Đổi trạng thái, gắn mã vận đơn, cập nhật thời gian giao.
+
+    Và UPDATE trong Postgres không sửa dòng tại chỗ.
+
+    Nó ghi một phiên bản mới của dòng đó, rồi đánh dấu phiên bản cũ là đã chết.
+
+    Doc Postgres nói rõ vì sao. Phiên bản cũ không được xoá chừng nào nó còn có thể nhìn thấy được với một transaction khác.
+
+    Đó không phải Postgres lười. Đó là điều kiện để một transaction đang chạy nhìn thấy dữ liệu nhất quán từ đầu tới cuối.
+
+    Nên sau mỗi lần UPDATE, bảng có thêm một phiên bản chết nằm lại.
+
+    Postgres có autovacuum để dọn chúng. Nhưng nó không chạy liên tục.
+
+    Mặc định, autovacuum đợi tới khi số dòng chết đạt hai mươi phần trăm số dòng của bảng.
+
+    Bảng một triệu dòng thì đó là khoảng hai trăm nghìn phiên bản chết. Bảng phải mang chừng ấy chỗ dư trước khi có ai đụng tới.
+
+    Rồi autovacuum tới lượt, và chạy VACUUM trên bảng đó. Đây là chỗ trực giác lệch.
+
+    VACUUM có dọn phiên bản chết thật. Số dòng chết về gần không.
+
+    Nhưng nó không trả chỗ đó về cho hệ điều hành. Nó đánh dấu chỗ đó là dùng lại được, bên trong chính bảng.
+
+    File không nhỏ đi một byte.
+
+    Kích thước file không đo lượng dữ liệu đang sống trong bảng.
+
+    Nó là mốc nước cao nhất. Là lượng dữ liệu đồng thời lớn nhất mà bảng từng phải chứa.
+
+    Mốc nước thì chỉ đi lên.
+
+    Chênh lệch giữa chỗ file chiếm và chỗ dữ liệu sống cần, cái đó gọi là bloat.
+
+    Có một tin tốt ở đây. Chỗ trống bên trong được tái dùng cho lần ghi sau.
+
+    Nên bảng ở trạng thái ổn định thì ngừng lớn. Nó chỉ không nhỏ lại.
+
+    Cách sửa không phải chạy VACUUM tay cho thường xuyên hơn.
+
+    Là hạ ngưỡng thu hồi cho riêng bảng nóng. Ví dụ đặt scale factor xuống hai phần trăm thay vì hai mươi.
+
+    Số phiên bản chết sinh ra không giảm đi. File vẫn không bao giờ tự nhỏ lại. Query, lược đồ, code ứng dụng đều giữ nguyên.
+
+    Cái được là mốc nước bị giữ thấp. Chỗ chết được tái dùng trước khi bảng phải xin thêm chỗ mới.
+
+    Đổi lấy chuyện đó, autovacuum chạy thường hơn và tốn I O đều hơn. Với bảng gần như chỉ INSERT thì đó là công cốc.
+
+    Còn một trường hợp riêng phải biết.
+
+    Nếu có một transaction mở rất lâu, autovacuum vẫn chạy, vẫn báo xong, và vẫn không dọn được gì.
+
+    Vì những phiên bản chết sinh ra sau khi nó bắt đầu thì với nó vẫn còn nhìn thấy được.
+
+    Muốn file thật sự nhỏ lại thì phải viết lại cả bảng. VACUUM FULL làm được chuyện đó.
+
+    Nhưng nó khoá bảng ở mức cao nhất suốt thời gian chạy. Và nó cần thêm đĩa, vì phải giữ cả bản cũ lẫn bản mới cho tới khi xong.
+
+    Lúc đĩa gần đầy chính là lúc khó chạy nó nhất.
+
+    Muốn biết mình đang ở đâu thì nhìn hai cột trong pg_stat_user_tables. Số dòng chết, và lần autovacuum gần nhất.
+
+    Dòng chết cao kèm lần dọn gần nhất đã cũ, nghĩa là thu hồi không theo kịp, hoặc đang bị chặn.
+
+    Nhưng dòng chết bằng không thì không chứng minh bảng không bloat. Nó chỉ nói vừa dọn xong. Mốc nước vẫn nằm nguyên đó.
+
+    Và bảng lớn cũng không chứng minh bloat. Bloat là chênh lệch, không phải kích thước.
+
+    Trong database của bạn, bảng nào có số dòng đứng yên mà dung lượng vẫn tăng?
+  inseparable:
+    - beats: [11, 12]
+      reason: >-
+        Beat 11 nêu ngưỡng hai mươi phần trăm. Beat 12 quy nó ra hai trăm nghìn phiên bản
+        chết cho bảng cụ thể này. Riêng beat 11 là một dòng cấu hình không có nghĩa với người
+        xem; riêng beat 12 thì con số hai trăm nghìn mất cơ sở. Cặp này là một đơn vị.
+    - beats: [14, 15, 16]
+      reason: >-
+        Cặp quan trọng nhất trong bài. Beat 14 nói VACUUM CÓ dọn phiên bản chết. Beat 15 nói
+        nó KHÔNG trả chỗ về hệ điều hành. Beat 16 là hệ quả quan sát được. Bỏ beat 15 là dạy
+        NGƯỢC HOÀN TOÀN - beat 14 đứng một mình dẫn thẳng tới kết luận "vậy file sẽ nhỏ lại",
+        đúng cái hiểu lầm cả video đang sửa.
+    - beats: [31, 32, 33]
+      reason: >-
+        Beat 31 nêu VACUUM FULL là cách duy nhất làm file nhỏ lại. Beat 32 và 33 nêu giá của
+        nó: khoá bảng ở mức cao nhất, và cần thêm đĩa đúng lúc đĩa đang thiếu. Bỏ beat 32
+        hoặc 33 là biến một thao tác khoá bảng production thành một lời khuyên vô hại.
+
+technical_notes:
+  - >-
+    Câu "file không nhỏ đi một byte" đúng TRONG PHẠM VI kịch bản. Doc Postgres nêu một ngoại
+    lệ: nếu một hoặc vài trang ở CUỐI bảng trống hẳn VÀ lấy được exclusive lock dễ dàng, thì
+    VACUUM thường CÓ trả chỗ về hệ điều hành. Trên bảng đang chịu ghi liên tục - đúng loại
+    bảng video đang nói - cả hai điều kiện đều không thoả.
+  - >-
+    Phân biệt "phiên bản chết" với "dòng chết". Doc dùng cả hai: "dead row versions" ở phần
+    vacuuming và "dead rows" trong mô tả n_dead_tup. Chúng chỉ cùng một thứ. Điểm dễ nhầm:
+    n_dead_tup KHÔNG đếm bản ghi nghiệp vụ đã bị xoá - nó đếm phiên bản dòng không còn nhìn
+    thấy được, mà phần lớn sinh ra từ UPDATE chứ không từ DELETE.
+  - >-
+    autovacuum và VACUUM là hai thứ khác nhau và narration nối chúng ở beat 13: autovacuum là
+    tiến trình nền, VACUUM là lệnh mà nó chạy. Không nối hai từ này là để phía sau tự hoà
+    giải hai thuật ngữ - đúng lỗi mà vòng feedback F01 chỉ ra.
+  - >-
+    Video chỉ nói một trong hai lý do VACUUM tồn tại. Lý do thứ hai là chống transaction ID
+    wraparound - cơ chế riêng, hệ quả riêng, và là một video khác. Cắt có chủ ý.
+  - >-
+    Con số hai phần trăm cho scale factor là khuyến nghị của người viết, không phải giá trị
+    trong doc. Narration nói rõ là "ví dụ". Giá trị đúng phải chỉnh theo từng bảng.
+  - >-
+    Video giới hạn ở bloat của BẢNG. Index phình theo cùng cơ chế và trong thực tế một index
+    phình có thể nặng hơn cả bảng.
+
+rejected_explanations:
+  - explanation: "Postgres không bao giờ xoá row"
+    reason: >-
+      Sai theo nghĩa đen, và là cách nói phổ biến nhất về topic này. VACUUM CÓ xoá phiên bản
+      chết. Dựng lại theo nghĩa đen thì người xem kết luận không có cách nào lấy lại chỗ, và
+      bỏ luôn việc chỉnh autovacuum. Cách nói đúng phạm vi: Postgres không xoá NGAY, và chỉ
+      xoá được khi phiên bản đó không còn nhìn thấy được với transaction nào.
+  - explanation: "Chạy VACUUM là file nhỏ lại"
+    reason: >-
+      Sai. VACUUM thường đánh dấu chỗ tái dùng được bên trong bảng, không trả về hệ điều hành.
+      Đây là hiểu lầm dẫn tới hành động sai rõ ràng nhất: người ta chạy VACUUM, nhìn dung
+      lượng không đổi, rồi kết luận VACUUM hỏng hoặc bảng có vấn đề nghiêm trọng hơn.
+  - explanation: "Bảng lớn nghĩa là bảng bị bloat"
+    reason: >-
+      Sai. Bloat là CHÊNH LỆCH giữa chỗ file chiếm và chỗ dữ liệu sống cần, không phải kích
+      thước tuyệt đối. Nhầm chỗ này dẫn tới chạy VACUUM FULL trên những bảng chỉ đơn giản là
+      có nhiều dữ liệu, tức là khoá bảng production để đổi lấy không gì cả.
+  - explanation: "n_dead_tup về 0 nghĩa là hết bloat"
+    reason: >-
+      Sai, và nguy hiểm nhất trong bốn cái vì nó tạo cảm giác an toàn ngay tại công cụ mà
+      người ta dùng để kiểm. n_dead_tup bằng 0 chỉ nói vừa dọn xong. Mốc nước cao nhất mà file
+      đã đạt tới thì vẫn nguyên. Cách nói đúng: muốn biết có bloat không thì so kích thước
+      file với chỗ mà n_live_tup cần, chứ không nhìn n_dead_tup.
+
+sources:
+  - title: "PostgreSQL - Routine Vacuuming"
+    url: "https://www.postgresql.org/docs/current/routine-vacuuming.html"
+    supports: >-
+      UPDATE/DELETE không xoá ngay phiên bản cũ, và lý do là MVCC với điều kiện còn-nhìn-thấy-được.
+      VACUUM thường không trả chỗ về hệ điều hành, trừ ngoại lệ trang cuối bảng. Công thức
+      ngưỡng autovacuum. Cách tìm transaction mở lâu qua age(backend_xmin).
+    kind: primary
+  - title: "PostgreSQL - VACUUM"
+    url: "https://www.postgresql.org/docs/current/sql-vacuum.html"
+    supports: >-
+      VACUUM thường chạy song song với đọc ghi bình thường và không lấy exclusive lock, chỗ
+      được giữ để tái dùng trong chính bảng. VACUUM FULL viết lại bảng, trả chỗ về hệ điều
+      hành, cần ACCESS EXCLUSIVE lock và cần thêm đĩa.
+    kind: primary
+  - title: "PostgreSQL - Automatic Vacuuming parameters"
+    url: "https://www.postgresql.org/docs/current/runtime-config-autovacuum.html"
+    supports: >-
+      Giá trị mặc định: autovacuum_vacuum_threshold 50 dòng, autovacuum_vacuum_scale_factor
+      0.2 tức 20 phần trăm kích thước bảng, autovacuum_vacuum_max_threshold 100 triệu dòng,
+      autovacuum_naptime một phút.
+    kind: primary
+  - title: "PostgreSQL - CREATE TABLE storage parameters"
+    url: "https://www.postgresql.org/docs/current/sql-createtable.html"
+    supports: "autovacuum_vacuum_scale_factor và autovacuum_vacuum_threshold có bản per-table dưới dạng storage parameter"
+    kind: primary
+  - title: "PostgreSQL - Monitoring Statistics"
+    url: "https://www.postgresql.org/docs/current/monitoring-stats.html"
+    supports: >-
+      Tên và nghĩa các cột n_live_tup, n_dead_tup, last_autovacuum, autovacuum_count trong
+      pg_stat_all_tables, và backend_xmin trong pg_stat_activity.
+    kind: primary
+
+confidence: high
+
+open_questions:
+  - >-
+    Chưa verify HOT update từ doc. Đó là nhánh quan trọng - nếu UPDATE không đụng cột được
+    index và trang còn chỗ thì phiên bản mới nằm cùng trang và index không phình theo. Nếu
+    làm video tiếp về index bloat thì phải đọc doc HOT trước.
+  - >-
+    Chưa có cơ sở để nói giá trị scale factor nào là hợp lý cho từng cỡ bảng. Video cố ý chỉ
+    nêu hai phần trăm như một ví dụ và nói rõ phải chỉnh theo từng bảng.
+  - >-
+    Chưa khảo sát công cụ đo bloat trực tiếp. Nếu có một cách đo được chênh lệch giữa kích
+    thước file và chỗ dữ liệu sống cần, đó sẽ là tín hiệu tốt hơn hẳn cặp n_dead_tup và
+    last_autovacuum mà video đang dùng.
+
+fingerprint:
+  hook_type: contradiction
+  incident_type: state_growth_without_row_growth
+  mechanism_shape: deferred_reclamation_gated_by_visibility
+  aha_type: file_size_is_high_water_mark
+  fix_type: earlier_reclamation
+  ending_type: two_metric_comparison

@@ -1,0 +1,56 @@
+video_id: D01-retry-storm
+title: The load is the failure, and the failure is the load
+domain: distributed-systems
+shots: 1
+engines:
+  - hyperframes
+representation_layers:
+  - system
+  - state
+camera:
+  - shot: dirB
+    motion: static
+    semantic_function: orbit_is_the_frame
+dominant_compositions:
+  - closed_circuit_filling_the_frame
+  - steady_stream_in_and_out
+  - no_content_stage
+dominant_geometry:
+  - circle
+  - radial_point_field
+  - single_capacity_arc
+visual_devices:
+  - density_is_the_quantity
+  - golden_angle_placement
+  - both_ends_constant
+  - ring_saturates_to_solid
+motion_devices:
+  - continuous_orbit
+  - treadmill_inflow
+  - treadmill_outflow
+  - spread_reveal
+typography_usage:
+  - single_centred_tally
+  - rate_readouts
+color_distribution:
+  dominant: neutral
+  pressure: burnt_orange
+  boundary: teal
+reference_influences:
+  - engineered_information_design
+  - particle_systems
+distinctive_device:
+  - the_loop_you_can_watch_fill
+  - the_two_ends_that_never_change
+spatial_model: circuit
+rejected_directions:
+  - id: dirA
+    model: flow_through_a_fixed_aperture
+    why: A physical constraint only reads against solid mass, and this brand has
+      none. Halton-scattered particles read as noise rather than as space.
+  - id: dirC
+    model: stacked_proportional_bands
+    why: Strongest single frame of the three, but it shows the consequence and never
+      the loop — and it is structurally a vertical bar chart, which is the habit
+      under investigation. Its exact-proportion image is kept for a later
+      consequence beat.

@@ -1,0 +1,81 @@
+id: D01-retry-storm
+title: "The load is the failure, and the failure is the load"
+domain: distributed-systems
+audience: "backend engineers, 2-5 years"
+
+assumptions:
+  - "A transient dependency failure starts it. Nothing is broken beyond capacity."
+  - "The service serves exactly its capacity every round and fails the remainder.
+     It does not degrade further under load — the amplification alone is the story."
+  - "Every client retries a failed request three times with no backoff, no jitter and
+     no budget. Three is the retry count, not a measured figure."
+  - "Baseline arrival rate is 120 per round and never changes. All growth in arrivals
+     is retries — the clients cause it, not the users."
+  - "Rounds are a modelling device for one feedback traversal, not a real interval."
+
+actors:
+  - { id: clients, label: "callers",  kind: request }
+  - { id: service, label: "service",  kind: service }
+  - { id: sys,     label: "in flight", kind: store }
+
+state:
+  sys.capacity: 100
+  sys.inflight: 120
+
+scenarios:
+  storm:
+    note: "no backoff, no budget, no breaker — each round's failures become the next round's load"
+    events:
+      - { id: cap, t: 0.02, actor: clients, op: read, target: sys, field: capacity, into: cap, expect: 100,
+          note: "capacity never changes. it is the only thing here that does not." }
+
+      - { id: r1_see,   t: 0.10, actor: clients, op: read,  target: sys, field: inflight, into: n, expect: 120,
+          note: "round 1 — 120 arrive, 100 are served, 20 fail" }
+      - { id: r1_retry, t: 0.17, actor: clients, op: spawn, count: { expr: "(n - cap) * 3" }, of: retry,
+          note: "each of the 20 failures is retried three times: 60 retries" }
+      - { id: r1_load,  t: 0.24, actor: clients, op: write, target: sys, field: inflight,
+          value: { expr: "120 + (n - cap) * 3" }, note: "next round arrives at 180 — and nobody asked for more" }
+
+      - { id: r2_see,   t: 0.38, actor: clients, op: read,  target: sys, field: inflight, into: n, expect: 180,
+          note: "round 2 — 180 arrive, still 100 served, 80 fail" }
+      - { id: r2_retry, t: 0.45, actor: clients, op: spawn, count: { expr: "(n - cap) * 3" }, of: retry,
+          note: "240 retries" }
+      - { id: r2_load,  t: 0.52, actor: clients, op: write, target: sys, field: inflight,
+          value: { expr: "120 + (n - cap) * 3" }, note: "360" }
+
+      - { id: r3_see,   t: 0.66, actor: clients, op: read,  target: sys, field: inflight, into: n, expect: 360,
+          note: "round 3 — 360 arrive, still 100 served, 260 fail" }
+      - { id: r3_retry, t: 0.74, actor: clients, op: spawn, count: { expr: "(n - cap) * 3" }, of: retry,
+          note: "780 retries" }
+      - { id: r3_load,  t: 0.84, actor: clients, op: write, target: sys, field: inflight,
+          value: { expr: "120 + (n - cap) * 3" }, note: "900 — seven and a half times the baseline" }
+    invariants:
+      - { id: load_ceiling, kind: bounded,     field: sys.inflight, max: 150,
+          note: "1.5x capacity of headroom — the point at which the service is in trouble" }
+      - { id: steady_state, kind: final_state, field: sys.inflight, expected: 120,
+          note: "without amplification the arrival rate returns to its baseline" }
+      - { id: retry_budget, kind: work_ratio,  count_op: retry, max: 60,
+          note: "one round of retries on a transient failure is the whole budget" }
+    expect:
+      violations: [load_ceiling, steady_state, retry_budget]
+
+  capped:
+    note: "retry once, then a breaker opens — the loop is cut, not the capacity raised"
+    events:
+      - { id: cap, t: 0.02, actor: clients, op: read, target: sys, field: capacity, into: cap, expect: 100 }
+      - { id: r1_see,   t: 0.14, actor: clients, op: read,  target: sys, field: inflight, into: n, expect: 120 }
+      - { id: r1_retry, t: 0.24, actor: clients, op: spawn, count: { expr: "(n - cap) * 1" }, of: retry,
+          note: "retried once, with backoff: 20" }
+      - { id: r1_load,  t: 0.34, actor: clients, op: write, target: sys, field: inflight,
+          value: { expr: "120 + (n - cap) * 1" }, note: "140 — above capacity, below trouble" }
+      - { id: r2_see,   t: 0.56, actor: clients, op: read,  target: sys, field: inflight, into: n, expect: 140 }
+      - { id: r2_break, t: 0.70, actor: clients, op: spawn, count: 0, of: retry,
+          note: "the breaker opens: the failure rate stops producing retries at all" }
+      - { id: r2_load,  t: 0.86, actor: clients, op: write, target: sys, field: inflight, value: 120,
+          note: "back to baseline. the loop was the problem, not the traffic." }
+    invariants:
+      - { id: load_ceiling, kind: bounded,     field: sys.inflight, max: 150 }
+      - { id: steady_state, kind: final_state, field: sys.inflight, expected: 120 }
+      - { id: retry_budget, kind: work_ratio,  count_op: retry, max: 60 }
+    expect:
+      violations: []

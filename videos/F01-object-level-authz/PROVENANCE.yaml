@@ -1,0 +1,25 @@
+package_id: "004"
+package_slug: authz-per-object-not-per-request
+schema_version: 1
+package_revision: null
+source_path: D:/Project/technical-content-engine/packages/004-authz-per-object-not-per-request/content-package.yaml
+source_sha256: 36db1604fd5979afc55b48c1fb2fbe8d76ed08c96c7c0d29a963c531044c6bdb
+source_git_commit: null
+imported_at: 2026-08-24T07:19:21.114Z
+validation_result:
+  validator: tools/validate-package.mjs
+  exit_code: 0
+  verdict: 0 lỗi · 0 cảnh báo
+consumed_as: F01-object-level-authz
+snapshot: videos/F01-object-level-authz/content-package.yaml
+snapshot_sha256: 36db1604fd5979afc55b48c1fb2fbe8d76ed08c96c7c0d29a963c531044c6bdb
+consumed_sha256: 36db1604fd5979afc55b48c1fb2fbe8d76ed08c96c7c0d29a963c531044c6bdb
+retroactive: false
+topic: IDOR / Broken Object Level Authorization
+domain: security
+source_modified_at: 2026-08-24T06:56:48.427Z
+notes:
+  - package carries no `revision` field, so revision is not expressible in this
+    contract — only content identity is. source_sha256 is what identifies these
+    bytes.
+  - "source_git_commit: source is not in a git working tree"

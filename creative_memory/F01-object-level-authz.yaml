@@ -1,0 +1,139 @@
+video_id: F01-object-level-authz
+status: FROZEN_BENCHMARK
+title: IDOR / Broken Object Level Authorization
+domain: security
+shots: 17
+engines:
+  - hyperframes
+representation_layers: []
+camera:
+  - shot: s01-leak
+    motion: static
+    semantic_function: hold_for_reading
+  - shot: s02-guess
+    motion: static
+    semantic_function: preserve_comparison_geometry
+  - shot: s02-eliminate
+    motion: static
+    semantic_function: preserve_comparison_geometry
+  - shot: s03-authored-a
+    motion: static
+    semantic_function: hold_for_reading
+  - shot: s04-authored-b
+    motion: static
+    semantic_function: hold_for_reading
+  - shot: s05-response
+    motion: static
+    semantic_function: preserve_comparison_geometry
+  - shot: s06-cadence
+    motion: static
+    semantic_function: preserve_comparison_geometry
+  - shot: s07-name
+    motion: static
+    semantic_function: hold_for_reading
+  - shot: s08-not-id
+    motion: static
+    semantic_function: preserve_comparison_geometry
+  - shot: s09-not-a-line
+    motion: static
+    semantic_function: preserve_comparison_geometry
+  - shot: s10-invariant
+    motion: static
+    semantic_function: hold_for_reading
+  - shot: s11-inherit
+    motion: static
+    semantic_function: hold_for_reading
+  - shot: s12-cost
+    motion: static
+    semantic_function: hold_for_reading
+  - shot: s13-scope-limits
+    motion: static
+    semantic_function: hold_for_reading
+  - shot: s14-signal
+    motion: static
+    semantic_function: hold_for_reading
+  - shot: s14-limits
+    motion: static
+    semantic_function: hold_for_reading
+  - shot: s15-question
+    motion: static
+    semantic_function: hold_for_reading
+dominant_compositions:
+  - two_bodies_sharing_one_geometry
+  - marks_in_columns_over_a_path_list
+  - a_fixed_object_with_a_contracting_claim_above_it
+  - an_open_field_above_a_low_question
+dominant_geometry:
+  - shared_row_columns_for_one_universe
+  - disjoint_regions_for_disjoint_sets
+  - a_measured_bar_divided_into_named_cells
+  - ink_low_with_the_field_above_it_open
+visual_devices:
+  - presence_marks_instead_of_function_names
+  - a_claim_that_arrives_already_struck
+  - an_excision_whose_hole_stays_empty
+  - a_span_that_really_contracts_to_one_third
+  - a_standing_claim_losing_weight_as_qualifications_land
+motion_devices:
+  - colour_naming_which_reach_is_which_while_geometry_holds
+  - a_row_arriving_already_covered_because_nobody_added_anything
+  - replacement_in_place_only_where_both_cannot_be_true_at_once
+  - the_survivor_taking_the_field_the_candidates_vacated
+typography_usage:
+  - code_is_authored_text_not_decoration
+  - monospace_means_value_never_label
+  - a_name_takes_the_field_alone_before_its_classification
+color_distribution:
+  dominant: neutral
+  needs_attention: vermilion
+  authorization_decision_exists: ochre
+  boundary_held: teal
+  dead_or_out_of_scope: grey
+reference_influences:
+  - engineered_information_design
+  - incident_write_up
+distinctive_device:
+  - a_check_that_never_existed_on_this_path_rather_than_one_that_was_skipped
+spatial_model: two_paths_to_one_object_where_only_one_carries_a_decision
+known_limitations:
+  - Lệch trái 16/17 shot và nặng-trên 15/17. Chữ Việt neo trái ở 93 hoặc 140 nên
+    lệch trái là hệ quả của chữ viết. Biên độ trên/dưới trải 16–83% và ba khung
+    nặng dưới đều nặng dưới VÌ NGHĨA. Không đuổi theo 50/50 — đó chính là luân
+    phiên máy móc đã bị cấm.
+  - Camera tĩnh 17/17. Không phải nguyên tắc, chỉ là chưa shot nào có lý do di
+    chuyển.
+  - Video thưa. Mực trung bình 2.56 trên nền; hai shot gần như trống là chủ ý
+    (s02-eliminate giữ mỗi người sống sót, s09 giữ mỗi cái lỗ).
+rejected_devices:
+  - device: writing_the_function_name_into_an_abstract_table
+    why_rejected: '`req.principal` và `assertMember` là code thật và thuộc về
+      s03/s04, nơi chúng được viết ra. Mang vào bảng năm đường, chúng thôi nghĩa
+      "đường này chịu một quyết định" và thành "đường này gọi hàm đó" — đúng
+      never_say số 5 — đồng thời đặt hai token của H2 cạnh nhau, cho không cách
+      đọc thay-thế. Cột nay là dấu hiện diện, tiêu đề cột gánh nghĩa.'
+  - device: declaring_a_spatial_operation_in_a_comment_instead_of_performing_it
+    why_rejected: Bản đầu của s08 đặt `width` lên container mà chữ không lấp đầy rồi
+      ghi trong comment rằng phạm vi khẳng định co lại. Trên màn hình không gì
+      co cả, và cv gate báo sạch vì không checker nào đọc ý định. Cùng loại lỗi
+      với match cut 03→04 từng bị khẳng định thay vì đo. Bản sau dùng dải chia
+      ba ô, hai ô scaleX về 0.
+  - device: a_repeated_vietnamese_phrase_down_a_monospace_column
+    why_rejected: Monospace trong thư viện này nghĩa là GIÁ TRỊ. Một cụm tiếng Việt
+      lặp năm lần trong mono là typography mặc áo nhãn. Đã tái phạm ngay sau khi
+      ghi nó ra làm lý do loại p4-limits — chỉ một luật kiểm được mới ngăn được,
+      ghi lại thì không.
+  - device: removing_a_number_the_package_explicitly_asks_for
+    why_rejected: Bỏ dấu % ở s14-signal vì sợ bị đọc thành điểm an toàn. Nhưng lời
+      thoại nói thẳng "rồi đếm xem bao nhiêu phần trăm route đã có test đó", và
+      chính s14-limits tồn tại để nói con số ấy chứng minh và không chứng minh
+      gì. Đó là Visual Engine quyết thay Content Engine ở đúng chỗ Content
+      Engine đã lo.
+  - device: a_camera_move_added_because_every_shot_is_static
+    why_rejected: Đa dạng phải đến từ nghĩa. Camera tĩnh 17/17 vẫn đúng vì chưa shot
+      nào có lý do di chuyển; khác biệt không gian nằm ở bố cục và chuyển động
+      nội bộ.
+  - device: mechanically_alternating_left_center_right_to_balance_the_metrics
+    why_rejected: "Số đo là chẩn đoán, không phải chỉ tiêu. Khung nặng dưới chỉ được
+      nặng dưới khi phần trống phía trên có nghĩa: câu hỏi không đứng dưới tiêu
+      đề; con số đi từ shot trước sang nên nằm thấp; người sống sót chiếm chỗ ba
+      giả thuyết vừa bỏ lại."

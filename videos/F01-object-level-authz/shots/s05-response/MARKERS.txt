@@ -1,0 +1,7 @@
+Shot s05-response — required event markers (1)
+
+Each row needs ONE element in the composition carrying that id, which becomes
+visible (opacity >= 0.5) at the given time. The element can be any visual you
+like — the moving object, a tick, a label, a ring. Layout is your call.
+
+  #ev-disclose  @  1.35s   comments_endpoint write

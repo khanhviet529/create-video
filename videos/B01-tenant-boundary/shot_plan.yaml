@@ -1,0 +1,138 @@
+video_id: B01-tenant-boundary
+title: "Authenticated is not authorised"
+semantics: semantics.yaml
+canvas: { w: 1080, h: 1920, fps: 30 }
+target_runtime_s: 68
+arc: incident -> mechanism -> the missing question -> fix -> detection
+ladder_path: [user_reality, system, implementation, system]
+
+shots:
+  - id: shot_01
+    time: [0.0, 10.0]
+    duration: 10.0
+    engine: hyperframes
+    status: planned
+    narration: "A support ticket from one customer contains another customer's invoice number."
+    purpose: "Open on the leak as a human event, not a diagram."
+    representation: [user_reality]
+    visual_direction: "Two account contexts, one identifier appearing in the wrong one."
+    semantic: { scenario: broken, events: [] }
+    validation: {}
+
+  - id: shot_02
+    time: [10.0, 23.0]
+    duration: 13.0
+    engine: hyperframes
+    hero: true
+    narration: >-
+      The token was valid. The user really was who they said they were.
+      Nothing ever asked whether the record belonged to them.
+    purpose: >-
+      Show that authentication and authorisation are two different questions, and
+      that only one of them was asked. The bug is an ABSENCE, so the absence has
+      to be the thing on screen.
+    viewer_belief_before: "A valid token means the request is allowed."
+    visual_question: "How many gates does this request actually pass through?"
+    semantic:
+      scenario: broken
+      events: [authn, lookup, respond]
+      t_window: [-0.22, 1.15]
+    camera:
+      motion: static
+      semantic_function: whole_route_must_stay_visible
+      rationale: >-
+        Tried and rejected — see shot_02_cam. The subject of this shot is a
+        COMPARISON between a station that has a gate and a station that does not,
+        so both have to be in frame at once for the absence to mean anything. On top
+        of that the layout spends the full canvas width on three columns, and any
+        zoom tight enough to matter loses one of them. Static here is a conclusion
+        reached by experiment, not an omission.
+    main_focus: "the empty slot where the second gate is not"
+    representation: [system, implementation]
+    visual_direction: >-
+      A vertical channel with two stations along it — a route, not a set of zones.
+      Station one is a gate that closes across the channel, evaluates, and opens.
+      Station two is TWO STUBS AND A GAP: the mounting points exist and the gate
+      does not. The gap is drawn in the first second, long before it is named, so
+      the viewer can notice it themselves. The request never slows down there.
+      It reaches the store, picks up a record tagged with a different tenant, and
+      carries it back out past both stations unchallenged. The payoff is one object
+      holding two tenant tags that do not match.
+    motion_reveal: "descend -> gate closes/opens -> pass through nothing -> collect -> ascend unchallenged"
+    validation:
+      focus_in_frame: ["#request", "#gate2"]
+      keeps_moving: "#stage"
+      max_static_sec: 2.6
+      caption_zone: true
+    review:
+      hero_frames: [0.9, 3.2, 5.1, 7.2, 9.4, 11.6, 12.8]
+      mute_test: "one gate present, one gate missing, request returns with a foreign tag"
+    transition: "hold on the empty slot; the next shot fills it"
+    viewer_belief_after: "Identity and ownership are separate checks, and only one was written."
+
+  # ---------------------------------------------------------------------------
+  # EXPERIMENT C — causality through camera. Kept alongside shot_02 for comparison.
+  - id: shot_02_cam
+    variant_of: shot_02
+    status: experiment_rejected
+    time: [10.0, 23.0]
+    duration: 13.0
+    engine: hyperframes
+    camera:
+      motion: push_in
+      semantic_function: global_to_root_cause
+      moves_during: [4.10, 6.70]
+      rationale: >-
+        In the static cut the empty gate slot is on screen for all thirteen seconds,
+        which sounds like an advantage and is actually the problem: it is present
+        but never POINTED AT, so it competes for attention with a moving request, a
+        store listing and two verdicts. The camera pushes in at exactly the moment
+        the request passes through the slot, so the frame is asking the question at
+        the instant the bug happens, then pulls back out to carry on. One move, at
+        the causal moment.
+      may_leave_view: ["#ev-authn"]
+      # ---- REJECTED after A/B review. Keeping the entry as the record. ----
+      # verdict: the static cut wins. Two reasons, and the second is the general one:
+      #
+      # 1. may_leave_view let #ev-authn exit, but at s=1.48 it exits PARTIALLY —
+      #    "PASS / token valid" is sliced down the middle at the canvas edge. Half a
+      #    word is worse than either the whole word or none of it. A camera must push
+      #    an element fully out, never crop it.
+      # 2. THE LAYOUT FORBIDS ZOOM. B01 spends the full 1080px on three columns —
+      #    station names at x90, the channel at x300-780, verdicts at x820-1060.
+      #    Any zoom tight enough to be a zoom loses a column. C01 and A01 could be
+      #    zoomed because their close-up content is gathered at one side; B01 is
+      #    horizontally committed everywhere.
+      #
+      # This is the real finding: whether a shot can take a camera at all is decided
+      # by its layout, not by its subject. B01 is a security video with a perfect
+      # global_to_root_cause story and no room to tell it that way.
+    narration: >-
+      The token was valid. The user really was who they said they were.
+      Nothing ever asked whether the record belonged to them.
+    purpose: "As shot_02, but testing whether the camera can point at the causal moment."
+    visual_question: "How many gates does this request actually pass through?"
+    semantic:
+      scenario: broken
+      events: [authn, lookup, respond]
+      t_window: [-0.22, 1.15]
+    representation: [system, implementation]
+    validation:
+      focus_in_frame: ["#gate2", "#request"]
+      keeps_moving: "#stage"
+      max_static_sec: 2.6
+      caption_zone: true
+    review:
+      hero_frames: [2.0, 4.1, 4.7, 5.4, 6.9, 9.4, 12.8]
+      mute_test: "the frame leans in exactly where nothing stops the request"
+
+fingerprint:
+  dominant_compositions: [vertical_channel_with_stations, left_label_column]
+  dominant_geometry: [channel_rails, gate_bars, stubs_and_a_gap]
+  visual_devices: [absence_as_subject, tenant_tag, unchallenged_return, carried_payload]
+  camera_devices: [static]
+  motion_devices: [descend, gate_split, pass_through, collect, ascend]
+  typography_usage: [request_line_as_object, paired_tags, small_caps_stations]
+  color_distribution: { dominant: neutral, boundary: teal, alert: vermilion }
+  reference_influences: [technical_schematics, blueprint_systems]
+  distinctive_device: [the_gate_that_is_not_there]

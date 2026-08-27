@@ -1,0 +1,315 @@
+provider: VoiceStudio
+source_repo: D:\Project\VoiceStudio
+provider_endpoint_identity: trycloudflare.com · sha256:4ef5e1fcc86a1b50
+narration_sha256: 9c961d8131c7260be7a1aa514f5e4a4b40e2657ac58d1c8145254ee9b92a1ee3
+voice_model:
+  engine: (provider default)
+  profile_id: 858f5a83
+  profile_name: namtre_v2
+  profile_pinned_as: 858f5a83
+  profile_verified: per segment, against the provider's generation history —
+    /generate does not report which voice it used, and an unknown profile_id
+    silently falls back to the default voice with HTTP 200
+  device: cuda (Tesla T4)
+  backend_version: 0.5.0
+generation_parameters:
+  speed: 1
+  seed: 1
+  language: vi
+  profile_id: 858f5a83
+  pronounce: "(provider default: true)"
+generation_parameters_source:
+  speed: shot_plan.yaml voice_calibration
+  seed: shot_plan.yaml voice_calibration
+  language: shot_plan.yaml voice_calibration
+seed_used: "1"
+generated_at: 2026-08-25T08:41:03.420Z
+audio_file: videos/F01-object-level-authz/voice/narration.wav
+audio_sha256: 2b00831fb5c741f54d2cfc24f516d1878bce8bdeec47d3dd548821c21893207a
+audio_duration: 169.12
+segments:
+  - index: 1
+    chars: 105
+    duration: 5.13
+    seed: "1"
+    text_sha256: d41823c3c0dd748e
+    first_words: Một người đã bị xoá khỏi workspace ba tháng trướ
+    audio_id: ad17af95
+    profile_id: 858f5a83
+  - index: 2
+    chars: 66
+    duration: 3.52
+    seed: "1"
+    text_sha256: 74e664681f4cd38f
+    first_words: Nghi ngờ rơi ngay vào token. Chắc phiên đăng nhậ
+    audio_id: 71fe3527
+    profile_id: 858f5a83
+  - index: 3
+    chars: 95
+    duration: 4.89
+    seed: "1"
+    text_sha256: 490a814c2af1e762
+    first_words: Nhưng token đó hết hạn từ lâu. Người này đang đă
+    audio_id: 400ccce9
+    profile_id: 858f5a83
+  - index: 4
+    chars: 49
+    duration: 2.65
+    seed: "1"
+    text_sha256: 9c35a8677b14de35
+    first_words: Trong database, membership của họ đã bị xoá thật
+    audio_id: a1d10f70
+    profile_id: 858f5a83
+  - index: 5
+    chars: 82
+    duration: 4.07
+    seed: "1"
+    text_sha256: 95ff2f69c911e15c
+    first_words: Và gọi thẳng vào endpoint tài liệu, server trả v
+    audio_id: c3a1e339
+    profile_id: 858f5a83
+  - index: 6
+    chars: 109
+    duration: 5.68
+    seed: "1"
+    text_sha256: 775d278198b93242
+    first_words: Một dữ kiện, ba giả thuyết bị loại. Xác thực khô
+    audio_id: 19f10cde
+    profile_id: 858f5a83
+  - index: 7
+    chars: 48
+    duration: 2.56
+    seed: "1"
+    text_sha256: cccc18df3d2ef142
+    first_words: Chỉ có một đường khác không trả về bốn không ba.
+    audio_id: 03ef4f42
+    profile_id: 858f5a83
+  - index: 8
+    chars: 137
+    duration: 7.14
+    seed: "1"
+    text_sha256: 76cb8f47a4b31cc2
+    first_words: "Xem lại lúc hệ thống được viết ra. Endpoint đọc "
+    audio_id: ee7e78fb
+    profile_id: 858f5a83
+  - index: 9
+    chars: 43
+    duration: 2.06
+    seed: "1"
+    text_sha256: 12bca30bff203b04
+    first_words: Cả hai bước đều đúng. Đến hôm nay vẫn đúng.
+    audio_id: 17b2a2d6
+    profile_id: 858f5a83
+  - index: 10
+    chars: 93
+    duration: 4.92
+    seed: "1"
+    text_sha256: f558b809bf7e0e9f
+    first_words: Ba tháng sau, đội thêm một tính năng. Xem commen
+    audio_id: 78428c3b
+    profile_id: 858f5a83
+  - index: 11
+    chars: 57
+    duration: 2.93
+    seed: "1"
+    text_sha256: 8bf351610b894fc3
+    first_words: Handler đó nhận id của tài liệu, rồi nạp comment
+    audio_id: 7c9985d9
+    profile_id: 858f5a83
+  - index: 12
+    chars: 63
+    duration: 3.35
+    seed: "1"
+    text_sha256: dcb233149028e676
+    first_words: Middleware xác thực vẫn chạy. Nó xác nhận đúng n
+    audio_id: 47b5f299
+    profile_id: 858f5a83
+  - index: 13
+    chars: 71
+    duration: 3.47
+    seed: "1"
+    text_sha256: eff6305c27eebbef
+    first_words: "Nhưng không có dòng nào hỏi: người này có quyền "
+    audio_id: dfda9a41
+    profile_id: 858f5a83
+  - index: 14
+    chars: 100
+    duration: 5.2
+    seed: "1"
+    text_sha256: 8485cfae31988f8b
+    first_words: Không phải ai đó bỏ qua bước kiểm. Bước kiểm chư
+    audio_id: 566a93ab
+    profile_id: 858f5a83
+  - index: 15
+    chars: 36
+    duration: 1.89
+    seed: "1"
+    text_sha256: 9629ef20b8dba966
+    first_words: Server trả về hai trăm, kèm dữ liệu.
+    audio_id: 1b07169a
+    profile_id: 858f5a83
+  - index: 16
+    chars: 34
+    duration: 1.61
+    seed: "1"
+    text_sha256: ea9b862e1c6d57b9
+    first_words: Hai câu hỏi ở đây không cùng nhịp.
+    audio_id: 0e85a9a3
+    profile_id: 858f5a83
+  - index: 17
+    chars: 93
+    duration: 4.85
+    seed: "1"
+    text_sha256: 1ae51112d6e1c4f9
+    first_words: Câu "anh là ai" được hỏi một lần cho mỗi request
+    audio_id: 998bd212
+    profile_id: 858f5a83
+  - index: 18
+    chars: 101
+    duration: 5.24
+    seed: "1"
+    text_sha256: 6083c14990c4c5d0
+    first_words: Câu "anh được chạm vào object này không" thì khá
+    audio_id: "30791463"
+    profile_id: 858f5a83
+  - index: 19
+    chars: 136
+    duration: 7.12
+    seed: "1"
+    text_sha256: 9b0822f7e323d36b
+    first_words: Số đường thì tăng theo thời gian. Thêm endpoint,
+    audio_id: b9c27bd2
+    profile_id: 858f5a83
+  - index: 20
+    chars: 131
+    duration: 6.86
+    seed: "1"
+    text_sha256: 1c7568fc5c1114ac
+    first_words: Lỗi này có tên. Phía web gọi là IDOR. Trong danh
+    audio_id: c3b0be59
+    profile_id: 858f5a83
+  - index: 21
+    chars: 80
+    duration: 3.94
+    seed: "1"
+    text_sha256: 51661db3a72dc8ad
+    first_words: Ở đây id là UUID. Người kia không đoán ra nó. Họ
+    audio_id: bd3f02a6
+    profile_id: 858f5a83
+  - index: 22
+    chars: 88
+    duration: 4.55
+    seed: "1"
+    text_sha256: 8e072a292eee7f36
+    first_words: Id khó đoán làm việc dò tìm đắt hơn. Nó không si
+    audio_id: 74c19587
+    profile_id: 858f5a83
+  - index: 23
+    chars: 37
+    duration: 2.12
+    seed: "1"
+    text_sha256: 29b41e2ff8c92aa2
+    first_words: Nên cách sửa không nằm ở việc đổi id.
+    audio_id: 41e8ad5f
+    profile_id: 858f5a83
+  - index: 24
+    chars: 99
+    duration: 4.88
+    seed: "1"
+    text_sha256: cb1019dc700e446a
+    first_words: Cũng không nằm ở việc thêm một dòng check vào ha
+    audio_id: f932f894
+    profile_id: 858f5a83
+  - index: 25
+    chars: 131
+    duration: 6.41
+    seed: "1"
+    text_sha256: 885fd11ed6f6f7e3
+    first_words: OWASP viết thẳng hai vế. Trừ tài nguyên công kha
+    audio_id: f9a6c785
+    profile_id: 858f5a83
+  - index: 26
+    chars: 157
+    duration: 8.16
+    seed: "1"
+    text_sha256: d3d7976f8e359f8e
+    first_words: Dịch sang code thì một cách làm là thế này. Khôn
+    audio_id: d9446baf
+    profile_id: 858f5a83
+  - index: 27
+    chars: 58
+    duration: 3.17
+    seed: "1"
+    text_sha256: 251931632d5fd5bd
+    first_words: Endpoint thêm sau thừa hưởng chuyện đó. Không ai
+    audio_id: 3b990b91
+    profile_id: 858f5a83
+  - index: 28
+    chars: 88
+    duration: 4.42
+    seed: "1"
+    text_sha256: fad569b54dac1c13
+    first_words: Authentication giữ nguyên. URL giữ nguyên. Handl
+    audio_id: 393e41d2
+    profile_id: 858f5a83
+  - index: 29
+    chars: 214
+    duration: 10.69
+    seed: "1"
+    text_sha256: e77399ec9bc01165
+    first_words: Cách này không miễn phí. Job nền và công cụ admi
+    audio_id: 2521c22a
+    profile_id: 858f5a83
+  - index: 30
+    chars: 115
+    duration: 5.76
+    seed: "1"
+    text_sha256: b505b36473dca06e
+    first_words: Và nó chỉ phủ quan hệ sở hữu. Chia sẻ có điều ki
+    audio_id: e014de8a
+    profile_id: 858f5a83
+  - index: 31
+    chars: 230
+    duration: 11.76
+    seed: "1"
+    text_sha256: 33bf180dc0b7f740
+    first_words: Cách kiểm thì đơn giản. Với mỗi route nhận id từ
+    audio_id: efd781a2
+    profile_id: 858f5a83
+  - index: 32
+    chars: 92
+    duration: 4.48
+    seed: "1"
+    text_sha256: 053b238b857d9e6e
+    first_words: Con số đó nói cho bạn biết còn đường nào chưa ai
+    audio_id: ac7a067e
+    profile_id: 858f5a83
+  - index: 33
+    chars: 130
+    duration: 6.12
+    seed: "1"
+    text_sha256: 38a58ff232b7320a
+    first_words: Test xanh chỉ chứng minh tài khoản trong fixture
+    audio_id: 72f710b2
+    profile_id: 858f5a83
+  - index: 34
+    chars: 55
+    duration: 3
+    seed: "1"
+    text_sha256: 589f6a2f0103c00a
+    first_words: Và nó không chạm tới đường nào không đi qua rout
+    audio_id: 176bd5e1
+    profile_id: 858f5a83
+  - index: 35
+    chars: 92
+    duration: 4.52
+    seed: "1"
+    text_sha256: 97888503f9d55886
+    first_words: Endpoint gần nhất bạn thêm vào. Nó tự kiểm quyền
+    audio_id: d53c321b
+    profile_id: 858f5a83
+segmentation: per authored paragraph; splitNarration verifies the rejoin equals
+  the canonical text. No silence inserted between segments — inter-beat pauses
+  are a video decision, not a measurement.
+generation_time_sec: 265.1
+package_estimate_sec: 166

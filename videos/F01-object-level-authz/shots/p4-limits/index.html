@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=1920" />
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+/* @brand:start */
+:root {
+  --ground: #0C0D0F; --ground-lift: #14161A;
+  --ink: #EDEAE4; --ink-mid: #9AA0A6; --ink-dim: #8B9198; --ink-ghost: #3A3E42;
+  --rule: #23272A; --rule-bright: #3D4348; --hair: 1.5px;
+  --authoritative: #C9A227; --stale: #E0533D; --lost: #6A6F74;
+  --boundary: #4E8C7D; --pressure: #B4623A; --counterfactual: #7A8086;
+  --font-value: "IBM Plex Mono", ui-monospace, monospace;
+  --font-label: "IBM Plex Sans Condensed", "IBM Plex Sans", system-ui, sans-serif;
+  --t-hero: 200px; --t-value: 64px; --t-body: 36px; --t-label: 26px; --track-label: 0.18em;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { overflow: hidden; background: var(--ground); color: var(--ink); font-family: var(--font-label); }
+.label { font-family: var(--font-label); font-size: var(--t-label); letter-spacing: var(--track-label);
+         text-transform: uppercase; color: var(--ink-dim); font-weight: 500; }
+/* @brand:end */
+
+html, body { width: 1080px; height: 1920px; }
+#stage { position: absolute; inset: 0; }
+
+/* ---------------------------------------------------------------------------
+   P4 — THE 32-SECOND TRADE-OFF / DETECTION REGISTER. Prototype, not a shot.
+
+   Step 2 flagged this as the section with no idea attached: four consecutive
+   hedges (privileged lane, ownership-only, the test, what the test does not
+   prove) is the easiest place in a 170s video to lose the viewer, because a list
+   of caveats has no shape.
+
+   The proposal is to stop treating them as four caveats and make them ONE image:
+   the inventory the viewer has been tracking for two minutes keeps growing, and
+   it grows past what any single mechanism reaches. The section is not "here are
+   the limitations"; it is "the list is longer than the fix".
+
+   That works only because the path inventory is the video's secondary tracked
+   object. Growth of a thing the viewer already knows carries meaning; a new
+   diagram of limitations would not.
+
+   Same rule as everywhere else: paths the fix does not reach carry NO token and
+   NO placeholder. Their reason is written beside them as plain text, because the
+   reason is genuinely different for each one and cannot be inferred.
+--------------------------------------------------------------------------- */
+#lblTop { position: absolute; left: 93px; top: 240px; width: 894px; }
+
+.p     { position: absolute; left: 93px; font-family: var(--font-value); font-size: 30px;
+         line-height: 1; white-space: pre; }
+.inside  { color: var(--ink-mid); }
+.outside { color: var(--ink-dim); }
+.tok   { position: absolute; left: 560px; font-family: var(--font-value); font-size: 28px;
+         line-height: 1; color: var(--authoritative); white-space: pre; }
+.why   { position: absolute; left: 560px; font-family: var(--font-label); font-size: 24px;
+         line-height: 1.22; letter-spacing: var(--track-label); text-transform: uppercase;
+         color: var(--lost); white-space: normal; width: 430px; }
+
+#rule  { position: absolute; left: 93px; top: 1076px; width: 894px; height: var(--hair);
+         background: var(--rule-bright); transform-origin: left center; }
+
+#covLbl { position: absolute; left: 93px; top: 1108px; }
+#cov    { position: absolute; left: 93px; top: 1156px; width: 894px;
+          font-family: var(--font-label); font-size: 40px; font-weight: 600; color: var(--ink); }
+#cov b  { font-family: var(--font-value); color: var(--authoritative); }
+#covNot { position: absolute; left: 93px; top: 1236px; width: 894px;
+          font-family: var(--font-label); font-size: 30px; line-height: 1.26;
+          letter-spacing: var(--track-label); text-transform: uppercase; color: var(--stale);
+          font-weight: 500; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="14"
+     data-width="1080" data-height="1920">
+  <div id="stage" class="clip" data-start="0" data-duration="14" data-track-index="0">
+
+    <div id="lblTop" class="label">bản kê đường đi &mdash; sau khi fix</div>
+
+    <div id="rows"></div>
+
+    <div id="rule"></div>
+    <div id="covLbl" class="label">độ phủ test phân quyền theo route</div>
+    <div id="cov"><b>4</b> trên <b>8</b> đường có test đó</div>
+    <div id="covNot">con số này nói còn đường nào chưa ai kiểm &mdash;<br />nó không nói phân quyền của bạn đúng</div>
+
+  </div>
+</div>
+
+<script>
+/* The four HTTP routes the viewer has already watched, then four more that the
+   data-layer fix does not reach. Each reason is real and specific: a background job
+   has no principal to enforce against; raw SQL and a second service do not go
+   through the application data layer at all; a queue consumer never sees req. */
+const ROWS = [
+  { p: '/documents/:id',           inside: true },
+  { p: '/documents/:id/comments',  inside: true },
+  { p: '/documents/:id/history',   inside: true },
+  { p: '/documents/:id/exports',   inside: true },
+  { p: 'jobs: weekly-report',      inside: false, why: 'không chạy dưới danh nghĩa người dùng nào' },
+  { p: 'queue: index-rebuild',     inside: false, why: 'không có req nào để nhận principal' },
+  { p: 'psql: truy vấn tay',       inside: false, why: 'không đi qua tầng nạp dữ liệu' },
+  { p: 'service khác, cùng db',    inside: false, why: 'không đi qua tầng nạp dữ liệu' },
+];
+const TOP = 340, PITCH = 88;
+
+const host = document.getElementById('rows');
+const pathEls = [], tokEls = [], whyEls = [];
+ROWS.forEach((r, i) => {
+  const a = document.createElement('div');
+  a.className = 'p ' + (r.inside ? 'inside' : 'outside');
+  a.style.top = (TOP + i * PITCH) + 'px'; a.textContent = r.p;
+  host.appendChild(a); pathEls.push(a);
+
+  if (r.inside) {
+    const b = document.createElement('div');
+    b.className = 'tok'; b.style.top = (TOP + i * PITCH + 2) + 'px';
+    b.textContent = 'quyết định được giao tới';
+    host.appendChild(b); tokEls.push(b);
+  } else {
+    // no token and NO placeholder. The reason is written instead, because it differs
+    // per row and cannot be inferred from an absence.
+    const c = document.createElement('div');
+    c.className = 'why'; c.style.top = (TOP + i * PITCH - 6) + 'px'; c.textContent = r.why;
+    host.appendChild(c); whyEls.push(c);
+  }
+});
+
+window.__timelines = window.__timelines || {};
+const tl = gsap.timeline({ paused: true });
+const R = 'power3.out', T = 'power2.inOut';
+
+gsap.set([...pathEls, ...tokEls, ...whyEls], { opacity: 0 });
+gsap.set(['#covLbl', '#cov', '#covNot'], { opacity: 0 });
+gsap.set('#rule', { scaleX: 0 });
+
+/* ---- 0.25–1.60  the four the viewer already knows, now covered --------
+   The decision arrives on all four without any of them asking. This is the fix
+   working, stated once and briefly — the section is not about the fix. */
+tl.to('#lblTop', { opacity: 1, duration: .4, ease: R }, 0.25)
+  .to(pathEls.slice(0, 4), { opacity: 1, duration: .26, ease: R, stagger: .16 }, 0.55)
+  .to(tokEls, { opacity: 1, duration: .24, ease: R, stagger: .10 }, 1.20);
+
+/* ---- 2.60–6.40  and the list keeps going -----------------------------
+   Slower than the first four. Each row arrives with its own reason, and the reasons
+   do not rhyme — that is the content: there is no single boundary that contains
+   them. Nothing is marked as missing; there is simply nothing in that column. */
+ROWS.forEach((r, i) => {
+  if (r.inside) return;
+  const t = 2.60 + (i - 4) * 0.95;
+  tl.to(pathEls[i], { opacity: 1, duration: .3, ease: R }, t)
+    .to(whyEls[i - 4], { opacity: 1, duration: .35, ease: R }, t + .22);
+});
+
+/* ---- 7.20  the count, over the same list ------------------------------ */
+tl.to('#rule', { scaleX: 1, duration: .7, ease: T }, 7.20)
+  .to('#covLbl', { opacity: 1, duration: .4, ease: R }, 7.60)
+  .to('#cov', { opacity: 1, duration: .45, ease: R }, 8.20);
+
+/* ---- 10.20  the boundary of the signal, at full size ------------------ */
+tl.to('#covNot', { opacity: 1, duration: .5, ease: R }, 10.20);
+
+window.__timelines['main'] = tl;
+</script>
+</body>
+</html>

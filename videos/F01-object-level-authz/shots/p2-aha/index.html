@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=1920" />
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+/* @brand:start */
+:root {
+  --ground: #0C0D0F; --ground-lift: #14161A;
+  --ink: #EDEAE4; --ink-mid: #9AA0A6; --ink-dim: #8B9198; --ink-ghost: #3A3E42;
+  --rule: #23272A; --rule-bright: #3D4348; --hair: 1.5px;
+  --authoritative: #C9A227; --stale: #E0533D; --lost: #6A6F74;
+  --boundary: #4E8C7D; --pressure: #B4623A; --counterfactual: #7A8086;
+  --font-value: "IBM Plex Mono", ui-monospace, monospace;
+  --font-label: "IBM Plex Sans Condensed", "IBM Plex Sans", system-ui, sans-serif;
+  --t-hero: 200px; --t-value: 64px; --t-body: 36px; --t-label: 26px; --track-label: 0.18em;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { overflow: hidden; background: var(--ground); color: var(--ink); font-family: var(--font-label); }
+.label { font-family: var(--font-label); font-size: var(--t-label); letter-spacing: var(--track-label);
+         text-transform: uppercase; color: var(--ink-dim); font-weight: 500; }
+/* @brand:end */
+
+html, body { width: 1080px; height: 1920px; }
+#stage { position: absolute; inset: 0; }
+
+/* ---------------------------------------------------------------------------
+   P2 — THE AHA: DELIVERED vs MUST-BE-ASKED. Prototype, not a shot.
+
+   Two earlier framings of this aha were rejected on semantics before being built:
+
+   (a) "the answer's scope is one access, it does not extend to another path."
+       False. An authorization decision about (subject, resource, action) applies on
+       any path — that is exactly why centralised enforcement works at all. The
+       package says the question must be ASKED again, which is about the act of
+       asking, not about the answer expiring.
+
+   (b) "the answer cannot be reused because it names the code path." Also false, and
+       worse: it would teach that authorization is a property of a route.
+
+   What survives is grammatical. `req.principal` is a NOUN THAT ARRIVES: middleware
+   puts it there, every path has it, used or not. The authorization decision is a
+   VERB SOMEONE PERFORMS: it happens only where a body performs it. A new path
+   inherits the noun automatically and does not inherit the verb.
+
+   The image is repetition vs singularity, in ONE column across two passes: the
+   delivered token appears on all four paths; the performed token appears on one.
+   Same position, so the comparison needs no annotation. No placeholder marks the
+   three paths that do not perform it — see VISUAL_STRATEGY §5.1.
+
+   Every path listed is an HTTP route, deliberately. A background job or a GraphQL
+   resolver has no `req.principal`, so putting one in this list to make the point
+   bigger would be a lie. Those belong to the trade-off register.
+--------------------------------------------------------------------------- */
+#lblTop { position: absolute; left: 93px; top: 244px; width: 894px; }
+
+#colHdrA, #colHdrB { position: absolute; left: 600px; top: 340px; }
+#colHdrA { color: var(--boundary); }
+#colHdrB { color: var(--authoritative); }
+
+.p    { position: absolute; left: 93px; font-family: var(--font-value); font-size: 34px;
+        line-height: 1; color: var(--ink-mid); white-space: pre; }
+.tok  { position: absolute; left: 600px; font-family: var(--font-value); font-size: 34px;
+        line-height: 1; white-space: pre; }
+.tokA { color: var(--boundary); }
+.tokB { color: var(--authoritative); font-weight: 600; }
+
+#noteA { position: absolute; left: 93px; top: 776px; width: 894px; color: var(--boundary); }
+#noteB { position: absolute; left: 93px; top: 776px; width: 894px; color: var(--authoritative); }
+
+.close { position: absolute; left: 93px; width: 894px; font-family: var(--font-label);
+         font-size: 40px; letter-spacing: 0.01em; font-weight: 600; }
+#c1 { top: 900px; color: var(--boundary); }
+#c2 { top: 958px; color: var(--authoritative); }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="10"
+     data-width="1080" data-height="1920">
+  <div id="stage" class="clip" data-start="0" data-duration="10" data-track-index="0">
+
+    <div id="lblTop" class="label">bốn đường http tới cùng tài liệu &mdash; cả bốn qua middleware xác thực</div>
+
+    <div id="colHdrA" class="label">được giao tới</div>
+    <div id="colHdrB" class="label">phải được thực hiện</div>
+
+    <div id="rows"></div>
+
+    <div id="noteA" class="label">middleware đặt nó ở đó &middot; đường mới nhận mà không ai làm gì</div>
+    <div id="noteB" class="label">chỉ xảy ra ở nơi có người thực hiện nó</div>
+
+    <div class="close" id="c1">một danh từ bạn nhận được</div>
+    <div class="close" id="c2">một động từ bạn phải làm</div>
+
+  </div>
+</div>
+
+<script>
+/* Four HTTP routes to the same document. All four pass the auth middleware, so all
+   four legitimately have req.principal — that is the point of the first pass. */
+const PATHS = ['/documents/:id', '/documents/:id/comments',
+               '/documents/:id/history', '/documents/:id/exports'];
+const TOP = 420, PITCH = 78;
+const PERFORMS = [0];              // only the first body performs the decision
+
+const host = document.getElementById('rows');
+const pathEls = [], tokA = [], tokB = [];
+PATHS.forEach((p, i) => {
+  const a = document.createElement('div');
+  a.className = 'p'; a.style.top = (TOP + i * PITCH) + 'px'; a.textContent = p;
+  host.appendChild(a); pathEls.push(a);
+
+  const b = document.createElement('div');
+  b.className = 'tok tokA'; b.style.top = (TOP + i * PITCH) + 'px'; b.textContent = 'req.principal';
+  host.appendChild(b); tokA.push(b);
+
+  if (PERFORMS.includes(i)) {
+    const c = document.createElement('div');
+    c.className = 'tok tokB'; c.style.top = (TOP + i * PITCH) + 'px'; c.textContent = 'assertMember(doc)';
+    host.appendChild(c); tokB.push(c);
+  }
+});
+
+window.__timelines = window.__timelines || {};
+const tl = gsap.timeline({ paused: true });
+const R = 'power3.out';
+
+gsap.set([...pathEls, ...tokA, ...tokB], { opacity: 0 });
+gsap.set(['#lblTop', '#colHdrA', '#colHdrB', '#noteA', '#noteB', '#c1', '#c2'], { opacity: 0 });
+
+/* ---- 0.25  the inventory the viewer has been tracking ----------------- */
+tl.to('#lblTop', { opacity: 1, duration: .4, ease: R }, 0.25)
+  .to(pathEls, { opacity: 1, duration: .28, ease: R, stagger: .18 }, 0.60);
+
+/* ---- 1.80  PASS ONE: what arrives -------------------------------------
+   Fast stagger on purpose. Nobody did anything for this to be here. */
+tl.to('#colHdrA', { opacity: 1, duration: .35, ease: R }, 1.80)
+  .to(tokA, { opacity: 1, duration: .25, ease: R, stagger: .09 }, 1.95)
+  .to('#noteA', { opacity: 1, duration: .4, ease: R }, 2.90);
+
+/* ---- 4.20  PASS TWO: what must be performed ---------------------------
+   Same column, so four-versus-one is a direct comparison and needs no marker.
+   Nothing is drawn beside the three paths that do not perform it. */
+tl.to([...tokA, '#colHdrA', '#noteA'], { opacity: 0, duration: .45 }, 4.20)
+  .to('#colHdrB', { opacity: 1, duration: .35, ease: R }, 4.75)
+  .to(tokB, { opacity: 1, duration: .35, ease: R }, 4.95)
+  .to('#noteB', { opacity: 1, duration: .4, ease: R }, 5.70);
+
+/* ---- 7.10  the grammar, named once ------------------------------------ */
+tl.to('#c1', { opacity: 1, duration: .4, ease: R }, 7.10)
+  .to('#c2', { opacity: 1, duration: .4, ease: R }, 7.75);
+
+window.__timelines['main'] = tl;
+</script>
+</body>
+</html>
