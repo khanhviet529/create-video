@@ -1,0 +1,36 @@
+{
+ "total_counted": 711,
+ "package_claims": 711,
+ "picked": [
+  {
+   "beat": 12,
+   "syllables": 29,
+   "terms": 6,
+   "text": "Doc Postgres nói streaming replication mặc định là bất đồng bộ. Có một khoảng trễ nhỏ giữa lúc commit trên primary và lúc thay đổi hiện ra trên replica."
+  },
+  {
+   "beat": 19,
+   "syllables": 14,
+   "terms": 0,
+   "text": "Với một node, hai cách đo đó là một. Với hai node thì không."
+  },
+  {
+   "beat": 30,
+   "syllables": 35,
+   "terms": 8,
+   "text": "Chỗ thứ ba. Bắt primary chờ replica. Postgres có mức remote apply. Commit không trả về cho tới khi replica đã áp dụng xong. Tức là tới khi câu đọc trên replica thấy được nó."
+  },
+  {
+   "beat": 36,
+   "syllables": 22,
+   "terms": 3,
+   "text": "Chỉ replay lag mới nói về cái mà câu đọc trên replica thấy được. Hai con số kia nói về độ bền."
+  },
+  {
+   "beat": 39,
+   "syllables": 30,
+   "terms": 3,
+   "text": "Cái gì trong hệ thống của bạn đang quyết định một câu SELECT đi về primary hay replica? Và nó có biết gì về câu ghi vừa xảy ra không?\n"
+  }
+ ]
+}

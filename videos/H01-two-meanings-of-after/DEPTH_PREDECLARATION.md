@@ -67,12 +67,17 @@ Nhưng nó đòi **ít nhất hai biểu diễn trung thực để xếp chồng
 **Không thể xếp chồng nhiều biểu diễn khi chỉ có một.** Vai này không phải bị bác — nó **không
 khả dụng**, và điều đó đến từ một kết quả đã có trong tay chứ không từ một phỏng đoán mới.
 
-### (c) Nguy cơ MỚI: phối cảnh bơm vào một khác biệt ĐỊNH LƯỢNG giữa hai thứ buộc phải giống nhau
+### (c) Nguy cơ MỚI — **chỉ với phép chiếu PHỐI CẢNH**: bơm vào một khác biệt ĐỊNH LƯỢNG giữa hai thứ buộc phải giống nhau
 
 Bản steelman hấp dẫn nhất: đặt **node** lên trục sâu — primary ở gần, replica ở xa — để giải
 phóng trục dọc.
 
 Nó hỏng, và hỏng theo một cách đáng ghi:
+
+> **Điều kiện:** lý do này chỉ đúng với **phép chiếu phối cảnh**. Phép chiếu **TRỰC GIAO**
+> không co ngắn theo độ sâu, nên nó KHÔNG dính lỗi này. Phán quyết vẫn đứng vì **(a) và (b)
+> độc lập với (c)**, và trực giao **không sửa được (a)** — nó vẫn trực giao với phạm vi.
+> Ghi (c) ở dạng tuyệt đối sẽ là đúng lỗi mà tài liệu SCOPE vừa cẩn thận tránh.
 
 - **Phối cảnh làm đường lịch sử của node xa NGẮN HƠN trên màn hình.** Nhưng cả hai node đọc
   **cùng một log, cùng những vị trí đó**. Hình sẽ nói replica có một lịch sử nhỏ hơn — một lời

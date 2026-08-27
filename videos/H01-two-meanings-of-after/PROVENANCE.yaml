@@ -22,3 +22,18 @@ notes:
   - package carries no `revision` field, so revision is not expressible in this
     contract — only content identity is. source_sha256 is what identifies these
     bytes.
+
+# -- mat xich git, them vao ngay soat lai (KHONG ghi de ban ghi o tren) --------------
+git_link_note: >-
+  Truong source_git_commit o tren ghim 92ce32aac75eddcfc04fccec22673d220e89ec3b. Commit do
+  KHONG phan giai duoc tu remote cua Content: lich su da push o do la 6757438 -> 37994b1 ->
+  4f8ad23, tuc repo Content da duoc khoi tao lai vao luc push. Ban ghi cu duoc GIU NGUYEN vi
+  no la bang chung ve thu da that su xay ra luc import, khong phai mot loi can xoa. Bao ve
+  thuc su khong nam o commit ma o noi dung: source_sha256 khop
+  f62837859b1d1a2f2232c91f029e52fb295ba4750617f05afc28a6e00a646e6d o ca hai dau. Dung nhu
+  notes da ghi tu dau: source_sha256 is what identifies these bytes.
+source_git_commit_resolvable: 4f8ad23
+source_git_commit_resolvable_note: >-
+  Mot commit CO TON TAI tren remote Content chua dung blob f62837859b1d...a646e6d. Them vao de
+  mat xich audit di duoc tu H01 ve mot commit that, ma khong phai sua hay xoa ban ghi goc.
+  Day la truong THU HAI, khong thay the source_git_commit.

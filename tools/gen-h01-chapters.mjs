@@ -6,105 +6,7 @@
  *
  * Không polish. Không voice. Không neo timing vào 169s — thời lượng đặt theo nhu cầu kiểm.
  */
-import fs from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { BRAND } from './g01-world.mjs';
-
-const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
-const OUT = path.join(ROOT, 'videos', 'H01-two-meanings-of-after', 'shots');
-
-const G = { x0: 170, x1: 910, yLine: 1000, yPri: 902, yRep: 1190, p0: 496.6, p1: 500.6 };
-const X = (p) => Math.round(G.x0 + (p - G.p0) / (G.p1 - G.p0) * (G.x1 - G.x0));
-
-const CSS = `
-#hist { position: absolute; left: ${G.x0}px; top: ${G.yLine - 1}px;
-        width: ${G.x1 - G.x0}px; height: 2px; background: var(--rule-bright); }
-.pt { position: absolute; width: 2px; height: 20px; margin-left: -1px;
-      top: ${G.yLine - 10}px; background: var(--rule-bright); }
-.pn { position: absolute; top: ${G.yLine + 40}px; width: 150px; margin-left: -168px;
-      text-align: right; font-family: var(--font-value); font-size: 30px; color: var(--ink-dim); }
-.br { position: absolute; height: 4px; background: var(--ink-mid); transform-origin: left center; }
-.cap2 { position: absolute; width: 4px; background: var(--ink-mid); }
-.brl { position: absolute; font-family: var(--font-label); font-size: 26px; letter-spacing: .14em;
-       text-transform: uppercase; font-weight: 500; color: var(--ink-dim); }
-.mk { position: absolute; width: 28px; height: 28px; margin: -14px 0 0 -14px; top: ${G.yLine}px;
-      background: var(--ground); box-shadow: inset 0 0 0 4px var(--ink); border-radius: 50%; }
-.mk.filled { background: var(--ink); }
-.ring { position: absolute; width: 76px; height: 76px; margin: -38px 0 0 -38px; top: ${G.yLine}px;
-        border-radius: 50%; box-shadow: inset 0 0 0 3px var(--ink); opacity: 0; }
-/* SỢI PHỤC VỤ: câu đọc này được tiền tố NÀO phục vụ. Đi lên = primary, đi xuống = replica. */
-.serve { position: absolute; width: 3px; background: var(--boundary); transform-origin: center top; }
-.serve.down { transform-origin: center top; }
-/* SỢI NEO của remote_apply: đầu mút commit neo vào ĐIỀU KIỆN, không vào thời điểm */
-.teth { position: absolute; width: 3px; background: var(--authoritative); transform-origin: center top; }
-/* MỐC trên MỘT hành trình — không phải ba thanh ngang nhau */
-.ms { position: absolute; width: 16px; height: 16px; margin: -8px 0 0 -8px; border-radius: 50%;
-      background: var(--ink-dim); }
-.msl { position: absolute; font-family: var(--font-value); font-size: 26px; color: var(--ink-dim);
-       margin-left: 26px; margin-top: -16px; }
-#gapb { position: absolute; top: ${G.yLine + 20}px; height: 3px; background: var(--ink-dim); opacity: 0; }
-`;
-
-const BASE_BODY = (opts = {}) => [
-  '    <div id="hist"></div>',
-  ...[497, 498, 499, 500].flatMap((p) => [
-    `    <div class="pt" style="left:${X(p)}px"></div>`,
-    `    <div class="pn" style="left:${X(p)}px">${p}</div>`,
-  ]),
-  `    <div id="gapb" style="left:${X(499)}px;width:${X(500) - X(499)}px"></div>`,
-  `    <div class="br" id="bPri" style="left:${G.x0}px;top:${G.yPri - 2}px;width:${X(500) - G.x0}px"></div>`,
-  `    <div class="cap2" id="cPri" style="left:${X(500)}px;top:${G.yPri - 2}px;height:${G.yLine - G.yPri - 12}px"></div>`,
-  `    <div class="br" id="bRep" style="left:${G.x0}px;top:${G.yRep - 2}px;width:${X(opts.repEnd ?? 499) - G.x0}px"></div>`,
-  `    <div class="cap2" id="cRep" style="left:${X(opts.repEnd ?? 499)}px;top:${G.yLine + 84}px;height:${G.yRep - G.yLine - 82}px"></div>`,
-  `    <div class="brl" id="lPri" style="left:${G.x0}px;top:${G.yPri - 46}px">primary đã áp tới</div>`,
-  `    <div class="brl" id="lRep" style="left:${G.x0}px;top:${G.yRep + 22}px">replica đã áp tới</div>`,
-].join('\n');
-
-const HELPERS = [
-  `const X = (p) => Math.round(${G.x0} + (p - ${G.p0}) / ${G.p1 - G.p0} * ${G.x1 - G.x0});`,
-  'function mark(p, filled) {',
-  "  const d = document.createElement('div');",
-  "  d.className = 'mk' + (filled ? ' filled' : '');",
-  "  d.style.left = X(p) + 'px'; stage.appendChild(d); return d;",
-  '}',
-  '/* sợi phục vụ: nối một câu đọc với tiền tố ĐANG phục vụ nó */',
-  'function serve(p, dir) {',
-  "  const d = document.createElement('div');",
-  "  d.className = 'serve';",
-  `  const up = dir === 'up';`,
-  `  const top = up ? ${G.yPri} : ${G.yLine + 14};`,
-  `  const h = up ? ${G.yLine - 14 - G.yPri} : ${G.yRep - G.yLine - 14};`,
-  "  d.style.cssText = 'left:' + (X(p) - 1) + 'px;top:' + top + 'px;height:' + h + 'px';",
-  '  stage.appendChild(d); return d;',
-  '}',
-].join('\n');
-
-function build({ id, dur, note, body, js }) {
-  const parts = ['<!doctype html>', '<html lang="vi">', '<head>',
-    '<meta charset="UTF-8" />', '<meta name="viewport" content="width=1080, height=1920" />',
-    '<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"><' + '/script>',
-    '<style>', BRAND, CSS, '',
-    '/* ---------------------------------------------------------------------------',
-    note, '--------------------------------------------------------------------------- */',
-    '</style>', '</head>', '<body>',
-    `<div id="root" data-composition-id="main" data-start="0" data-duration="${dur}"`,
-    '     data-width="1080" data-height="1920">',
-    `  <div id="stage" class="clip" data-start="0" data-duration="${dur}" data-track-index="0">`,
-    body, '  </div>', '</div>', '',
-    '<script>',
-    'window.__timelines = window.__timelines || {};',
-    'const tl = gsap.timeline({ paused: true });',
-    "const R = 'power3.out', T = 'power2.inOut';",
-    "const stage = document.getElementById('stage');",
-    HELPERS, js,
-    "window.__timelines['main'] = tl;",
-    '<' + '/script>', '</body>', '</html>', ''];
-  const dir = path.join(OUT, id);
-  fs.mkdirSync(dir, { recursive: true });
-  fs.writeFileSync(path.join(dir, 'index.html'), parts.join('\n'));
-  console.log('wrote', id, dur + 's');
-}
+import { G, X, CSS, BASE_BODY, HELPERS, build } from './h01-shared.mjs';
 
 /* ══════════════════ CH-B · AHA (beat 16–19) ═══════════════════════════════════
    R18: hình KHÔNG được phát biểu theo hệ VỊ TRÍ trong lúc lời đang nói theo hệ ĐỒNG HỒ.
@@ -119,18 +21,13 @@ build({
       + '   nên chuyện loại trừ KHÔNG PHÁT BIỂU ĐƯỢC — "với một node, hai cách đo là một".',
   body: BASE_BODY(),
   js: [
+    '/* THỪA HƯỞNG: đường lịch sử, các vị trí và hai dấu đã có từ CH-2 và sống qua CH-3.',
+    '   Chương này KHÔNG dựng lại chúng — đo được ở review câm rằng dựng lại là phá thế giới bền. */',
     "gsap.set(['#bPri','#cPri','#bRep','#cRep','#lPri','#lRep','#gapb'], { opacity: 0 });",
-    "gsap.set('.pt, .pn', { opacity: 0 });",
-    "gsap.set('#hist', { scaleX: 0, transformOrigin: 'left center' });",
-    '',
-    '/* beat 16 — chỉ có lịch sử và hai sự kiện. Không hệ quy chiếu nào được phát biểu. */',
-    "tl.to('#hist', { scaleX: 1, duration: .7, ease: R }, 0.3);",
-    "tl.to('.pt', { opacity: 1, duration: .3, stagger: .08 }, 0.9);",
-    "tl.to('.pn', { opacity: 1, duration: .3, stagger: .08 }, 1.0);",
+    "gsap.set('.pt, .pn', { opacity: 1 });",
+    "gsap.set('#hist', { scaleX: 1 });",
     'const W = mark(500, true), Rd = mark(499, false);',
-    'gsap.set([W, Rd], { opacity: 0 });',
-    "tl.to(W, { opacity: 1, duration: .4, ease: R }, 1.6);",
-    "tl.to(Rd, { opacity: 1, duration: .4, ease: R }, 2.4);",
+    'gsap.set([W, Rd], { opacity: 1 });',
     '',
     '/* beat 17 (2.9 → 5.6) — hệ ĐỒNG HỒ. Hình IM LẶNG: không đoạn bao nào xuất hiện. */',
     '',
@@ -252,7 +149,7 @@ build({
    R12 — cùng một số đọc cho HAI thế giới khác nhau: gap nhỏ vì vừa chép kịp, và gap bằng
         không vì KHÔNG CÓ GÌ ĐỂ CHÉP. */
 build({
-  id: 'ch-do-luong', dur: 22,
+  id: 'ch-do-luong', dur: 17,
   note: '   CH-C · phát hiện. Ba loại lag là BA MỐC trên một hành trình WAL đi từ primary xuống\n'
       + '   replica — không phải ba thanh ngang nhau. Chỉ mốc thứ ba (applied) có sợi nối tới\n'
       + '   ĐẦU MÚT tiền tố, vì chỉ nó dời được đầu mút đó; hai mốc kia nói về độ bền.\n'

@@ -91,15 +91,17 @@ html, body { width: 1080px; height: 1920px; }
 
 
 /* ---------------------------------------------------------------------------
-   NEGATIVE CONTROL cho R18. Đoạn bao có mặt ngay từ đầu, tức hình đang phát biểu hệ
-   VỊ TRÍ trong lúc lời nói theo hệ ĐỒNG HỒ. Shot này TỒN TẠI ĐỂ TRƯỢT.
+   NEGATIVE CONTROL cho R4. Hai bảo đảm hiện ra như hai ĐÈN cùng hình, một bật một tắt —
+   tức gộp hai loại vị từ vào một thang nhị phân, đúng thứ rejected_explanations[2] cấm.
+   Bằng chứng của cả hai đều là một cú đổi opacity, không cái nào là chuyển động hoàn
+   tất. Shot này TỒN TẠI ĐỂ TRƯỢT.
 --------------------------------------------------------------------------- */
 </style>
 </head>
 <body>
-<div id="root" data-composition-id="main" data-start="0" data-duration="6"
+<div id="root" data-composition-id="main" data-start="0" data-duration="9"
      data-width="1080" data-height="1920">
-  <div id="stage" class="clip" data-start="0" data-duration="6" data-track-index="0">
+  <div id="stage" class="clip" data-start="0" data-duration="9" data-track-index="0">
     <div id="hist"></div>
     <div class="pt" style="left:244px"></div>
     <div class="pn" style="left:244px">497</div>
@@ -116,6 +118,8 @@ html, body { width: 1080px; height: 1920px; }
     <div class="cap2" id="cRep" style="left:614px;top:1084px;height:108px"></div>
     <div class="brl" id="lPri" style="left:170px;top:856px">primary đã áp tới</div>
     <div class="brl" id="lRep" style="left:170px;top:1212px">replica đã áp tới</div>
+    <div class="mk" id="d1" style="left:340px;top:1480px"></div>
+    <div class="mk filled" id="d2" style="left:740px;top:1480px"></div>
   </div>
 </div>
 
@@ -143,6 +147,9 @@ function serve(p, dir) {
 gsap.set('.pt, .pn', { opacity: 1 });
 const W = mark(500, true), Rd = mark(499, false);
 tl.to([W, Rd], { opacity: 1, duration: .3 }, 0.4);
+gsap.set(['#d1','#d2'], { opacity: 0 });
+tl.to('#d1', { opacity: 1, duration: .4 }, 2.0);
+tl.to('#d2', { opacity: 1, duration: .4 }, 6.0);
 window.__timelines['main'] = tl;
 </script>
 </body>

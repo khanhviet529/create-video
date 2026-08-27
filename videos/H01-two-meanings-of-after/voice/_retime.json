@@ -1,0 +1,77 @@
+{
+ "total_narration_s": 168.45,
+ "rows": [
+  {
+   "id": "ch1-su-co",
+   "a": 1,
+   "b": 7,
+   "need": 24.18,
+   "built": 14,
+   "lastMove": 7.75,
+   "overSpeech": 16.43
+  },
+  {
+   "id": "ch2-co-che",
+   "a": 8,
+   "b": 12,
+   "need": 21.86,
+   "built": 17,
+   "lastMove": 13.75,
+   "overSpeech": 8.11
+  },
+  {
+   "id": "ch3-cua-so",
+   "a": 13,
+   "b": 15,
+   "need": 13.86,
+   "built": 12,
+   "lastMove": 6,
+   "overSpeech": 7.86
+  },
+  {
+   "id": "ch-aha",
+   "a": 16,
+   "b": 19,
+   "need": 11.35,
+   "built": 15,
+   "lastMove": 13.25,
+   "overSpeech": -1.9
+  },
+  {
+   "id": "ch4-bao-dam",
+   "a": 20,
+   "b": 24,
+   "need": 23.46,
+   "built": 18,
+   "lastMove": 13.25,
+   "overSpeech": 10.21
+  },
+  {
+   "id": "ch-bon-vi-tri",
+   "a": 25,
+   "b": 33,
+   "need": 45.19,
+   "built": 30,
+   "lastMove": 26.25,
+   "overSpeech": 18.94
+  },
+  {
+   "id": "ch-do-luong",
+   "a": 34,
+   "b": 38,
+   "need": 21.69,
+   "built": 17,
+   "lastMove": 16.75,
+   "overSpeech": 4.94
+  },
+  {
+   "id": "ch5-cau-hoi",
+   "a": 39,
+   "b": 39,
+   "need": 6.86,
+   "built": 8,
+   "lastMove": 3.75,
+   "overSpeech": 3.11
+  }
+ ]
+}

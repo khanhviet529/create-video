@@ -89,33 +89,23 @@ html, body { width: 1080px; height: 1920px; }
 #gapb { position: absolute; top: 1020px; height: 3px; background: var(--ink-dim); opacity: 0; }
 
 
+.q { position: absolute; left: 90px; width: 900px; font-family: var(--font-label);
+     font-size: 50px; line-height: 1.24; letter-spacing: .01em; font-weight: 600; }
+#q1 { top: 980px; color: var(--ink); }
+#q2 { top: 1130px; color: var(--stale); }
 
 /* ---------------------------------------------------------------------------
-   NEGATIVE CONTROL cho R18. Đoạn bao có mặt ngay từ đầu, tức hình đang phát biểu hệ
-   VỊ TRÍ trong lúc lời nói theo hệ ĐỒNG HỒ. Shot này TỒN TẠI ĐỂ TRƯỢT.
+   CH-5 · câu hỏi. Cú ra tỉ lệ: rời lịch sử replication, quay về người xem.
+   Chữ và chỉ chữ, đối xứng với CH-1 — mở bằng một sự cố, đóng bằng một câu hỏi.
 --------------------------------------------------------------------------- */
 </style>
 </head>
 <body>
-<div id="root" data-composition-id="main" data-start="0" data-duration="6"
+<div id="root" data-composition-id="main" data-start="0" data-duration="8"
      data-width="1080" data-height="1920">
-  <div id="stage" class="clip" data-start="0" data-duration="6" data-track-index="0">
-    <div id="hist"></div>
-    <div class="pt" style="left:244px"></div>
-    <div class="pn" style="left:244px">497</div>
-    <div class="pt" style="left:429px"></div>
-    <div class="pn" style="left:429px">498</div>
-    <div class="pt" style="left:614px"></div>
-    <div class="pn" style="left:614px">499</div>
-    <div class="pt" style="left:799px"></div>
-    <div class="pn" style="left:799px">500</div>
-    <div id="gapb" style="left:614px;width:185px"></div>
-    <div class="br" id="bPri" style="left:170px;top:900px;width:629px"></div>
-    <div class="cap2" id="cPri" style="left:799px;top:900px;height:86px"></div>
-    <div class="br" id="bRep" style="left:170px;top:1188px;width:444px"></div>
-    <div class="cap2" id="cRep" style="left:614px;top:1084px;height:108px"></div>
-    <div class="brl" id="lPri" style="left:170px;top:856px">primary đã áp tới</div>
-    <div class="brl" id="lRep" style="left:170px;top:1212px">replica đã áp tới</div>
+  <div id="stage" class="clip" data-start="0" data-duration="8" data-track-index="0">
+    <div class="q" id="q1">cái gì đang quyết định một câu SELECT đi về primary hay replica?</div>
+    <div class="q" id="q2">và nó có biết gì về câu ghi vừa xảy ra không?</div>
   </div>
 </div>
 
@@ -140,9 +130,9 @@ function serve(p, dir) {
   d.style.cssText = 'left:' + (X(p) - 1) + 'px;top:' + top + 'px;height:' + h + 'px';
   stage.appendChild(d); return d;
 }
-gsap.set('.pt, .pn', { opacity: 1 });
-const W = mark(500, true), Rd = mark(499, false);
-tl.to([W, Rd], { opacity: 1, duration: .3 }, 0.4);
+gsap.set(['#q1','#q2'], { opacity: 0 });
+tl.to('#q1', { opacity: 1, duration: .7, ease: R }, 0.6);
+tl.to('#q2', { opacity: 1, duration: .7, ease: R }, 3.4);
 window.__timelines['main'] = tl;
 </script>
 </body>

@@ -133,3 +133,49 @@ tương ứng của shot chính. Nếu NC nổ mà đại lượng thiết kế 
 
 **Hệ quả cho mọi bản vá:** `String.replace` không guard là một lỗi âm thầm. Mọi phép thay thế
 trong script vá phải **ném lỗi khi không khớp**.
+
+---
+
+## TIÊU CHÍ DỰNG hay KHÔNG DỰNG — phân loại khẳng định trước khi mở prototype
+
+Ngang hàng với cổng L2 và cổng RGB. Áp trước khi mở bất kỳ prototype nào.
+
+| loại khẳng định | câu hỏi nó trả lời | cần gì |
+|---|---|---|
+| **CẢM THỤ** | *người xem đọc ra gì?* | **BẮT BUỘC artifact.** Không đo thì chỉ là ý kiến |
+| **CẤU TRÚC** | *một biểu diễn có tồn tại không?* | **hình học ĐỦ.** Artifact là dư |
+
+**Ví dụ cảm thụ** — R1: *"phép chiếu có đọc ra 'cùng hai sự kiện, đảo thứ tự' không?"* Lập luận
+thiết kế nghe rất thuyết phục và **sai**. Phải có `YAVG 0.0038` mới kết luận được "tiếng vọng".
+
+**Ví dụ cấu trúc** — trần tỉ lệ: *"chiều sâu có tạo được nấc bên trong không?"* Trả lời bằng
+hình học: trần đặt bởi **phạm vi**, chiều sâu **trực giao với phạm vi**. Render nó chỉ cho ra
+một khung đẹp hơn cùng bốn vị trí đó. Cùng loại: **loại vị từ của một thiết bị** (LAW-2), và
+**một biểu diễn thứ hai có tồn tại để xếp chồng không**.
+
+### Khe giữa hai loại, và cách đóng nó
+
+Prototype thứ ba của H01 (cú duyệt) rơi đúng vào khe: pre-declaration **đã kết luận được bằng
+cấu trúc** — lượt "theo thứ tự tới" không có vật nào trong khung để neo vào — rồi **vẫn dựng**
+để lấy số. Giá trị biên gần bằng không: nó **xác nhận một dự đoán** thay vì trả lời một câu chưa
+biết.
+
+> **Nếu pre-declaration đã kết luận được bằng cấu trúc, ĐỪNG dựng để xác nhận nó.**
+> Dựng chỉ khi câu hỏi còn lại là *cảm thụ*.
+
+Một prototype dựng để thoả chuẩn chứng minh, chứ không để biết điều chưa biết, là chi phí thuần.
+
+---
+
+## CÁCH LY DỤNG CỤ — `check-vacuum-invariant.mjs`
+
+`check-vacuum-invariant.mjs` phân loại pixel bằng **luma** (dải 130–158 cho `--ink-dim`). G01 đã
+**FROZEN**, và kết quả xác minh của nó gắn với dụng cụ ở trạng thái lúc đó, nên **không sửa**.
+
+> **Dụng cụ đó bị CÁCH LY cho G01.**
+> Mọi lần dùng nó cho **một video mới** thì **BẮT BUỘC** sửa sang RGB + biên độ kênh **trước khi
+> chạy**, theo cổng RGB.
+
+Rủi ro ở G01 là **tiềm ẩn chứ không hiện thực**: dải 130–158 nằm dưới cả `--ink-mid` (≈160) lẫn
+`--authoritative` (≈168). Nhưng bảng va chạm luma là thứ **mở rộng theo thời gian**, nên một
+palette mới có thể đẩy một token vào đúng dải đó mà không ai nhận ra.

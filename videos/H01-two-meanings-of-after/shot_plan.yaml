@@ -1,6 +1,6 @@
 video_id: H01-two-meanings-of-after
 package: "007"
-stage: STEP_3_R1
+stage: CHAPTERS_ASSEMBLED_MUTE
 full_video_review: not_started
 timing_status: NOT_MEASURED
 
@@ -137,7 +137,7 @@ shots:
       mute_test: hai lượt khác nhịp — bộ kiểm phải nói ra
 
   - id: ch-aha
-    status: chapter_draft
+    time: [ 43, 58 ]
     name: CH-B · AHA (beat 16-19)
     duration: 15
     engine: hyperframes
@@ -172,7 +172,7 @@ shots:
     review: { hero_frames: [ 2.0, 5.7 ], mute_test: hình phát biểu vị trí quá sớm }
 
   - id: ch-bon-vi-tri
-    status: chapter_draft
+    time: [ 76, 106 ]
     name: CH-A · bốn vị trí (beat 25-33)
     duration: 30
     engine: hyperframes
@@ -204,19 +204,19 @@ shots:
     review: { hero_frames: [ 2.0, 5.7 ], mute_test: câu đọc thứ hai nối lên — sai }
 
   - id: ch-do-luong
-    status: chapter_draft
+    time: [ 106, 123 ]
     name: CH-C · phát hiện (beat 34-38)
-    duration: 22
+    duration: 17
     engine: hyperframes
     purpose: ba mốc trên một hành trình; cùng số đọc cho hai thế giới
     same_reading_two_worlds:
       levels: { primary: 902, replica: 1190, line: 1000 }
       world_a: 13.1
-      world_b: 19.6
+      world_b: 16.4
       note: R12 — bề rộng khe hở phải bằng nhau ở hai thế giới, trong khi chuyển động khác hẳn
     camera: { motion: static, semantic_function: none, rationale: dụng cụ đo không cần đổi chỗ đứng }
     review:
-      hero_frames: [ 1.4, 2.8, 4.4, 6.4, 7.4, 10.2, 13.6, 15.4, 17.4, 19.6, 21.7 ]
+      hero_frames: [ 1.4, 2.8, 4.4, 6.4, 7.4, 10.2, 13.6, 15.4, 16.7 ]
       mute_test: ba mốc lần lượt trên một hành trình; chỉ mốc cuối nối tới đầu mút; hai thế giới cùng số đọc
 
   - id: ch-dl-neg-reading
@@ -232,6 +232,103 @@ shots:
       expect: READING_DIFFERS
     camera: { motion: static, semantic_function: none, rationale: negative control }
     review: { hero_frames: [ 2.0, 5.7 ], mute_test: hai khe hở khác nhau }
+
+  - id: ch1-su-co
+    time: [ 0, 14 ]
+    name: CH-1 · sự cố (beat 1-7)
+    duration: 14
+    engine: hyperframes
+    purpose: stale khác lost ở mức sự cố, dựng bằng sự CÓ MẶT chứ không bằng nhãn
+    camera: { motion: static, semantic_function: none, rationale: chưa có thế giới để camera đi vào }
+    review:
+      hero_frames: [ 1.2, 2.6, 5.6, 7.9, 10.0, 13.7 ]
+      mute_test: >-
+        ô người dùng lùi về giá trị cũ; ô primary giữ giá trị mới và không bao giờ đổi
+
+  - id: ch2-co-che
+    time: [ 14, 31 ]
+    name: CH-2 · cơ chế (beat 8-12)
+    duration: 17
+    engine: hyperframes
+    purpose: CÚ VÀO TỈ LỆ — từ ô đọc giao diện sang lịch sử replication
+    scale_transition: { kind: entry, at_beat_boundary: beat 7 sang beat 8 }
+    prefix_world:
+      brackets: { primary: bPri, replica: bRep }
+      levels: { primary: 902, replica: 1190, line: 1000 }
+      covered_mark: { position: 500, must_be_inside: primary, from: 5.0, to: 12.0 }
+      separable_from: 7.4
+    camera:
+      motion: static
+      semantic_function: none
+      rationale: cú vào tỉ lệ là đổi thứ TRƯỜNG CHỨA, không phải đổi chỗ đứng của máy quay
+    review:
+      hero_frames: [ 2.0, 4.9, 6.2, 8.4, 10.4, 14.2, 16.7 ]
+      mute_test: >-
+        log tới; commit ở 500; tiền tố dưới dừng ở 499; câu đọc nối xuống; rồi đầu mút dưới
+        TỚI MUỘN
+
+  - id: ch3-cua-so
+    time: [ 31, 43 ]
+    name: CH-3 · cửa sổ (beat 13-15)
+    duration: 12
+    engine: hyperframes
+    purpose: cặp không tách rời số 1 — hai khoảng chung gốc, B kết thúc BÊN TRONG A
+    nested_spans:
+      origin_x: 200
+      outer: spA
+      inner: spB
+      at: 10.0
+      levels: { outer_y: 1288, inner_y: 1364 }
+      note: cùng quan hệ trong/ngoài với thế giới nền, chỉ đổi tập
+    camera: { motion: static, semantic_function: none, rationale: thiết bị thời gian chỉ sống ba beat rồi nghỉ }
+    review:
+      hero_frames: [ 1.0, 3.2, 4.8, 6.6, 9.0, 11.7 ]
+      mute_test: hai khoảng cùng xuất phát; khoảng ngắn kết thúc BÊN TRONG khoảng dài
+
+  - id: ch4-bao-dam
+    time: [ 58, 76 ]
+    name: CH-4 · hai bảo đảm và cái giá (beat 20-24)
+    duration: 18
+    engine: hyperframes
+    purpose: hai bảo đảm hiện ra như HAI LOẠI khẳng định, không phải bật/tắt
+    two_kinds:
+      static_claim: { window: [2.0, 5.5], name: read-your-writes, expect: no_motion }
+      motion_claim: { window: [7.6, 9.2], name: eventual consistency, expect: motion }
+      levels: { primary: 902, replica: 1190, line: 1000 }
+    prefix_world:
+      brackets: { primary: bPri, replica: bRep }
+      levels: { primary: 902, replica: 1190, line: 1000 }
+      covered_mark: { position: 500, must_be_inside: primary, from: 1.2, to: 6.0 }
+      separable_from: 2.0
+    camera: { motion: static, semantic_function: none, rationale: hai bảo đảm phải cùng một chỗ đứng }
+    review:
+      hero_frames: [ 1.6, 3.2, 6.0, 8.4, 10.4, 13.6, 17.7 ]
+      mute_test: >-
+        một bảo đảm là quan hệ TĨNH giữa hai dấu; bảo đảm kia là một CHUYỂN ĐỘNG hoàn tất
+
+  - id: ch4-neg-binary
+    status: experiment
+    name: NEGATIVE CONTROL — hai bảo đảm thành hai đèn
+    duration: 9
+    engine: hyperframes
+    purpose: cả hai bảo đảm dựng CÙNG hình dạng bằng chứng; bộ kiểm hai-loại phải nổ
+    two_kinds:
+      static_claim: { window: [1.6, 3.6], name: đèn 1, expect: no_motion }
+      motion_claim: { window: [5.6, 7.6], name: đèn 2, expect: motion }
+      levels: { primary: 902, replica: 1190, line: 1000 }
+      expect: SAME_KIND
+    camera: { motion: static, semantic_function: none, rationale: negative control }
+    review: { hero_frames: [ 3.0, 8.7 ], mute_test: hai đèn cùng hình, chỉ khác trạng thái }
+
+  - id: ch5-cau-hoi
+    time: [ 123, 131 ]
+    name: CH-5 · câu hỏi (beat 39)
+    duration: 8
+    engine: hyperframes
+    purpose: CÚ RA TỈ LỆ — rời thế giới, quay về người xem
+    scale_transition: { kind: exit, at_beat_boundary: beat 38 sang beat 39 }
+    camera: { motion: static, semantic_function: none, rationale: không còn thế giới để camera đi ra }
+    review: { hero_frames: [ 1.6, 4.4, 7.7 ], mute_test: một câu hỏi, hai vế }
 
 camera_semantics:
   default: tĩnh

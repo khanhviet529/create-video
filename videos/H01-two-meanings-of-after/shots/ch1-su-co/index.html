@@ -89,33 +89,29 @@ html, body { width: 1080px; height: 1920px; }
 #gapb { position: absolute; top: 1020px; height: 3px; background: var(--ink-dim); opacity: 0; }
 
 
+#uLbl, #pLbl { position: absolute; left: 150px; font-family: var(--font-label); font-size: 26px;
+       letter-spacing: .14em; text-transform: uppercase; font-weight: 500; color: var(--ink-dim); }
+#uLbl { top: 774px; } #pLbl { top: 1034px; }
+.rule2 { position: absolute; left: 150px; width: 780px; height: 1.5px; background: var(--rule); }
+.vv { position: absolute; left: 150px; font-family: var(--font-value); font-size: 54px;
+      color: var(--ink); }
 
 /* ---------------------------------------------------------------------------
-   NEGATIVE CONTROL cho R18. Đoạn bao có mặt ngay từ đầu, tức hình đang phát biểu hệ
-   VỊ TRÍ trong lúc lời nói theo hệ ĐỒNG HỒ. Shot này TỒN TẠI ĐỂ TRƯỢT.
+   CH-1 · sự cố. Hai ô đọc, một giá trị. Ô của người dùng lùi về cũ; ô của primary
+   không đổi. Beat 4 ("họ gọi đó là mất dữ liệu") và beat 5 ("không có gì mất") là MỘT
+   chuyện xảy ra với một vật, không phải hai câu chữ: giá trị mới vẫn nằm đó suốt.
+   Chưa có đường lịch sử — cú vào tỉ lệ nằm ở ranh giới sang CH-2.
 --------------------------------------------------------------------------- */
 </style>
 </head>
 <body>
-<div id="root" data-composition-id="main" data-start="0" data-duration="6"
+<div id="root" data-composition-id="main" data-start="0" data-duration="14"
      data-width="1080" data-height="1920">
-  <div id="stage" class="clip" data-start="0" data-duration="6" data-track-index="0">
-    <div id="hist"></div>
-    <div class="pt" style="left:244px"></div>
-    <div class="pn" style="left:244px">497</div>
-    <div class="pt" style="left:429px"></div>
-    <div class="pn" style="left:429px">498</div>
-    <div class="pt" style="left:614px"></div>
-    <div class="pn" style="left:614px">499</div>
-    <div class="pt" style="left:799px"></div>
-    <div class="pn" style="left:799px">500</div>
-    <div id="gapb" style="left:614px;width:185px"></div>
-    <div class="br" id="bPri" style="left:170px;top:900px;width:629px"></div>
-    <div class="cap2" id="cPri" style="left:799px;top:900px;height:86px"></div>
-    <div class="br" id="bRep" style="left:170px;top:1188px;width:444px"></div>
-    <div class="cap2" id="cRep" style="left:614px;top:1084px;height:108px"></div>
-    <div class="brl" id="lPri" style="left:170px;top:856px">primary đã áp tới</div>
-    <div class="brl" id="lRep" style="left:170px;top:1212px">replica đã áp tới</div>
+  <div id="stage" class="clip" data-start="0" data-duration="14" data-track-index="0">
+    <div id="uLbl">người dùng thấy</div>
+    <div class="rule2" style="top:842px"></div>
+    <div id="pLbl">primary giữ</div>
+    <div class="rule2" style="top:1102px"></div>
   </div>
 </div>
 
@@ -140,9 +136,33 @@ function serve(p, dir) {
   d.style.cssText = 'left:' + (X(p) - 1) + 'px;top:' + top + 'px;height:' + h + 'px';
   stage.appendChild(d); return d;
 }
-gsap.set('.pt, .pn', { opacity: 1 });
-const W = mark(500, true), Rd = mark(499, false);
-tl.to([W, Rd], { opacity: 1, duration: .3 }, 0.4);
+function val(top, text, cls) {
+  const d = document.createElement('div');
+  d.className = 'vv' + (cls ? ' ' + cls : '');
+  d.style.top = top + 'px'; d.textContent = text;
+  stage.appendChild(d); return d;
+}
+gsap.set(['#uLbl','#pLbl','.rule2'], { opacity: 0 });
+
+/* beat 1-2 — hệ chạy tốt. Chỉ có ô của người dùng, và nó mang giá trị mới. */
+tl.to(['#uLbl','.rule2'], { opacity: 1, duration: .5, ease: R }, 0.5);
+const uNew = val(820, 'giá trị mới');
+const uOld = val(820, 'giá trị cũ');
+gsap.set([uNew, uOld], { opacity: 0 });
+tl.to(uNew, { opacity: 1, duration: .45, ease: R }, 1.6);
+
+/* beat 3 — bấm F5, và ô của người dùng LÙI VỀ giá trị cũ */
+tl.to(uNew, { opacity: 0, duration: .3, ease: T }, 4.6);
+tl.to(uOld, { opacity: 1, duration: .4, ease: R }, 4.9);
+
+/* beat 4-5 — không cần chữ "mất dữ liệu" để bác chữ "mất dữ liệu": ô thứ hai mở ra và
+   giá trị mới VẪN NẰM ĐÓ. Bác bằng một vật, không bằng một câu. */
+tl.to(['#pLbl'], { opacity: 1, duration: .5, ease: R }, 6.8);
+const pNew = val(1080, 'giá trị mới');
+gsap.set(pNew, { opacity: 0 });
+tl.to(pNew, { opacity: 1, duration: .5, ease: R }, 7.4);
+
+/* beat 6-7 — cả hai ô giữ nguyên. Không ô nào sai; chúng trả lời hai câu hỏi khác nhau. */
 window.__timelines['main'] = tl;
 </script>
 </body>

@@ -89,6 +89,7 @@ html, body { width: 1080px; height: 1920px; }
 #gapb { position: absolute; top: 1020px; height: 3px; background: var(--ink-dim); opacity: 0; }
 
 
+
 /* ---------------------------------------------------------------------------
    CH-B · AHA. Hai dấu có mặt từ đầu, W trước R. Trong beat 17 (hệ ĐỒNG HỒ) KHÔNG có
    đoạn bao nào — hình không phát biểu hệ nào cả. Beat 18 gọi tên hệ VỊ TRÍ và đoạn bao
@@ -141,18 +142,13 @@ function serve(p, dir) {
   d.style.cssText = 'left:' + (X(p) - 1) + 'px;top:' + top + 'px;height:' + h + 'px';
   stage.appendChild(d); return d;
 }
+/* THỪA HƯỞNG: đường lịch sử, các vị trí và hai dấu đã có từ CH-2 và sống qua CH-3.
+   Chương này KHÔNG dựng lại chúng — đo được ở review câm rằng dựng lại là phá thế giới bền. */
 gsap.set(['#bPri','#cPri','#bRep','#cRep','#lPri','#lRep','#gapb'], { opacity: 0 });
-gsap.set('.pt, .pn', { opacity: 0 });
-gsap.set('#hist', { scaleX: 0, transformOrigin: 'left center' });
-
-/* beat 16 — chỉ có lịch sử và hai sự kiện. Không hệ quy chiếu nào được phát biểu. */
-tl.to('#hist', { scaleX: 1, duration: .7, ease: R }, 0.3);
-tl.to('.pt', { opacity: 1, duration: .3, stagger: .08 }, 0.9);
-tl.to('.pn', { opacity: 1, duration: .3, stagger: .08 }, 1.0);
+gsap.set('.pt, .pn', { opacity: 1 });
+gsap.set('#hist', { scaleX: 1 });
 const W = mark(500, true), Rd = mark(499, false);
-gsap.set([W, Rd], { opacity: 0 });
-tl.to(W, { opacity: 1, duration: .4, ease: R }, 1.6);
-tl.to(Rd, { opacity: 1, duration: .4, ease: R }, 2.4);
+gsap.set([W, Rd], { opacity: 1 });
 
 /* beat 17 (2.9 → 5.6) — hệ ĐỒNG HỒ. Hình IM LẶNG: không đoạn bao nào xuất hiện. */
 

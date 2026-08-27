@@ -91,15 +91,17 @@ html, body { width: 1080px; height: 1920px; }
 
 
 /* ---------------------------------------------------------------------------
-   NEGATIVE CONTROL cho R18. Đoạn bao có mặt ngay từ đầu, tức hình đang phát biểu hệ
-   VỊ TRÍ trong lúc lời nói theo hệ ĐỒNG HỒ. Shot này TỒN TẠI ĐỂ TRƯỢT.
+   CH-4 · hai bảo đảm. RYW là vị từ về MỘT CẶP, nên bằng chứng của nó là một quan hệ
+   TĨNH giữa hai dấu — không gì chuyển động. EC là vị từ về ĐIỂM CUỐI, nên bằng chứng
+   của nó là một CHUYỂN ĐỘNG hoàn tất — đầu mút dưới đi tới nơi. Hai loại bằng chứng
+   khác nhau, nên không gộp được thành một thang bật/tắt.
 --------------------------------------------------------------------------- */
 </style>
 </head>
 <body>
-<div id="root" data-composition-id="main" data-start="0" data-duration="6"
+<div id="root" data-composition-id="main" data-start="0" data-duration="18"
      data-width="1080" data-height="1920">
-  <div id="stage" class="clip" data-start="0" data-duration="6" data-track-index="0">
+  <div id="stage" class="clip" data-start="0" data-duration="18" data-track-index="0">
     <div id="hist"></div>
     <div class="pt" style="left:244px"></div>
     <div class="pn" style="left:244px">497</div>
@@ -141,8 +143,29 @@ function serve(p, dir) {
   stage.appendChild(d); return d;
 }
 gsap.set('.pt, .pn', { opacity: 1 });
+gsap.set('#gapb', { opacity: 0 });
 const W = mark(500, true), Rd = mark(499, false);
-tl.to([W, Rd], { opacity: 1, duration: .3 }, 0.4);
+const sd = serve(499, 'down');
+gsap.set([W, Rd], { opacity: 0 });
+gsap.set(sd, { opacity: 0, scaleY: 0 });
+
+/* beat 20 — RYW có tên. Bằng chứng: một QUAN HỆ TĨNH giữa hai dấu của cùng người dùng.
+   Không vật nào chuyển động trong cửa sổ này. */
+tl.to([W, Rd], { opacity: 1, duration: .45, ease: R }, 0.6);
+tl.to(sd, { opacity: 1, scaleY: 1, duration: .5, ease: R }, 1.4);
+tl.to('#gapb', { opacity: .85, duration: .4, ease: R }, 2.4);
+
+/* beat 21 — EC vẫn được giữ đúng. Bằng chứng: một CHUYỂN ĐỘNG hoàn tất — đầu mút dưới
+   đi tới mọi vị trí đầu mút trên đã đạt. Khác LOẠI, nên khác hình dạng bằng chứng. */
+tl.to('#bRep', { scaleX: 1.4167, duration: 1.5, ease: T }, 7.4);
+tl.to('#cRep', { x: 185, duration: 1.5, ease: T }, 7.4);
+tl.to('#gapb', { opacity: 0, duration: .7, ease: T }, 7.8);
+
+/* beat 22-24 — không phải bug, là một cái giá. Trường trở lại đúng trạng thái đã trả:
+   tiền tố dưới lùi về 499, và khoảng chênh quay lại. Cái giá vẫn ở đó sau khi EC xong. */
+tl.to('#bRep', { scaleX: 1, duration: .9, ease: T }, 12.4);
+tl.to('#cRep', { x: 0, duration: .9, ease: T }, 12.4);
+tl.to('#gapb', { opacity: .85, duration: .5, ease: R }, 13.0);
 window.__timelines['main'] = tl;
 </script>
 </body>

@@ -1,0 +1,15 @@
+HTTP/1.1 200 OK
+Date: Thu, 27 Aug 2026 06:55:17 GMT
+Content-Type: audio/wav
+Content-Length: 415278
+Connection: keep-alive
+CF-Ray: a3192b5b7cfc03df-HKG
+CF-Cache-Status: DYNAMIC
+Server: cloudflare
+x-audio-duration: 8.65
+x-audio-id: 4ceb7876
+x-audio-path: 4ceb7876.wav
+x-gen-time: 4.43
+x-omnivoice-backend: 0.5.0
+x-seed: 1
+

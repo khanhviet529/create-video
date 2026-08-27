@@ -1,0 +1,67 @@
+[
+ {
+  "beat": 12,
+  "syllables": 29,
+  "http": "200",
+  "bytes": 377838,
+  "riff": true,
+  "wall_s": 68.9,
+  "duration": "7.87",
+  "audio_id": "a08f8e25",
+  "seed": "1",
+  "dropped": null,
+  "dropped_text": null
+ },
+ {
+  "beat": 19,
+  "syllables": 14,
+  "http": "200",
+  "bytes": 151278,
+  "riff": true,
+  "wall_s": 4.6,
+  "duration": "3.15",
+  "audio_id": "8e0bee10",
+  "seed": "1",
+  "dropped": null,
+  "dropped_text": null
+ },
+ {
+  "beat": 30,
+  "syllables": 35,
+  "http": "200",
+  "bytes": 415278,
+  "riff": true,
+  "wall_s": 8.3,
+  "duration": "8.65",
+  "audio_id": "4ceb7876",
+  "seed": "1",
+  "dropped": null,
+  "dropped_text": null
+ },
+ {
+  "beat": 36,
+  "syllables": 22,
+  "http": "200",
+  "bytes": 218958,
+  "riff": true,
+  "wall_s": 5.2,
+  "duration": "4.56",
+  "audio_id": "b41861da",
+  "seed": "1",
+  "dropped": null,
+  "dropped_text": null
+ },
+ {
+  "beat": 39,
+  "syllables": 30,
+  "http": "200",
+  "bytes": 329358,
+  "riff": true,
+  "wall_s": 6.6,
+  "duration": "6.86",
+  "audio_id": "14ea059c",
+  "seed": "1",
+  "dropped": null,
+  "dropped_text": null
+ }
+]

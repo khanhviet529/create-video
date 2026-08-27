@@ -1,0 +1,8 @@
+file 'D:/creative-video/videos/H01-two-meanings-of-after/shots/ch1-su-co/render.mp4'
+file 'D:/creative-video/videos/H01-two-meanings-of-after/shots/ch2-co-che/render.mp4'
+file 'D:/creative-video/videos/H01-two-meanings-of-after/shots/ch3-cua-so/render.mp4'
+file 'D:/creative-video/videos/H01-two-meanings-of-after/shots/ch-aha/render.mp4'
+file 'D:/creative-video/videos/H01-two-meanings-of-after/shots/ch4-bao-dam/render.mp4'
+file 'D:/creative-video/videos/H01-two-meanings-of-after/shots/ch-bon-vi-tri/render.mp4'
+file 'D:/creative-video/videos/H01-two-meanings-of-after/shots/ch-do-luong/render.mp4'
+file 'D:/creative-video/videos/H01-two-meanings-of-after/shots/ch5-cau-hoi/render.mp4'
