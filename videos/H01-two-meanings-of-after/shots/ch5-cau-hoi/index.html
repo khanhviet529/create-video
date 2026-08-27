@@ -101,9 +101,9 @@ html, body { width: 1080px; height: 1920px; }
 </style>
 </head>
 <body>
-<div id="root" data-composition-id="main" data-start="0" data-duration="8"
+<div id="root" data-composition-id="main" data-start="0" data-duration="6.86"
      data-width="1080" data-height="1920">
-  <div id="stage" class="clip" data-start="0" data-duration="8" data-track-index="0">
+  <div id="stage" class="clip" data-start="0" data-duration="6.86" data-track-index="0">
     <div class="q" id="q1">cái gì đang quyết định một câu SELECT đi về primary hay replica?</div>
     <div class="q" id="q2">và nó có biết gì về câu ghi vừa xảy ra không?</div>
   </div>
@@ -131,8 +131,8 @@ function serve(p, dir) {
   stage.appendChild(d); return d;
 }
 gsap.set(['#q1','#q2'], { opacity: 0 });
-tl.to('#q1', { opacity: 1, duration: .7, ease: R }, 0.6);
-tl.to('#q2', { opacity: 1, duration: .7, ease: R }, 3.4);
+tl.to('#q1', { opacity: 1, duration: .7, ease: R }, 0.000);
+tl.to('#q2', { opacity: 1, duration: .7, ease: R }, 2.596);
 window.__timelines['main'] = tl;
 </script>
 </body>

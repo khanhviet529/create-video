@@ -110,9 +110,9 @@ html, body { width: 1080px; height: 1920px; }
 </style>
 </head>
 <body>
-<div id="root" data-composition-id="main" data-start="0" data-duration="12"
+<div id="root" data-composition-id="main" data-start="0" data-duration="13.86"
      data-width="1080" data-height="1920">
-  <div id="stage" class="clip" data-start="0" data-duration="12" data-track-index="0">
+  <div id="stage" class="clip" data-start="0" data-duration="13.86" data-track-index="0">
     <div id="hist"></div>
     <div class="pt" style="left:244px"></div>
     <div class="pn" style="left:244px">497</div>
@@ -171,18 +171,18 @@ gsap.set(['#spA','#lA','#spB','#lB'], { opacity: 0 });
 gsap.set(['#spA','#spB'], { scaleX: 0 });
 
 /* trục thời gian và mốc chung — thiết bị này chỉ sống ở ba beat rồi nghỉ */
-tl.to(['#tax','#torg','#lorg'], { opacity: 1, duration: .5, ease: R }, 0.4);
+tl.to(['#tax','#torg','#lorg'], { opacity: 1, duration: .5, ease: R }, 0.000);
 
 /* beat 13 — con số có nguồn: độ trễ thường dưới một giây */
-tl.to('#lA', { opacity: 1, duration: .4, ease: R }, 1.6);
-tl.to('#spA', { opacity: 1, scaleX: 1, duration: .8, ease: T }, 1.9);
+tl.to('#lA', { opacity: 1, duration: .4, ease: R }, 0.000);
+tl.to('#spA', { opacity: 1, scaleX: 1, duration: .8, ease: T }, 0.227);
 
 /* beat 14 — và khoảng giữa lưu với câu đọc kế tiếp CŨNG dưới một giây */
-tl.to('#lB', { opacity: 1, duration: .4, ease: R }, 5.0);
-tl.to('#spB', { opacity: 1, scaleX: 1, duration: .8, ease: T }, 5.3);
+tl.to('#lB', { opacity: 1, duration: .4, ease: R }, 2.570);
+tl.to('#spB', { opacity: 1, scaleX: 1, duration: .8, ease: T }, 3.344);
 
 /* beat 15 — B kết thúc BÊN TRONG A. Cùng quan hệ trong/ngoài của thế giới nền. */
-tl.to(['#spA','#spB'], { opacity: 1, duration: .3 }, 8.4);
+tl.to(['#spA','#spB'], { opacity: 1, duration: .3 }, 11.340);
 window.__timelines['main'] = tl;
 </script>
 </body>

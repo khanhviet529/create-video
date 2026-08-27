@@ -13,7 +13,40 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { BRAND } from './g01-world.mjs';
 
+/* Mốc beat TÁC GIẢ — đọc từ chính comment beat trong generator. Beat không có mặt ở đây là
+   beat KHÔNG có sự kiện, và đó là một khoảng GIỮ có lý do, không phải một chỗ thiếu. */
+export const AUTHORED = {
+  'ch1-su-co': { 1: 0.5, 3: 4.6, 5: 6.8, 7: 11.0 },
+  'ch2-co-che': { 8: 0.4, 9: 3.6, 10: 6.6, 11: 9.2, 12: 12.6 },
+  'ch3-cua-so': { 13: 1.6, 14: 5.0, 15: 8.4 },
+  'ch-aha': { 16: 0.0, 18: 5.8, 19: 9.6 },
+  'ch4-bao-dam': { 20: 0.6, 21: 7.4, 22: 12.4, 23: 15.5 },
+  'ch-bon-vi-tri': { 25: 0.6, 26: 3.6, 27: 6.0, 28: 9.0, 29: 11.0, 30: 15.0, 31: 16.2, 32: 21.0, 33: 25.4 },
+  'ch-do-luong': { 34: 0.5, 35: 2.0, 36: 5.6, 37: 8.4, 38: 12.4 },
+  'ch5-cau-hoi': { 39: 0.6 },
+};
+const TIMING = (() => {
+  const f = path.join(path.dirname(path.dirname(fileURLToPath(import.meta.url))), 'videos', 'H01-two-meanings-of-after', 'voice', 'shot_timing.json');
+  return fs.existsSync(f) ? JSON.parse(fs.readFileSync(f, 'utf8')) : null;
+})();
+
+/* ánh xạ tuyến tính từng khúc, neo ở các mốc beat */
+function mapTime(t, auth, real, authDur, realDur) {
+  const ks = Object.keys(auth).map(Number).sort((a, b) => a - b);
+  const A = ks.map((k) => auth[k]), Rl = ks.map((k) => real[k]);
+  if (t <= A[0]) return Math.max(0, Rl[0] + (t - A[0]));
+  for (let i = 0; i + 1 < A.length; i++) {
+    if (t <= A[i + 1]) {
+      const f = (t - A[i]) / (A[i + 1] - A[i]);
+      return Math.max(0, Rl[i] + f * (Rl[i + 1] - Rl[i]));
+    }
+  }
+  const f = (t - A[A.length - 1]) / Math.max(0.001, authDur - A[A.length - 1]);
+  return Math.max(0, Rl[Rl.length - 1] + f * (realDur - Rl[Rl.length - 1]));
+}
+
 export const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
+
 export const OUT = path.join(ROOT, 'videos', 'H01-two-meanings-of-after', 'shots');
 
 export const G = { x0: 170, x1: 910, yLine: 1000, yPri: 902, yRep: 1190, p0: 496.6, p1: 500.6 };
@@ -83,6 +116,19 @@ export const HELPERS = [
 ].join('\n');
 
 export function build({ id, dur, note, body, js, css = '', stretch = 1 }) {
+  // eslint-disable-next-line no-param-reassign
+  /* RETIME ở mức beat, ưu tiên hơn stretch tỉ lệ */
+  const AU = AUTHORED[id], TM = TIMING && TIMING.chapters[id];
+  if (AU && TM) {
+    const before = (js.match(/tl\.\w+\([^;]*?,\s*\d+(?:\.\d+)?\);/g) || []).length;
+    js = js.replace(/(tl\.\w+\([^;]*?,\s*)(\d+(?:\.\d+)?)(\);)/g,
+      (_, a, t, z) => a + mapTime(+t, AU, TM.offsets, dur, TM.duration).toFixed(3) + z);
+    const after = (js.match(/tl\.\w+\([^;]*?,\s*\d+(?:\.\d+)?\);/g) || []).length;
+    if (before !== after || before === 0) throw new Error('retime: ' + id + ' regex không an toàn');
+    console.log('  retime ' + id.padEnd(16) + dur + 's → ' + TM.duration + 's  (' + before + ' vị trí)');
+    dur = TM.duration;
+    stretch = 1;
+  }
   if (stretch !== 1) {
     const before = (js.match(/tl\.\w+\([^;]*?,\s*\d+(?:\.\d+)?\);/g) || []).length;
     js = js.replace(/(tl\.\w+\([^;]*?,\s*)(\d+(?:\.\d+)?)(\);)/g,

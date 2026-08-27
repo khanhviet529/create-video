@@ -105,9 +105,9 @@ html, body { width: 1080px; height: 1920px; }
 </style>
 </head>
 <body>
-<div id="root" data-composition-id="main" data-start="0" data-duration="14"
+<div id="root" data-composition-id="main" data-start="0" data-duration="24.18"
      data-width="1080" data-height="1920">
-  <div id="stage" class="clip" data-start="0" data-duration="14" data-track-index="0">
+  <div id="stage" class="clip" data-start="0" data-duration="24.18" data-track-index="0">
     <div id="uLbl">người dùng thấy</div>
     <div class="rule2" style="top:842px"></div>
     <div id="pLbl">primary giữ</div>
@@ -142,27 +142,34 @@ function val(top, text, cls) {
   d.style.top = top + 'px'; d.textContent = text;
   stage.appendChild(d); return d;
 }
-gsap.set(['#uLbl','#pLbl','.rule2'], { opacity: 0 });
+gsap.set(['#uLbl','#pLbl'], { opacity: 0 });
+gsap.set('.rule2', { opacity: 0 });
 
 /* beat 1-2 — hệ chạy tốt. Chỉ có ô của người dùng, và nó mang giá trị mới. */
-tl.to(['#uLbl','.rule2'], { opacity: 1, duration: .5, ease: R }, 0.5);
+tl.to('#uLbl', { opacity: 1, duration: .5, ease: R }, 0.000);
+tl.to('.rule2', { opacity: .38, duration: .5, ease: R }, 0.000);
 const uNew = val(820, 'giá trị mới');
 const uOld = val(820, 'giá trị cũ');
 gsap.set([uNew, uOld], { opacity: 0 });
-tl.to(uNew, { opacity: 1, duration: .45, ease: R }, 1.6);
+tl.to(uNew, { opacity: 1, duration: .45, ease: R }, 1.414);
 
 /* beat 3 — bấm F5, và ô của người dùng LÙI VỀ giá trị cũ */
-tl.to(uNew, { opacity: 0, duration: .3, ease: T }, 4.6);
-tl.to(uOld, { opacity: 1, duration: .4, ease: R }, 4.9);
+tl.to(uNew, { opacity: 0, duration: .3, ease: T }, 5.270);
+tl.to(uOld, { opacity: 1, duration: .4, ease: R }, 6.214);
 
 /* beat 4-5 — không cần chữ "mất dữ liệu" để bác chữ "mất dữ liệu": ô thứ hai mở ra và
    giá trị mới VẪN NẰM ĐÓ. Bác bằng một vật, không bằng một câu. */
-tl.to(['#pLbl'], { opacity: 1, duration: .5, ease: R }, 6.8);
+tl.to(['#pLbl'], { opacity: 1, duration: .5, ease: R }, 12.190);
 const pNew = val(1080, 'giá trị mới');
 gsap.set(pNew, { opacity: 0 });
-tl.to(pNew, { opacity: 1, duration: .5, ease: R }, 7.4);
+tl.to(pNew, { opacity: 1, duration: .5, ease: R }, 13.393);
 
-/* beat 6-7 — cả hai ô giữ nguyên. Không ô nào sai; chúng trả lời hai câu hỏi khác nhau. */
+/* beat 6 — hai lời giải thích bị loại. Trên màn hình KHÔNG gì đổi, và đó chính là lý do
+   đội đi tìm sai chỗ: loại một ứng viên không làm trạng thái đổi. Khoảng GIỮ có lý do. */
+/* beat 7 — "không node nào hỏng, cả hai đang trả lời đúng". Hai vạch sáng lên ĐỒNG THỜI
+   và GIỐNG NHAU: sự đồng thời và sự giống nhau chính là khẳng định. Vật đã có sẵn. */
+tl.to('.rule2', { opacity: 1, duration: .5, ease: R }, 20.610);
+tl.fromTo('.rule2', { scaleX: 1 }, { scaleX: 1.0, duration: .01 }, 20.610);
 window.__timelines['main'] = tl;
 </script>
 </body>

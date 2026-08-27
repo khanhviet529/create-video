@@ -100,9 +100,9 @@ html, body { width: 1080px; height: 1920px; }
 </style>
 </head>
 <body>
-<div id="root" data-composition-id="main" data-start="0" data-duration="17"
+<div id="root" data-composition-id="main" data-start="0" data-duration="21.69"
      data-width="1080" data-height="1920">
-  <div id="stage" class="clip" data-start="0" data-duration="17" data-track-index="0">
+  <div id="stage" class="clip" data-start="0" data-duration="21.69" data-track-index="0">
     <div id="hist"></div>
     <div class="pt" style="left:244px"></div>
     <div class="pn" style="left:244px">497</div>
@@ -152,34 +152,34 @@ function serve(p, dir) {
 gsap.set('.pt, .pn', { opacity: 1 });
 gsap.set(['#m0','#m1','#m2','#ml0','#ml1','#ml2','#gapb'], { opacity: 0 });
 const W = mark(500, true); gsap.set(W, { opacity: 0 });
-tl.to(W, { opacity: 1, duration: .4, ease: R }, 0.5);
+tl.to(W, { opacity: 1, duration: .4, ease: R }, 0.000);
 
 /* beat 35 — ba mốc, LẦN LƯỢT, trên MỘT hành trình đi xuống. Không song song, không cùng cỡ. */
-tl.to(['#m0','#ml0'], { opacity: 1, duration: .35, ease: R }, 2.0);
-tl.to(['#m1','#ml1'], { opacity: 1, duration: .35, ease: R }, 3.0);
-tl.to(['#m2','#ml2'], { opacity: 1, duration: .35, ease: R }, 4.0);
+tl.to(['#m0','#ml0'], { opacity: 1, duration: .35, ease: R }, 2.520);
+tl.to(['#m1','#ml1'], { opacity: 1, duration: .35, ease: R }, 3.534);
+tl.to(['#m2','#ml2'], { opacity: 1, duration: .35, ease: R }, 4.548);
 
 /* beat 36 — chỉ mốc CUỐI có sợi nối tới đầu mút tiền tố. Hai mốc kia không nối vào đâu. */
 const ln = document.createElement("div"); ln.className = "teth";
 ln.style.cssText = "left:" + (X(500) - 1) + "px;top:" + 1134 + "px;height:" + 56 + "px";
 stage.appendChild(ln); gsap.set(ln, { opacity: 0, scaleY: 0 });
-tl.to(ln, { opacity: 1, scaleY: 1, duration: .6, ease: R }, 5.6);
-tl.to(['#m0','#ml0','#m1','#ml1'], { opacity: .28, duration: .5, ease: T }, 6.4);
+tl.to(ln, { opacity: 1, scaleY: 1, duration: .6, ease: R }, 6.170);
+tl.to(['#m0','#ml0','#m1','#ml1'], { opacity: .28, duration: .5, ease: T }, 7.473);
 
 /* beat 37 — khe hở nhỏ vẫn là khe hở: một câu đọc rơi vào đó vẫn thấy giá trị cũ */
-tl.to('#gapb', { opacity: .85, duration: .4, ease: R }, 8.4);
+tl.to('#gapb', { opacity: .85, duration: .4, ease: R }, 10.730);
 const Rd = mark(499, false); gsap.set(Rd, { opacity: 0 });
 const sd = serve(499, 'down'); gsap.set(sd, { opacity: 0, scaleY: 0 });
-tl.to(Rd, { opacity: 1, duration: .4, ease: R }, 9.2);
-tl.to(sd, { opacity: 1, scaleY: 1, duration: .45, ease: R }, 9.5);
+tl.to(Rd, { opacity: 1, duration: .4, ease: R }, 11.866);
+tl.to(sd, { opacity: 1, scaleY: 1, duration: .45, ease: R }, 12.292);
 
 /* THẾ GIỚI (a) — hai đầu mút CÙNG TIẾN, khe hở giữ nguyên bề rộng */
-tl.to([Rd, sd], { opacity: 0, duration: .35, ease: T }, 11.6);
-tl.to('#bPri', { scaleX: 1.0954, duration: 1.4, ease: 'none' }, 12.4);
-tl.to('#cPri', { x: 60, duration: 1.4, ease: 'none' }, 12.4);
-tl.to('#bRep', { scaleX: 1.1351, duration: 1.4, ease: 'none' }, 12.4);
-tl.to('#cRep', { x: 60, duration: 1.4, ease: 'none' }, 12.4);
-tl.to('#gapb', { x: 60, duration: 1.4, ease: 'none' }, 12.4);
+tl.to([Rd, sd], { opacity: 0, duration: .35, ease: T }, 15.274);
+tl.to('#bPri', { scaleX: 1.0954, duration: 1.4, ease: 'none' }, 16.410);
+tl.to('#cPri', { x: 60, duration: 1.4, ease: 'none' }, 16.410);
+tl.to('#bRep', { scaleX: 1.1351, duration: 1.4, ease: 'none' }, 16.410);
+tl.to('#cRep', { x: 60, duration: 1.4, ease: 'none' }, 16.410);
+tl.to('#gapb', { x: 60, duration: 1.4, ease: 'none' }, 16.410);
 
 /* THẾ GIỚI (b) — beat 38: primary RẢNH. KHÔNG đầu mút nào tiến nữa, và khe hở giữ
    NGUYÊN bề rộng. Số đọc y hệt thế giới (a) — thứ khác là CHUYỂN ĐỘNG, không phải số.

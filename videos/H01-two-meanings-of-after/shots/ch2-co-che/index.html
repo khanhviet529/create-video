@@ -98,9 +98,9 @@ html, body { width: 1080px; height: 1920px; }
 </style>
 </head>
 <body>
-<div id="root" data-composition-id="main" data-start="0" data-duration="17"
+<div id="root" data-composition-id="main" data-start="0" data-duration="21.86"
      data-width="1080" data-height="1920">
-  <div id="stage" class="clip" data-start="0" data-duration="17" data-track-index="0">
+  <div id="stage" class="clip" data-start="0" data-duration="21.86" data-track-index="0">
     <div id="hist"></div>
     <div class="pt" style="left:244px"></div>
     <div class="pn" style="left:244px">497</div>
@@ -146,29 +146,29 @@ gsap.set('.pt, .pn', { opacity: 0 });
 gsap.set('#hist', { scaleX: 0, transformOrigin: 'left center' });
 
 /* beat 8 — một cái log, và replica chạy lại đúng cái log đó */
-tl.to('#hist', { scaleX: 1, duration: .9, ease: R }, 0.4);
-tl.to('.pt', { opacity: 1, duration: .35, stagger: .1 }, 1.2);
-tl.to('.pn', { opacity: 1, duration: .35, stagger: .1 }, 1.4);
+tl.to('#hist', { scaleX: 1, duration: .9, ease: R }, 0.000);
+tl.to('.pt', { opacity: 1, duration: .35, stagger: .1 }, 1.050);
+tl.to('.pn', { opacity: 1, duration: .35, stagger: .1 }, 1.312);
 
 /* beat 9 — primary commit ở 500 */
 const W = mark(500, true); gsap.set(W, { opacity: 0 });
-tl.to(['#bPri','#cPri','#lPri'], { opacity: 1, duration: .55, ease: R }, 3.6);
-tl.to(W, { opacity: 1, duration: .4, ease: R }, 4.4);
+tl.to(['#bPri','#cPri','#lPri'], { opacity: 1, duration: .55, ease: R }, 4.200);
+tl.to(W, { opacity: 1, duration: .4, ease: R }, 4.861);
 
 /* beat 10 — replica lúc đó đang ở 499 */
-tl.to(['#bRep','#cRep','#lRep'], { opacity: 1, duration: .6, ease: R }, 6.6);
-tl.to('#gapb', { opacity: .85, duration: .4, ease: R }, 7.6);
+tl.to(['#bRep','#cRep','#lRep'], { opacity: 1, duration: .6, ease: R }, 6.680);
+tl.to('#gapb', { opacity: .85, duration: .4, ease: R }, 7.657);
 
 /* beat 11 — câu đọc chạy trên replica, và thấy đúng thế giới ở vị trí của nó */
 const Rd = mark(499, false); gsap.set(Rd, { opacity: 0 });
 const sd = serve(499, 'down'); gsap.set(sd, { opacity: 0, scaleY: 0 });
-tl.to(Rd, { opacity: 1, duration: .45, ease: R }, 9.2);
-tl.to(sd, { opacity: 1, scaleY: 1, duration: .5, ease: R }, 9.6);
+tl.to(Rd, { opacity: 1, duration: .45, ease: R }, 9.220);
+tl.to(sd, { opacity: 1, scaleY: 1, duration: .5, ease: R }, 9.781);
 
 /* beat 12 — bất đồng bộ mặc định: đầu mút dưới TỚI MUỘN. Không trục thời gian nào. */
-tl.to('#bRep', { scaleX: 1.4167, duration: 1.3, ease: T }, 12.6);
-tl.to('#cRep', { x: 185, duration: 1.3, ease: T }, 12.6);
-tl.to('#gapb', { opacity: 0, duration: .6, ease: T }, 13.0);
+tl.to('#bRep', { scaleX: 1.4167, duration: 1.3, ease: T }, 13.990);
+tl.to('#cRep', { x: 185, duration: 1.3, ease: T }, 13.990);
+tl.to('#gapb', { opacity: 0, duration: .6, ease: T }, 14.705);
 window.__timelines['main'] = tl;
 </script>
 </body>

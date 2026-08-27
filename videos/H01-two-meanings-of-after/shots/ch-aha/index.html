@@ -99,9 +99,9 @@ html, body { width: 1080px; height: 1920px; }
 </style>
 </head>
 <body>
-<div id="root" data-composition-id="main" data-start="0" data-duration="15"
+<div id="root" data-composition-id="main" data-start="0" data-duration="11.35"
      data-width="1080" data-height="1920">
-  <div id="stage" class="clip" data-start="0" data-duration="15" data-track-index="0">
+  <div id="stage" class="clip" data-start="0" data-duration="11.35" data-track-index="0">
     <div id="hist"></div>
     <div class="pt" style="left:244px"></div>
     <div class="pn" style="left:244px">497</div>
@@ -153,15 +153,15 @@ gsap.set([W, Rd], { opacity: 1 });
 /* beat 17 (2.9 → 5.6) — hệ ĐỒNG HỒ. Hình IM LẶNG: không đoạn bao nào xuất hiện. */
 
 /* beat 18 (5.6) — hệ VỊ TRÍ được gọi tên, và đoạn bao tới đúng lúc đó */
-tl.to(['#bPri','#cPri','#lPri'], { opacity: 1, duration: .5, ease: R }, 5.8);
-tl.to(['#bRep','#cRep','#lRep'], { opacity: 1, duration: .5, ease: R }, 6.6);
-tl.to('#gapb', { opacity: .85, duration: .4, ease: R }, 7.6);
+tl.to(['#bPri','#cPri','#lPri'], { opacity: 1, duration: .5, ease: R }, 5.400);
+tl.to(['#bRep','#cRep','#lRep'], { opacity: 1, duration: .5, ease: R }, 5.989);
+tl.to('#gapb', { opacity: .85, duration: .4, ease: R }, 6.726);
 
 /* beat 19 — MỘT node: tiền tố thứ hai biến mất, và cùng với nó là chính khả năng
    phát biểu chuyện loại trừ. Rồi node thứ hai trở lại, và nó phát biểu lại được. */
-tl.to(['#bRep','#cRep','#lRep','#gapb'], { opacity: 0, duration: .5, ease: T }, 9.6);
-tl.to(['#bRep','#cRep','#lRep'], { opacity: 1, duration: .5, ease: R }, 12.4);
-tl.to('#gapb', { opacity: .85, duration: .4, ease: R }, 13.0);
+tl.to(['#bRep','#cRep','#lRep','#gapb'], { opacity: 0, duration: .5, ease: T }, 8.200);
+tl.to(['#bRep','#cRep','#lRep'], { opacity: 1, duration: .5, ease: R }, 9.833);
+tl.to('#gapb', { opacity: .85, duration: .4, ease: R }, 10.183);
 window.__timelines['main'] = tl;
 </script>
 </body>

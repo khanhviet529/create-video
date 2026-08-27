@@ -179,3 +179,42 @@ Một prototype dựng để thoả chuẩn chứng minh, chứ không để bi�
 Rủi ro ở G01 là **tiềm ẩn chứ không hiện thực**: dải 130–158 nằm dưới cả `--ink-mid` (≈160) lẫn
 `--authoritative` (≈168). Nhưng bảng va chạm luma là thứ **mở rộng theo thời gian**, nên một
 palette mới có thể đẩy một token vào đúng dải đó mà không ai nhận ra.
+
+---
+
+## CỔNG L2 — bản mở rộng: khai luôn ĐO Ở ĐÂU
+
+Từ lỗi dụng cụ #5 (LOCK-1: `11px vs 10px` ở một cột, `4px = 4px` ở cột xa chốt đầu mút).
+
+> Ngoài **đo đại lượng gì**, khai thêm **ĐO Ở ĐÂU** và **vì sao vị trí đó đại diện**.
+> Nếu đại lượng có thể **biến thiên dọc một trục**, lấy mẫu **≥ 2 vị trí** và nêu cả hai.
+
+Ở lỗi #5, độ dày thanh biến thiên dọc trục x vì hai **chốt đầu mút** vươn ngược chiều nhau và
+lọt vào cửa sổ quét. Một mẫu ở một cột không đại diện. Ba cột (`x=300/450/600`) thì đại diện,
+và cả ba cho `4/4`.
+
+### Vì sao con số cần theo là "lỗi dụng cụ bị BẮT", không phải "không có lỗi dụng cụ"
+
+Năm lỗi dụng cụ trong cung H01, **cả năm bị bắt**, **chưa lỗi nào dẫn tới một kết luận sai**:
+
+| # | lỗi | bắt bằng gì |
+|---|---|---|
+| 1 | độ dốc toàn cục trên đường phần lớn phẳng | negative control nổ đúng |
+| 2 | giao **chỉ số cột** thay cho **che nhau** | NC nổ trong khi shot chính cũng nổ |
+| 3 | **mép** đĩa vs **đầu mút** thanh | cùng dấu hiệu chẩn đoán |
+| 4 | va chạm luma `--authoritative` / `--ink-mid` | chẩn đoán phân bố màu |
+| 5 | đo độ dày ở **một cột** có chốt vươn ngược | đo lại ở cột xa chốt |
+
+Mục tiêu **không phải** zero lỗi dụng cụ — mục tiêu là **không lỗi nào lọt thành kết luận**.
+Con số đúng để theo là *bị bắt / tổng*, và cơ chế bắt là **negative control** cộng thói quen
+**nghi dụng cụ trước khi nghi artifact**.
+
+### Và một lỗi cùng họ, ở tầng VERDICT chứ không tầng phép đo
+
+`review-h01-voiced.mjs` bản đầu **in cảnh báo** "vượt đáng kể, rủi ro tĩnh như F01" rồi vẫn
+kết **"mọi mục ĐẠT"**, vì mục đó không `fail++`. Một bộ kiểm tự khai ngưỡng rồi không tính
+ngưỡng đó vào verdict là **pass gây nhầm** — cùng họ với đo-đại-lượng-thay-thế, chỉ dịch lên
+một tầng.
+
+> **Mọi ngưỡng một bộ kiểm tự khai phải tính vào verdict của nó.** Nếu chỉ để in ra thì đừng
+> gọi nó là ngưỡng.

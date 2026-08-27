@@ -1,6 +1,6 @@
 video_id: H01-two-meanings-of-after
 package: "007"
-stage: CHAPTERS_ASSEMBLED_MUTE
+stage: BEAT_ANCHORED_RETIMED
 full_video_review: not_started
 timing_status: NOT_MEASURED
 
@@ -137,9 +137,9 @@ shots:
       mute_test: hai lượt khác nhịp — bộ kiểm phải nói ra
 
   - id: ch-aha
-    time: [ 43, 58 ]
+    time: [ 59.9, 71.25 ]
     name: CH-B · AHA (beat 16-19)
-    duration: 15
+    duration: 11.35
     engine: hyperframes
     purpose: hệ quy chiếu của HÌNH đến cùng mệnh đề gọi tên nó
     frame_silence:
@@ -172,9 +172,9 @@ shots:
     review: { hero_frames: [ 2.0, 5.7 ], mute_test: hình phát biểu vị trí quá sớm }
 
   - id: ch-bon-vi-tri
-    time: [ 76, 106 ]
+    time: [ 94.71, 139.9 ]
     name: CH-A · bốn vị trí (beat 25-33)
-    duration: 30
+    duration: 45.19
     engine: hyperframes
     purpose: bốn phép biến hình KHÁC LOẠI trên cùng trường, tỉ lệ giữ nguyên
     prefix_world:
@@ -204,9 +204,9 @@ shots:
     review: { hero_frames: [ 2.0, 5.7 ], mute_test: câu đọc thứ hai nối lên — sai }
 
   - id: ch-do-luong
-    time: [ 106, 123 ]
+    time: [ 139.9, 161.59 ]
     name: CH-C · phát hiện (beat 34-38)
-    duration: 17
+    duration: 21.69
     engine: hyperframes
     purpose: ba mốc trên một hành trình; cùng số đọc cho hai thế giới
     same_reading_two_worlds:
@@ -234,9 +234,9 @@ shots:
     review: { hero_frames: [ 2.0, 5.7 ], mute_test: hai khe hở khác nhau }
 
   - id: ch1-su-co
-    time: [ 0, 14 ]
+    time: [ 0, 24.18 ]
     name: CH-1 · sự cố (beat 1-7)
-    duration: 14
+    duration: 24.18
     engine: hyperframes
     purpose: stale khác lost ở mức sự cố, dựng bằng sự CÓ MẶT chứ không bằng nhãn
     camera: { motion: static, semantic_function: none, rationale: chưa có thế giới để camera đi vào }
@@ -246,9 +246,9 @@ shots:
         ô người dùng lùi về giá trị cũ; ô primary giữ giá trị mới và không bao giờ đổi
 
   - id: ch2-co-che
-    time: [ 14, 31 ]
+    time: [ 24.18, 46.04 ]
     name: CH-2 · cơ chế (beat 8-12)
-    duration: 17
+    duration: 21.86
     engine: hyperframes
     purpose: CÚ VÀO TỈ LỆ — từ ô đọc giao diện sang lịch sử replication
     scale_transition: { kind: entry, at_beat_boundary: beat 7 sang beat 8 }
@@ -268,9 +268,9 @@ shots:
         TỚI MUỘN
 
   - id: ch3-cua-so
-    time: [ 31, 43 ]
+    time: [ 46.04, 59.9 ]
     name: CH-3 · cửa sổ (beat 13-15)
-    duration: 12
+    duration: 13.86
     engine: hyperframes
     purpose: cặp không tách rời số 1 — hai khoảng chung gốc, B kết thúc BÊN TRONG A
     nested_spans:
@@ -286,9 +286,9 @@ shots:
       mute_test: hai khoảng cùng xuất phát; khoảng ngắn kết thúc BÊN TRONG khoảng dài
 
   - id: ch4-bao-dam
-    time: [ 58, 76 ]
+    time: [ 71.25, 94.71 ]
     name: CH-4 · hai bảo đảm và cái giá (beat 20-24)
-    duration: 18
+    duration: 23.46
     engine: hyperframes
     purpose: hai bảo đảm hiện ra như HAI LOẠI khẳng định, không phải bật/tắt
     two_kinds:
@@ -321,9 +321,9 @@ shots:
     review: { hero_frames: [ 3.0, 8.7 ], mute_test: hai đèn cùng hình, chỉ khác trạng thái }
 
   - id: ch5-cau-hoi
-    time: [ 123, 131 ]
+    time: [ 161.59, 168.45 ]
     name: CH-5 · câu hỏi (beat 39)
-    duration: 8
+    duration: 6.86
     engine: hyperframes
     purpose: CÚ RA TỈ LỆ — rời thế giới, quay về người xem
     scale_transition: { kind: exit, at_beat_boundary: beat 38 sang beat 39 }
