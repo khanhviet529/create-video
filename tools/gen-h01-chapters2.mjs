@@ -54,9 +54,11 @@ build({
     'gsap.set([uNew, uOld], { opacity: 0 });',
     'tl.to(uNew, { opacity: 1, duration: .45, ease: R }, 1.6);',
     '',
-    '/* beat 3 — bấm F5, và ô của người dùng LÙI VỀ giá trị cũ */',
+    '/* beat 3 — bấm F5. HAI bước, đúng như một refresh xảy ra: giá trị rời đi khi câu đọc',
+    '   được gửi, rồi giá trị CŨ về khi câu đọc trả lời. Quãng trống ở giữa LÀ round trip —',
+    '   nó là nội dung của beat, không phải một khoảng chờ được thêm vào. */',
     'tl.to(uNew, { opacity: 0, duration: .3, ease: T }, 4.6);',
-    'tl.to(uOld, { opacity: 1, duration: .4, ease: R }, 4.9);',
+    'tl.to(uOld, { opacity: 1, duration: .4, ease: R }, 5.62);',
     '',
     '/* beat 4-5 — không cần chữ "mất dữ liệu" để bác chữ "mất dữ liệu": ô thứ hai mở ra và',
     '   giá trị mới VẪN NẰM ĐÓ. Bác bằng một vật, không bằng một câu. */',
@@ -122,6 +124,26 @@ build({
    quan hệ BAO HÀM — hai khoảng chung gốc, và B kết thúc BÊN TRONG A. Cùng vị từ với nền,
    áp lên một tập khác (thời điểm thay vì vị trí), nên người xem không phải học phép đọc thứ hai. */
 const TL = { x: 200, y: 1330, w: 700, aFrac: 0.86, bFrac: 0.52 };
+/* ── beat 15 của ch3-cua-so: KHÔNG CÓ CỤM, CÓ CHỦ Ý ──────────────────────────────────────
+   Ở đây từng có `tl.to(['#spA','#spB'], { opacity: 1, duration: .3 }, 8.4)`: một tween đặt
+   opacity 1 lên hai vật ĐÃ ở opacity 1 (#spA từ 1.9, #spB từ 5.0). Bảng 2×2 comment×tween cho
+   thấy cùng một băm mp4 ở cả hai cột tween ⇒ tween vô hiệu. Đã xoá.
+
+   KHÔNG thay bằng chuyển động khác. Nội dung beat 15 là "B kết thúc BÊN TRONG A" — một QUAN HỆ.
+   LAW-2 chiều dương: quan hệ là một CẤU HÌNH, và cấu hình đứng yên. Hai khoảng đã nằm trên hình,
+   B đã kết thúc bên trong A về hình học; lời chỉ nói ra thứ hình đang cho thấy. Cùng loại với
+   beat 20 và beat 32. Bảng soát lượt 10 gộp cả 9.8s vào beat 14 nên khoảng giữ này chưa từng lộ
+   ra — nó lộ ra khi beat 14 được chia làm hai, và đó là lý do phải soát lại cả sáu mục.
+
+   ── PHÁT HIỆN VỀ DỤNG CỤ, ghi ở đây vì nó ràng buộc mọi chứng minh byte về sau ──
+   Đổi RIÊNG văn bản comment trong HTML (JS thi hành sau khi bóc comment: byte-identical, 8150
+   bytes cả hai) vẫn đổi 414/416 khung. Đã định vị: x 200..612, y 1241..1478 — viền glyph của hai
+   dòng nhãn, 6342 pixel lệch >20, YAVG tối đa 0.18/255. Là antialiasing subpixel của chữ, không
+   phải nội dung; hai ảnh cắt cận cảnh trông y nhau. Ba hệ quả:
+     · Băm mp4 KHÔNG phải bằng chứng pixel. Muốn nói "giống nhau về hình" thì đo framemd5 hoặc
+       so raw rgb24, không so băm container.
+     · Băm mp4 cũng không phải bằng chứng "JS không đổi" theo chiều ngược lại.
+     · Vì vậy ghi chú giải thích phải nằm NGOÀI mảng js. Comment trong HTML không miễn phí. */
 build({
   id: 'ch3-cua-so', dur: 12,
   note: '   CH-3 · cửa sổ. Hai khoảng CHUNG GỐC trên một trục thời gian riêng, và khoảng B kết\n'
@@ -166,12 +188,14 @@ build({
     "tl.to('#lA', { opacity: 1, duration: .4, ease: R }, 1.6);",
     "tl.to('#spA', { opacity: 1, scaleX: 1, duration: .8, ease: T }, 1.9);",
     '',
-    '/* beat 14 — và khoảng giữa lưu với câu đọc kế tiếp CŨNG dưới một giây */',
+    '/* beat 14 — câu nêu HAI mốc: "lúc user bấm lưu" VÀ "lúc trình duyệt gửi câu đọc tiếp',
+    '   theo". Nên khoảng B được vẽ theo đúng hai mốc đó: mốc ĐẦU hiện trước, rồi khoảng VƯƠN',
+    '   tới mốc cuối. Một khoảng có hai đầu, và câu cũng có hai đầu. */',
     "tl.to('#lB', { opacity: 1, duration: .4, ease: R }, 5.0);",
-    "tl.to('#spB', { opacity: 1, scaleX: 1, duration: .8, ease: T }, 5.3);",
+    "tl.to('#spB', { opacity: 1, duration: .35, ease: R }, 5.0);",
+    "tl.to('#spB', { scaleX: 1, duration: .9, ease: T }, 6.72);",
     '',
     '/* beat 15 — B kết thúc BÊN TRONG A. Cùng quan hệ trong/ngoài của thế giới nền. */',
-    "tl.to(['#spA','#spB'], { opacity: 1, duration: .3 }, 8.4);",
   ].join('\n'),
 });
 

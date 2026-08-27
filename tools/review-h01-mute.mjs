@@ -45,6 +45,12 @@
  *   đo: quét ô 40×40 quanh dấu ở mọi chương có thế giới, tìm pixel đỏ trội.
  *   không thay thế: không kiểm CSS trong source (một overlay có thể phủ lên lúc chạy).
  *
+ * ════ HAI LỖI DỤNG CỤ ĐÃ SỬA (lượt 11) ════
+ * · FILM từng được chọn bằng readdir()[0] — đúng do thứ tự chữ cái, không do chủ ý. Đã ghim tên.
+ * · Mục 4 từng lấy đuôi bằng `136 − chuyển_động_cuối`, với 136 là độ dài bản CÂM. Trên bản có
+ *   giọng (168.5s) phép này ra số ÂM. Nay đọc độ dài thật từ phim đang đo.
+ * Cả hai đều là dạng đã gặp: hằng số của artifact cũ nằm lại trong dụng cụ.
+ *
  *   node tools/review-h01-mute.mjs
  */
 import { execFileSync } from 'node:child_process';
@@ -58,8 +64,10 @@ const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const V = path.join(ROOT, 'videos', 'H01-two-meanings-of-after');
 const plan = YAML.parse(fs.readFileSync(path.join(V, 'shot_plan.yaml'), 'utf8'));
 const cut = plan.shots.filter((s) => !s.status).sort((a, b) => a.time[0] - b.time[0]);
-const FILM = fs.readdirSync(path.join(V, 'output')).filter((f) => f.endsWith('.mp4'))
-  .map((f) => path.join(V, 'output', f))[0];
+const FILM = path.join(V, 'output', 'BEAT_ANCHORED_RETIMED.mp4');
+if (!fs.existsSync(FILM)) throw new Error('không có bản đã lắp: ' + FILM);
+const DUR = +execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration',
+  '-of', 'csv=p=0', FILM], { encoding: 'utf8', windowsHide: true }).trim();
 const W = 1080, H = 1920;
 const TMP = fs.mkdtempSync(path.join(os.tmpdir(), 'rev-'));
 const shotFile = (id) => path.join(V, 'shots', id, 'render.mp4');
@@ -171,7 +179,7 @@ const mov = [...o.matchAll(/pts_time:([\d.]+)[\s\S]*?YMAX=(\d+)/g)]
   .filter((m) => +m[2] > 8).map((m) => +m[1]);
 let worst = 0, worstAt = 0, prev = 0;
 for (const t of mov) { if (t - prev > worst) { worst = t - prev; worstAt = prev; } prev = t; }
-const tail = +(136 - (mov.length ? mov[mov.length - 1] : 0)).toFixed(2);
+const tail = +(DUR - (mov.length ? mov[mov.length - 1] : 0)).toFixed(2);
 console.log('  quãng đứng dài nhất: ' + worst.toFixed(2) + 's, bắt đầu ở ' + worstAt.toFixed(2) + 's');
 console.log('  đuôi sau chuyển động cuối: ' + tail.toFixed(2) + 's');
 console.log('  ── theo chương ──');

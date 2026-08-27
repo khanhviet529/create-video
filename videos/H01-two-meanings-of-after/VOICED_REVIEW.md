@@ -172,3 +172,67 @@ node tools/review-h01-mute.mjs
 node tools/review-h01-voiced.mjs
 ffprobe -v error -show_entries format=duration -of default=nw=1:nk=1 videos/H01-two-meanings-of-after/output/BEAT_ANCHORED_RETIMED.mp4
 ```
+
+---
+
+# LƯỢT 11 — BA KHOẢNG ĐÃ SỬA, VÀ MỘT KHOẢNG THỨ TƯ LỘ RA
+
+**Bảng ở §A phía trên là bản ghi của lượt 10, giữ lại làm bằng chứng về thứ đã đo lúc đó.**
+Bản ghi hiện hành là `VALIDATION_NOTES.md`. Ba chỗ trong bảng cũ nay đã sai và được nêu rõ:
+
+| §A cũ nói | thực tế sau lượt 11 |
+|---|---|
+| beat 3 = 5.8s, "một cụm cho bốn hành động" | 3.5s, hai cụm — refresh là round trip |
+| beat 14 = 9.8s, "beat dài 8.8s, một cụm" | khoảng đó **phủ hai beat**: 4.3s (b14) + 6.0s (b15) |
+| beat 30 = 8.3s, "beat dài 8.6s, một cụm" | 4.8s, sợi neo rồi vòng mở ra và giữ |
+| §C: "KHÔNG ĐẠT · vượt ngưỡng 12 điểm % 2.4 lần" | ngưỡng đã **RÚT** — nó so hai vị từ khác loại |
+
+Ba điều lượt 10 nói đúng và vẫn đúng: timing khớp beat, bốn lock còn đứng, và ba khoảng kia là
+bệnh **mật độ ở mức beat**.
+
+## Điều lượt 10 nói SAI
+
+**"Ba khoảng không justify được".** Đúng ba khoảng ấy cần sửa, nhưng bảng đã **gán khoảng 9.8s
+cho beat 14** trong khi nó phủ cả beat 15. Gán một khoảng cho beat mở đầu nó là một phép **gán**,
+không phải một phép **đo**. Khi beat 14 có cụm thứ hai, beat 15 lộ ra với 6.0s riêng của nó — và
+cụm được khai cho beat 15 hoá ra là một tween `opacity: 1` áp lên vật đã ở opacity 1.
+
+**"KHÔNG đạt chuẩn để đi tiếp vì 74.8% vs 45.4%".** Ngưỡng 12 điểm % so tỉ lệ giữ của một vị từ
+QUÁ TRÌNH (G01) với một vị từ QUAN HỆ (H01) mà không kiểm hai bên có so được không. Đã rút, và
+việc rút được khai trong header của bộ kiểm cùng lý do. Con số mới là **74.3%**; nó được ghi
+nhận, không được xin lỗi.
+
+## Ba bản sửa, nguyên văn nội dung beat
+
+**beat 3 · `ch1-su-co`** — *"User bấm lưu, hệ thống báo đã lưu, bấm F5 thì giá trị cũ quay lại."*
+Bốn hành động, một cú cross-fade. Refresh là một **round trip**, nên tách thành hai bước đúng như
+nó xảy ra: giá trị rời đi khi câu đọc được gửi (real 5.3s), giá trị **cũ** về khi câu đọc trả lời
+(real ≈8.5s). Quãng trống ở giữa **LÀ** round trip.
+
+**beat 14 · `ch3-cua-so`** — *"khoảng cách giữa lúc user bấm lưu VÀ lúc trình duyệt gửi câu đọc
+tiếp theo"*. Câu nêu **hai mốc**, nên khoảng B được vẽ theo hai mốc: mốc đầu hiện trước (real
+2.6s), rồi khoảng **vươn** tới mốc cuối (real ≈7.0s). Một khoảng có hai đầu, và câu cũng có hai.
+
+**beat 30 · `ch-bon-vi-tri`** — *"Commit không trả về cho tới khi replica đã áp dụng xong."* Mệnh
+đề thứ hai là một **trạng thái của dấu commit**, không phải một câu chú thích. Sợi neo hiện (real
+20.8s), rồi vòng quanh dấu commit **mở ra và GIỮ** (real ≈25.9s) — đang chờ. Beat 31 là chỗ nó
+được nhả, khi tiền tố dưới tới 500.
+
+Cả ba: **thay đổi trạng thái trên vật đã có mặt**, gắn vào mệnh đề đang đọc. Beat 6 của `ch1` vẫn
+không được thêm cụm.
+
+## Đã soát lại những gì
+
+| việc | kết quả |
+|---|---|
+| timing sau khi sửa | 168.45s = 168.45s, lệch **0.000s** |
+| full-video review, **cả sáu mục**, trên bản có giọng | **sáu mục ĐẠT** |
+| bốn lock, quét lại | cả bốn còn đứng |
+| 5 shot không sửa, băm trước/sau | `html` **và** `render.mp4` **byte-identical** |
+| bytes của artifact cuối vs bytes mà review đã đo | **trùng khít** — `4c3077f7149c8cb2…` |
+
+Hai lỗi dụng cụ đã sửa **trước** khi tin số: `review-h01-mute.mjs` chọn phim bằng `readdir()[0]`,
+và lấy đuôi bằng `136 − chuyển_động_cuối` với 136 là độ dài bản **câm**.
+
+Chi tiết từng đại lượng, lệnh tái lập, và phát hiện về renderer (comment trong HTML đổi 414/416
+khung ở tầng antialiasing) nằm trong **`VALIDATION_NOTES.md`**.

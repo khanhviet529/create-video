@@ -25,8 +25,12 @@
  *   đo: với mỗi beat, tìm cụm chuyển động gần nhất và lấy độ lệch so với mốc beat.
  *   không thay thế: không so số cụm với số beat (đúng số mà lệch chỗ vẫn sai).
  *
- * C · TỔNG THỜI GIAN GIỮ, đặt cạnh G01
- *   khẳng định: tỉ lệ giữ-không-đổi của H01 so được với G01 (đã qua full-video review).
+ * C · TỔNG THỜI GIAN GIỮ, đặt cạnh G01 — ĐO, KHÔNG XỬ (ngưỡng đã rút ở lượt 11)
+ *   khẳng định CŨ, ĐÃ RÚT: "tỉ lệ giữ của H01 so được với G01". Khẳng định đó sai ở chỗ nó
+ *   chưa kiểm hai bên có so được không. G01 mang vị từ QUÁ TRÌNH, H01 mang vị từ QUAN HỆ; một
+ *   quan hệ là một cấu hình, và cấu hình đứng yên. Hiệu hai tỉ lệ không phán quyết được gì.
+ *   đo: vẫn in cả hai tỉ lệ, vì con số vẫn là thông tin về artifact.
+ *   không thay thế: con số tổng KHÔNG thay được việc soát từng khoảng giữ có chính đáng hay không.
  *   đo: tổng thời gian trong các khoảng không-đổi / runtime, cho cả hai video.
  *   không thay thế: không so số khoảng (một video có thể có ít khoảng mà mỗi khoảng rất dài).
  *
@@ -127,9 +131,15 @@ console.log('  H01  ' + RUN.toFixed(1) + 's · giữ ' + totalHold.toFixed(1) + 
   + '% · khoảng dài nhất ' + (gaps.length ? Math.max(...gaps.map((g) => g.len)).toFixed(2) : '<3') + 's');
 if (g01pct !== null) {
   const d = h01pct - g01pct;
-  console.log('  → H01 ' + (d > 0 ? 'giữ NHIỀU HƠN' : 'giữ ÍT HƠN') + ' G01 ' + Math.abs(d).toFixed(1)
-    + ' điểm %' + (d > 12 ? '  ← VƯỢT ĐÁNG KỂ, rủi ro tĩnh như F01' : ''));
-  if (d > 12) { fail++; console.log('    -> TÍNH LÀ KHÔNG ĐẠT: ngưỡng đã tự khai là 12 điểm %'); }
+  console.log('  → H01 ' + (d > 0 ? 'giữ NHIỀU HƠN' : 'giữ ÍT HƠN') + ' G01 '
+    + Math.abs(d).toFixed(1) + ' điểm %');
+  console.log('  MỤC NÀY ĐO, KHÔNG XỬ — và đây là lý do, không phải một chỗ bỏ qua:');
+  console.log('    G01 dựng trên vị từ QUÁ TRÌNH (bloat lớn dần) → chở được chuyển động liên tục');
+  console.log('    H01 dựng trên vị từ QUAN HỆ (bao hàm tiền tố) → một quan hệ là một CẤU HÌNH,');
+  console.log('    và cấu hình thì đứng. Hai tỉ lệ này không phải hai giá trị của cùng đại lượng,');
+  console.log('    nên hiệu của chúng không phán quyết được gì. Ngưỡng 12 điểm % đã bị RÚT.');
+  console.log('    Cái phán quyết được là từng khoảng giữ có chính đáng hay không — việc đó do');
+  console.log('    người soát làm trên từng beat, có bảng, không phải một con số tổng.');
 }
 
 console.log('\n══ D · BỐN LOCK trên bản có giọng ══');

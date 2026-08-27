@@ -177,12 +177,14 @@ tl.to(['#tax','#torg','#lorg'], { opacity: 1, duration: .5, ease: R }, 0.000);
 tl.to('#lA', { opacity: 1, duration: .4, ease: R }, 0.000);
 tl.to('#spA', { opacity: 1, scaleX: 1, duration: .8, ease: T }, 0.227);
 
-/* beat 14 — và khoảng giữa lưu với câu đọc kế tiếp CŨNG dưới một giây */
+/* beat 14 — câu nêu HAI mốc: "lúc user bấm lưu" VÀ "lúc trình duyệt gửi câu đọc tiếp
+   theo". Nên khoảng B được vẽ theo đúng hai mốc đó: mốc ĐẦU hiện trước, rồi khoảng VƯƠN
+   tới mốc cuối. Một khoảng có hai đầu, và câu cũng có hai đầu. */
 tl.to('#lB', { opacity: 1, duration: .4, ease: R }, 2.570);
-tl.to('#spB', { opacity: 1, scaleX: 1, duration: .8, ease: T }, 3.344);
+tl.to('#spB', { opacity: 1, duration: .35, ease: R }, 2.570);
+tl.to('#spB', { scaleX: 1, duration: .9, ease: T }, 7.007);
 
 /* beat 15 — B kết thúc BÊN TRONG A. Cùng quan hệ trong/ngoài của thế giới nền. */
-tl.to(['#spA','#spB'], { opacity: 1, duration: .3 }, 11.340);
 window.__timelines['main'] = tl;
 </script>
 </body>

@@ -218,3 +218,70 @@ một tầng.
 
 > **Mọi ngưỡng một bộ kiểm tự khai phải tính vào verdict của nó.** Nếu chỉ để in ra thì đừng
 > gọi nó là ngưỡng.
+
+### Ngưỡng tự khai mà SAI thì phải RÚT, không phải làm cho im
+
+Quy tắc trên có một mặt thứ hai. Mục C của `review-h01-voiced.mjs` tự khai ngưỡng "12 điểm % so
+với G01" và H01 vượt 29 điểm. Nhưng ngưỡng ấy **so hai đại lượng không so được**: G01 mang vị từ
+QUÁ TRÌNH, H01 mang vị từ QUAN HỆ (xem `LAW-device-predicate-motion-budget.md`). Hiệu của hai tỉ
+lệ giữ khác loại vị từ không phán quyết được gì.
+
+Có ba cách xử, và chỉ một cách đúng:
+
+| cách | vấn đề |
+|---|---|
+| giữ ngưỡng, thêm chuyển động để hạ % | sửa artifact cho vừa một phép đo sai — và ở H01 nó mở lại LOCK-A |
+| xoá `fail++`, giữ dòng cảnh báo | đúng cái **pass gây nhầm** vừa sửa ở trên |
+| **RÚT ngưỡng, khai rõ đã rút và vì sao** | ✓ |
+
+> **Rút một ngưỡng là một hành động phải NÓI RA trong chính bộ kiểm.** Mục đó tự khai là
+> "ĐO, KHÔNG XỬ", kèm lý do. Không khai ngưỡng thì không có gì để tính vào verdict — nhưng
+> việc *không khai* phải hiện ra, nếu không nó thành một chỗ bỏ qua im lặng.
+
+### Mẫu số đúng: ĐẾM BEAT, không phải nhịp trung bình
+
+Mật độ cụm phải chia cho **số beat**, không cho nhịp beat trung bình của chương. `ch-bon-vi-tri`
+đạt **1.22 cụm/beat** — nghe như đủ — trong khi vẫn chứa một beat **8.6s** chỉ có một cụm. Trung
+bình che khuyết điểm phân bố.
+
+> **Một chương "đủ mật độ" theo trung bình vẫn có thể chứa một beat rỗng.** Phép đo phải chạy
+> **trên từng beat**, và bảng phải liệt kê từng beat, không phải một dòng tổng cho chương.
+
+Hệ quả kèm theo, gặp ở lượt 11: một khoảng giữ **9.8s** bị gán cho **một** beat (beat 14) trong
+khi nó phủ **hai** beat (14 và 15). Khi beat 14 được chia làm hai cụm, khoảng 9.8s tách ra và
+**beat 15 mới lộ ra** như một khoảng giữ riêng 6.0s — chưa từng xuất hiện trong bảng trước đó.
+
+> **Gán một khoảng cho beat mở đầu nó là một phép gán, không phải một phép đo.** Khoảng phải
+> được đối chiếu với **mọi** beat mà nó phủ.
+
+### Băm container KHÔNG phải bằng chứng pixel — theo cả hai chiều
+
+Lượt 11 xoá một tween `opacity: 1` áp lên vật đã ở opacity 1 và băm mp4 **đổi**. Kết luận "vậy
+tween có tác dụng" là sai. Bảng 2×2 (comment × tween) cho thấy tween vô hiệu ở cả hai cột, và
+biến thật là **văn bản comment**. Sau khi bóc comment, JS thi hành **byte-identical, 8150 bytes
+cả hai bản** — vậy mà 414/416 khung khác nhau: 6342 pixel/khung lệch >20 tại `x 200..612,
+y 1241..1478`, YAVG tối đa 0.18/255. Là **antialiasing subpixel của hai dòng nhãn chữ**; hai ảnh
+cắt cận cảnh trông y nhau.
+
+> **Băm mp4 không chứng minh "hình giống nhau", và cũng không chứng minh "code đã đổi".** Muốn
+> nói về pixel thì đo pixel: `framemd5`, hoặc so raw rgb24 hai khung trích riêng.
+>
+> **Renderer này phụ thuộc cả những byte KHÔNG thi hành trong HTML.** Comment trong HTML không
+> miễn phí. Ghi chú giải thích để **ngoài** phần phát vào HTML.
+
+Cách dùng đúng của băm, vẫn còn giá trị: chứng minh một shot **không bị sửa**. Renderer đã được
+chứng minh xác định ở tầng byte (hai lần render cùng source → cùng băm), nên với 5 shot không
+sửa của lượt 11, `html` và `render.mp4` băm trùng trước/sau là bằng chứng đủ.
+
+### Bốn lỗi dụng cụ nữa, lượt 11 — cùng một họ với năm lỗi trước
+
+| # | lỗi | bắt bằng gì |
+|---|---|---|
+| 6 | `review-h01-mute.mjs` chọn phim bằng `readdir()[0]` — đúng nhờ thứ tự chữ cái, không nhờ chủ ý | đọc lại dụng cụ trước khi tin số của nó |
+| 7 | cùng file: lấy đuôi bằng `136 − chuyển_động_cuối`, với 136 là độ dài bản **CÂM** | bản có giọng dài 168.5s ⇒ đuôi sẽ ra số ÂM |
+| 8 | `blend=difference` **không nhãn `[0:v][1:v]`** ⇒ `signalstats` đo luma của input 0, không đo hiệu | NC: tự so với chính nó phải ra `YMAX=0` — và nó ra 0 ở cả 416 khung |
+| 9 | trích raw rgb24 **qua** `blend` ⇒ "2 073 600/2 073 600 pixel lệch", bất khả với YAVG 0.18 | số vô lý ⇒ nghi dụng cụ; trích riêng hai khung rồi so trong node |
+
+Lỗi #7 là lần thứ tư một **hằng số của artifact cũ** nằm lại trong dụng cụ. Lỗi #8 nhắc lại vì
+sao NC phải chạy **mỗi lần**: chỉ một dòng `tự-so-với-chính-nó → 0` đã phân biệt được "đo hiệu"
+với "đo input 0".

@@ -186,9 +186,13 @@ stage.appendChild(th); gsap.set(th, { opacity: 0, scaleY: 0 });
 const rW = document.createElement("div"); rW.className = "ring";
 rW.style.left = X(500) + "px"; stage.appendChild(rW);
 tl.to(th, { opacity: 1, scaleY: 1, duration: .5, ease: R }, 20.840);
+/* "Commit KHÔNG TRẢ VỀ cho tới khi replica đã áp dụng xong" — một TRẠNG THÁI của dấu
+   commit, không phải một câu chú thích. Vòng mở ra và GIỮ: đang chờ. */
+tl.fromTo(rW, { opacity: 0, scale: .8 }, { opacity: .55, scale: 1, duration: .45, ease: R }, 25.886);
 tl.to('#bRep', { scaleX: 1.4167, duration: 1.6, ease: T }, 29.490);
 tl.to('#cRep', { x: 185, duration: 1.6, ease: T }, 29.490);
-tl.fromTo(rW, { opacity: 0, scale: .55 }, { opacity: 1, scale: 1, duration: .35, ease: R }, 31.946);
+/* beat 31 — điều kiện đạt: vòng đóng lại rồi nhả. Đây là chỗ commit TRẢ VỀ. */
+tl.to(rW, { opacity: 1, scale: 1, duration: .3, ease: R }, 31.946);
 tl.to(rW, { opacity: 0, scale: 1.35, duration: .5, ease: T }, 32.492);
 tl.to(th, { opacity: 0, duration: .4, ease: T }, 32.765);
 tl.to('#bRep', { scaleX: 1, duration: .01 }, 34.130);

@@ -153,9 +153,11 @@ const uOld = val(820, 'giá trị cũ');
 gsap.set([uNew, uOld], { opacity: 0 });
 tl.to(uNew, { opacity: 1, duration: .45, ease: R }, 1.414);
 
-/* beat 3 — bấm F5, và ô của người dùng LÙI VỀ giá trị cũ */
+/* beat 3 — bấm F5. HAI bước, đúng như một refresh xảy ra: giá trị rời đi khi câu đọc
+   được gửi, rồi giá trị CŨ về khi câu đọc trả lời. Quãng trống ở giữa LÀ round trip —
+   nó là nội dung của beat, không phải một khoảng chờ được thêm vào. */
 tl.to(uNew, { opacity: 0, duration: .3, ease: T }, 5.270);
-tl.to(uOld, { opacity: 1, duration: .4, ease: R }, 6.214);
+tl.to(uOld, { opacity: 1, duration: .4, ease: R }, 8.478);
 
 /* beat 4-5 — không cần chữ "mất dữ liệu" để bác chữ "mất dữ liệu": ô thứ hai mở ra và
    giá trị mới VẪN NẰM ĐÓ. Bác bằng một vật, không bằng một câu. */
